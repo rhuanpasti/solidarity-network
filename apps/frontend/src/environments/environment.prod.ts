@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://api.solidarity-network.example/api/v1',
+  apiBaseUrl: 'https://solidarity-network.onrender.com/api/v1',
 };
