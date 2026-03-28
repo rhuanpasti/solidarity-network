@@ -1,9 +1,34 @@
+import { existsSync } from 'node:fs';
+import process from 'node:process';
+import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/modules/auth/password.util';
 
 const prisma = new PrismaClient();
+const envFilePath = resolve(process.cwd(), '.env');
+
+if (existsSync(envFilePath)) {
+  process.loadEnvFile(envFilePath);
+}
 
 async function main() {
+  const seedAdminEmail =
+    process.env.SEED_ADMIN_EMAIL?.trim() || 'admin@solidarity-network.local';
+  const seedAdminUsername = process.env.SEED_ADMIN_USERNAME?.trim();
+  const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD?.trim();
+
+  if (Boolean(seedAdminUsername) !== Boolean(seedAdminPassword)) {
+    throw new Error(
+      'Set both SEED_ADMIN_USERNAME and SEED_ADMIN_PASSWORD or leave both empty.',
+    );
+  }
+
+  if (seedAdminPassword && seedAdminPassword.length < 12) {
+    throw new Error(
+      'SEED_ADMIN_PASSWORD must contain at least 12 characters.',
+    );
+  }
+
   const program = await prisma.charityProgram.upsert({
     where: { id: 'program-food-security' },
     update: {},
@@ -16,7 +41,7 @@ async function main() {
   });
 
   const administrator = await prisma.administrator.upsert({
-    where: { email: 'admin@solidarity-network.local' },
+    where: { email: seedAdminEmail },
     update: {
       name: 'System Administrator',
       phone: '+55 11 98888-0000',
@@ -24,7 +49,7 @@ async function main() {
     },
     create: {
       name: 'System Administrator',
-      email: 'admin@solidarity-network.local',
+      email: seedAdminEmail,
       phone: '+55 11 98888-0000',
       role: 'super_admin',
       charityPrograms: {
@@ -35,18 +60,26 @@ async function main() {
     },
   });
 
-  await prisma.authCredential.upsert({
-    where: { username: 'admin' },
-    update: {
-      administratorId: administrator.id,
-    },
-    create: {
-      administratorId: administrator.id,
-      username: 'admin',
-      passwordHash: await hashPassword('admin'),
-      mustChangePassword: true,
-    },
-  });
+  if (seedAdminUsername && seedAdminPassword) {
+    await prisma.authCredential.upsert({
+      where: { username: seedAdminUsername },
+      update: {
+        administratorId: administrator.id,
+        passwordHash: await hashPassword(seedAdminPassword),
+        mustChangePassword: true,
+      },
+      create: {
+        administratorId: administrator.id,
+        username: seedAdminUsername,
+        passwordHash: await hashPassword(seedAdminPassword),
+        mustChangePassword: true,
+      },
+    });
+  } else {
+    console.warn(
+      'Skipping seeded auth credential. Set SEED_ADMIN_USERNAME and SEED_ADMIN_PASSWORD to create an administrator login.',
+    );
+  }
 
   const benefit = await prisma.benefit.upsert({
     where: { id: 'benefit-basic-food-basket' },

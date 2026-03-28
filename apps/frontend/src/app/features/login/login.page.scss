@@ -146,8 +146,7 @@
 }
 
 .login-header p,
-.session-card p,
-.demo-card p {
+.session-card p {
   margin: 0 0 0.4rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -163,23 +162,20 @@
 }
 
 .login-header span,
-.session-card span,
-.demo-card span {
+.session-card span {
   display: block;
   color: #6b7280;
   line-height: 1.6;
 }
 
-.session-card,
-.demo-card {
+.session-card {
   padding: 1.35rem 1.4rem;
   border: 1px solid #e5e7eb;
   border-radius: 1.4rem;
   background: #f9fafb;
 }
 
-.session-card strong,
-.demo-card strong {
+.session-card strong {
   display: block;
   color: #111827;
 }
@@ -256,14 +252,6 @@
 .login-submit {
   width: 100%;
   justify-content: center;
-}
-
-.ghost-link {
-  display: inline-flex;
-  margin-top: 0.25rem;
-  color: #16a34a;
-  font-weight: 600;
-  text-decoration: none;
 }
 
 .language-switcher {

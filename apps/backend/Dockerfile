@@ -1,6 +1,7 @@
 FROM node:24-alpine AS base
 WORKDIR /workspace
 
+COPY tsconfig.base.json ./tsconfig.base.json
 COPY packages/shared ./packages/shared
 COPY apps/backend ./apps/backend
 
@@ -21,5 +22,4 @@ COPY apps/backend/package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
-
+CMD ["node", "dist/apps/backend/src/main.js"]

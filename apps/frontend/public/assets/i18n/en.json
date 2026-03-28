@@ -181,13 +181,10 @@
     "invalidCredentials": "Invalid login or password.",
     "invalidCurrentPassword": "Current password is invalid.",
     "passwordReuseNotAllowed": "The new password must be different from the current password.",
+    "passwordPolicy": "Use at least 12 characters with uppercase, lowercase, number, and special character.",
     "passwordMismatch": "Password confirmation does not match the new password.",
-    "demoLabel": "Demo access",
-    "demoLogin": "Login: admin",
-    "demoPassword": "Password: admin",
-    "protectedHint": "The dashboard route remains protected and only opens after authentication.",
     "firstAccessEyebrow": "First access",
-    "firstAccessTitle": "Update the default admin password",
-    "firstAccessDescription": "For security, the default administrator must replace the initial password before entering the dashboard."
+    "firstAccessTitle": "Set a new password before continuing",
+    "firstAccessDescription": "For security, update your password before entering the dashboard."
   }
 }

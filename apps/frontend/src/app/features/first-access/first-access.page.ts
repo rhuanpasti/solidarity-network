@@ -5,6 +5,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { touchAll } from '../../shared/utils/form.utils';
 
+const PASSWORD_POLICY_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
+
 @Component({
   selector: 'sn-first-access-page',
   standalone: true,
@@ -24,7 +27,14 @@ export class FirstAccessPage {
 
   readonly form = this.formBuilder.nonNullable.group({
     currentPassword: ['', [Validators.required]],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    newPassword: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(12),
+        Validators.pattern(PASSWORD_POLICY_REGEX),
+      ],
+    ],
     confirmPassword: ['', [Validators.required]],
   });
 
@@ -47,10 +57,16 @@ export class FirstAccessPage {
   async submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+
+      if (this.form.controls.newPassword.invalid) {
+        this.errorMessage.set('auth.passwordPolicy');
+      }
+
       return;
     }
 
     const raw = this.form.getRawValue();
+    this.errorMessage.set(null);
 
     if (raw.newPassword !== raw.confirmPassword) {
       this.errorMessage.set('auth.passwordMismatch');

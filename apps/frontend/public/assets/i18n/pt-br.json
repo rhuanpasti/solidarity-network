@@ -181,13 +181,10 @@
     "invalidCredentials": "Login ou senha invalidos.",
     "invalidCurrentPassword": "A senha atual esta invalida.",
     "passwordReuseNotAllowed": "A nova senha deve ser diferente da senha atual.",
+    "passwordPolicy": "Use ao menos 12 caracteres com letra maiuscula, minuscula, numero e caractere especial.",
     "passwordMismatch": "A confirmacao da senha nao corresponde a nova senha.",
-    "demoLabel": "Acesso de demonstracao",
-    "demoLogin": "Login: admin",
-    "demoPassword": "Senha: admin",
-    "protectedHint": "A rota do dashboard continua protegida e so abre depois da autenticacao.",
     "firstAccessEyebrow": "Primeiro acesso",
-    "firstAccessTitle": "Atualize a senha padrao do administrador",
-    "firstAccessDescription": "Por seguranca, o administrador padrao precisa trocar a senha inicial antes de entrar no dashboard."
+    "firstAccessTitle": "Defina uma nova senha antes de continuar",
+    "firstAccessDescription": "Por seguranca, atualize sua senha antes de entrar no dashboard."
   }
 }

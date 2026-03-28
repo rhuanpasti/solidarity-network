@@ -146,9 +146,18 @@ This codebase is designed to be deployable without paid infrastructure:
 
 The repository includes Docker support and environment templates so local development does not depend on paid tooling.
 
+For production-like environments:
+
+- do not use hardcoded secrets from source control
+- set `JWT_SECRET` to a unique value with at least 32 characters
+- keep Swagger disabled in production
+- create bootstrap administrator credentials explicitly through seed environment variables
+
 ## Local Development
 
 ### 1. Start PostgreSQL
+
+Create a root `.env` from `.env.example` before using Docker Compose.
 
 ```bash
 docker compose up -d postgres
@@ -161,6 +170,8 @@ cd apps/backend
 cp .env.example .env
 npm install
 npm run prisma:generate
+export SEED_ADMIN_USERNAME=your-admin-user
+export SEED_ADMIN_PASSWORD=your-strong-password
 npm run prisma:migrate
 npm run prisma:seed
 npm run start:dev
@@ -188,6 +199,8 @@ Or from the repository root:
 
 Update `src/environments/environment.ts` when you need a different API URL locally.
 
+The backend seed no longer creates a default login automatically. To provision an administrator credential, set `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` explicitly before running the seed.
+
 ## Internationalization
 
 The frontend ships with runtime i18n files:
@@ -199,12 +212,12 @@ Default locale is English. Portuguese displays institutional labels as `Rede Sol
 
 ## Database Defaults
 
-The default local PostgreSQL configuration in this repository is now:
+Example local PostgreSQL configuration:
 
 - database: `solidarity`
 - user: `postgres`
-- password: `admin`
-- connection string: `postgresql://postgres:admin@localhost:5432/solidarity?schema=public`
+- password: set your own strong value in the root `.env`
+- connection string: `postgresql://postgres:<your-password>@localhost:5432/solidarity?schema=public`
 
 ## Deliverables Included
 
