@@ -24,3 +24,4 @@ COPY apps/backend/package.json ./package.json
 EXPOSE 3000
 
 CMD ["npm", "run", "start:prod"]
+
