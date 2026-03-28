@@ -14,8 +14,9 @@ RUN npm install && npm run build
 FROM node:24-alpine AS runtime
 WORKDIR /app
 
-COPY --from=base /workspace/packages/shared /app/packages/shared
 COPY --from=base /workspace/apps/backend/node_modules /app/node_modules
+RUN mkdir -p /app/node_modules/@solidarity-network && rm -rf /app/node_modules/@solidarity-network/shared
+COPY --from=base /workspace/packages/shared /app/node_modules/@solidarity-network/shared
 COPY --from=base /workspace/apps/backend/dist /app/dist
 COPY --from=base /workspace/apps/backend/prisma /app/prisma
 COPY apps/backend/package.json ./package.json
