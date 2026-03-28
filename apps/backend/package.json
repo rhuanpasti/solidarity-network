@@ -9,6 +9,7 @@
     "start:dev": "tsx watch src/main.ts",
     "build": "nest build",
     "start": "node dist/apps/backend/src/main.js",
+    "start:prod": "prisma migrate deploy && node dist/apps/backend/src/main.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:seed": "tsx prisma/seed.ts"

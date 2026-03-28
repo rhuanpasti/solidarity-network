@@ -23,4 +23,4 @@ COPY apps/backend/package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["node", "dist/apps/backend/src/main.js"]
+CMD ["npm", "run", "start:prod"]
