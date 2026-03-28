@@ -1,0 +1,8 @@
+{
+  "name": "solidarity-network-frontend",
+  "compatibility_date": "2026-03-28",
+  "assets": {
+    "directory": "./dist/solidarity-network-frontend/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
