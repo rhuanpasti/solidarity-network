@@ -1,0 +1,41 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.dashboard.eyebrow"
+    title="features.dashboard.title"
+    description="features.dashboard.description"
+  />
+
+  <section class="stats-grid">
+    @for (stat of stats(); track stat.key) {
+      <article class="stat-card">
+        <p>{{ stat.label | translate }}</p>
+        <strong>{{ stat.value }}</strong>
+      </article>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h3>{{ 'features.dashboard.recentDeliveriesTitle' | translate }}</h3>
+        <p>{{ 'features.dashboard.recentDeliveriesDescription' | translate }}</p>
+      </div>
+    </div>
+
+    <div class="list compact-list">
+      @for (delivery of recentDeliveries(); track delivery.id) {
+        <article class="list-item static-item">
+          <div>
+            <strong>{{ delivery.beneficiary.fullName }}</strong>
+            <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
+          </div>
+          <div class="item-meta">
+            <span>#{{ delivery.reference }}</span>
+            <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+</div>
+

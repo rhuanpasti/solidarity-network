@@ -1,0 +1,171 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.beneficiaries.eyebrow"
+    title="features.beneficiaries.title"
+    description="features.beneficiaries.description"
+  />
+
+  <section class="panel filter-panel">
+    <div class="field-grid">
+      <label class="field">
+        <span>{{ 'common.search' | translate }}</span>
+        <input #searchInput class="input" type="search" [value]="filters().search" />
+      </label>
+
+      <label class="field">
+        <span>{{ 'forms.charityProgram' | translate }}</span>
+        <select #programInput class="input">
+          <option value="">{{ 'common.all' | translate }}</option>
+          @for (program of programs(); track program.id) {
+            <option [value]="program.id" [selected]="filters().charityProgramId === program.id">
+              {{ program.name }}
+            </option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>{{ 'forms.status' | translate }}</span>
+        <select #statusInput class="input">
+          <option value="">{{ 'common.all' | translate }}</option>
+          <option [value]="BeneficiaryStatus.Active">{{ 'enums.beneficiaryStatuses.active' | translate }}</option>
+          <option [value]="BeneficiaryStatus.Inactive">{{ 'enums.beneficiaryStatuses.inactive' | translate }}</option>
+          <option [value]="BeneficiaryStatus.Archived">{{ 'enums.beneficiaryStatuses.archived' | translate }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="applyFilters(searchInput.value, programInput.value, statusInput.value)"
+      >
+        {{ 'common.applyFilters' | translate }}
+      </button>
+    </div>
+  </section>
+
+  <div class="content-grid">
+    <section class="panel">
+      @if (items().length) {
+        <div class="list">
+          @for (item of items(); track item.id) {
+            <button type="button" class="list-item" (click)="select(item)">
+              <div>
+                <strong>{{ item.fullName }}</strong>
+                <p>{{ item.document }}</p>
+                <small>{{ item.charityProgram.name }}</small>
+              </div>
+              <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
+            </button>
+          }
+        </div>
+      } @else {
+        <sn-empty-state
+          title="features.beneficiaries.emptyTitle"
+          description="features.beneficiaries.emptyDescription"
+        />
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>
+            {{
+              selected()
+                ? ('features.beneficiaries.editTitle' | translate)
+                : ('features.beneficiaries.createTitle' | translate)
+            }}
+          </h3>
+          <p>{{ 'features.beneficiaries.formDescription' | translate }}</p>
+        </div>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.fullName' | translate }}</span>
+            <input class="input" type="text" formControlName="fullName" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.document' | translate }}</span>
+            <input class="input" type="text" formControlName="document" />
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.birthDate' | translate }}</span>
+            <input class="input" type="date" formControlName="birthDate" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.phone' | translate }}</span>
+            <input class="input" type="text" formControlName="phone" />
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.charityProgram' | translate }}</span>
+            <select class="input" formControlName="charityProgramId">
+              <option value="">{{ 'common.selectOption' | translate }}</option>
+              @for (program of programs(); track program.id) {
+                <option [value]="program.id">{{ program.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>{{ 'forms.status' | translate }}</span>
+            <select class="input" formControlName="status">
+              <option [value]="BeneficiaryStatus.Active">{{ 'enums.beneficiaryStatuses.active' | translate }}</option>
+              <option [value]="BeneficiaryStatus.Inactive">{{ 'enums.beneficiaryStatuses.inactive' | translate }}</option>
+              <option [value]="BeneficiaryStatus.Archived">{{ 'enums.beneficiaryStatuses.archived' | translate }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field-grid" formGroupName="address">
+          <label class="field">
+            <span>{{ 'forms.street' | translate }}</span>
+            <input class="input" type="text" formControlName="street" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.number' | translate }}</span>
+            <input class="input" type="text" formControlName="number" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.district' | translate }}</span>
+            <input class="input" type="text" formControlName="district" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.city' | translate }}</span>
+            <input class="input" type="text" formControlName="city" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.state' | translate }}</span>
+            <input class="input" type="text" formControlName="state" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.postalCode' | translate }}</span>
+            <input class="input" type="text" formControlName="postalCode" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>{{ 'forms.notes' | translate }}</span>
+          <textarea class="input textarea" formControlName="notes"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
+          <button type="button" class="secondary-button" (click)="resetForm()">
+            {{ 'common.clear' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+

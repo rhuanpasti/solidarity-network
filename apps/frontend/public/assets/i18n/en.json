@@ -1,0 +1,146 @@
+{
+  "app": {
+    "brandTitle": "Solidarity Network",
+    "brandSubtitle": "Community operations",
+    "tagline": "Coordinate charity programs, people, and delivered support from one place."
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "charityPrograms": "Charity Programs",
+    "administrators": "Administrators",
+    "beneficiaries": "Beneficiaries",
+    "benefits": "Benefits",
+    "benefitDeliveries": "Benefit Deliveries"
+  },
+  "common": {
+    "skipToContent": "Skip to content",
+    "primaryNavigation": "Primary navigation",
+    "search": "Search",
+    "searchPlaceholder": "Search by name, description, or document",
+    "save": "Save",
+    "clear": "Clear",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": "All",
+    "applyFilters": "Apply filters",
+    "selectOption": "Select an option",
+    "registerDelivery": "Register delivery"
+  },
+  "forms": {
+    "name": "Name",
+    "description": "Description",
+    "status": "Status",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "charityPrograms": "Linked programs",
+    "charityProgram": "Charity program",
+    "fullName": "Full name",
+    "document": "Document",
+    "birthDate": "Birth date",
+    "street": "Street",
+    "number": "Number",
+    "district": "District",
+    "city": "City",
+    "state": "State",
+    "postalCode": "Postal code",
+    "notes": "Notes",
+    "category": "Category",
+    "active": "Active",
+    "beneficiary": "Beneficiary",
+    "benefit": "Benefit",
+    "administrator": "Administrator",
+    "quantity": "Quantity",
+    "deliveryDate": "Delivery date",
+    "reference": "Reference"
+  },
+  "enums": {
+    "roles": {
+      "super_admin": "Super admin",
+      "program_manager": "Program manager",
+      "case_worker": "Case worker"
+    },
+    "beneficiaryStatuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    },
+    "categories": {
+      "food": "Food support",
+      "hygiene": "Hygiene kit",
+      "financial": "Financial aid",
+      "education": "School material",
+      "clothing": "Clothing",
+      "medicine": "Medicine",
+      "other": "Other"
+    }
+  },
+  "features": {
+    "dashboard": {
+      "eyebrow": "Overview",
+      "title": "Operations dashboard",
+      "description": "Track the current state of programs, people, and deliveries without leaving the main workspace.",
+      "recentDeliveriesTitle": "Recent deliveries",
+      "recentDeliveriesDescription": "Latest registered support actions across the network.",
+      "stats": {
+        "programs": "Programs",
+        "administrators": "Administrators",
+        "beneficiaries": "Beneficiaries",
+        "benefits": "Benefits"
+      }
+    },
+    "charityPrograms": {
+      "eyebrow": "Programs",
+      "title": "Charity program management",
+      "description": "Create, review, and activate the programs that structure your charity operation.",
+      "emptyTitle": "No programs yet",
+      "emptyDescription": "Create your first charity program to start linking teams and beneficiaries.",
+      "createTitle": "Create program",
+      "editTitle": "Program details",
+      "formDescription": "Maintain the program catalog with clear status control.",
+      "toggleStatus": "Toggle status"
+    },
+    "administrators": {
+      "eyebrow": "Team",
+      "title": "Administrator management",
+      "description": "Register administrators, define roles, and link each person to the right programs.",
+      "emptyTitle": "No administrators yet",
+      "emptyDescription": "Add administrators to distribute operational responsibilities.",
+      "createTitle": "Create administrator",
+      "editTitle": "Administrator details",
+      "formDescription": "Use program links to keep delivery responsibility aligned."
+    },
+    "beneficiaries": {
+      "eyebrow": "Beneficiaries",
+      "title": "Beneficiary management",
+      "description": "Keep beneficiary records updated with filters for status and program scope.",
+      "emptyTitle": "No beneficiaries found",
+      "emptyDescription": "Register a beneficiary to start recording benefit deliveries.",
+      "createTitle": "Create beneficiary",
+      "editTitle": "Beneficiary details",
+      "formDescription": "Capture identity, address, notes, and charity program assignment."
+    },
+    "benefits": {
+      "eyebrow": "Benefits",
+      "title": "Benefit catalog",
+      "description": "Standardize which items or support types can be delivered across your programs.",
+      "emptyTitle": "No benefits yet",
+      "emptyDescription": "Create benefits such as food baskets, hygiene kits, or medicine support.",
+      "createTitle": "Create benefit",
+      "editTitle": "Benefit details",
+      "formDescription": "Keep categories and active status under control.",
+      "toggleStatus": "Toggle availability"
+    },
+    "benefitDeliveries": {
+      "eyebrow": "Deliveries",
+      "title": "Benefit delivery history",
+      "description": "Register new deliveries and audit the full history by program or beneficiary.",
+      "historyTitle": "Delivery history",
+      "historyDescription": "Recent deliveries with quantity, date, and responsible administrator.",
+      "emptyTitle": "No deliveries found",
+      "emptyDescription": "Register a new delivery to build your audit trail.",
+      "registerTitle": "Register delivery",
+      "formDescription": "Use program-linked selections to avoid inconsistent records."
+    }
+  }
+}

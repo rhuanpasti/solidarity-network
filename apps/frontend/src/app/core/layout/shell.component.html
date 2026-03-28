@@ -1,0 +1,54 @@
+<a class="skip-link" href="#content">{{ 'common.skipToContent' | translate }}</a>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <p class="eyebrow">{{ 'app.brandSubtitle' | translate }}</p>
+      <h1>{{ 'app.brandTitle' | translate }}</h1>
+      <p>{{ 'app.tagline' | translate }}</p>
+    </div>
+
+    {{ 'common.skipToContent' | translate  }}
+    
+    <nav class="navigation" [attr.aria-label]="'common.primaryNavigation' | translate">
+      @for (item of navigationItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          class="navigation-link"
+        >
+          {{ item.labelKey | translate }}
+        </a>
+      }
+    </nav>
+
+    <div class="language-switcher">
+      <button
+        type="button"
+        class="language-button"
+        [class.active]="currentLanguage() === 'en'"
+        (click)="setLanguage('en')"
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        class="language-button"
+        [class.active]="currentLanguage() === 'pt-br'"
+        (click)="setLanguage('pt-br')"
+      >
+        PT-BR
+      </button>
+    </div>
+  </aside>
+
+  <main id="content" class="content">
+    <router-outlet />
+  </main>
+
+  @if (toastService.message(); as toast) {
+    <div class="toast" role="status" aria-live="polite" [class.error]="toast.type === 'error'">
+      {{ toast.text }}
+    </div>
+  }
+</div>

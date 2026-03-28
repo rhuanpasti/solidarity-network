@@ -1,0 +1,98 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.charityPrograms.eyebrow"
+    title="features.charityPrograms.title"
+    description="features.charityPrograms.description"
+  />
+
+  <div class="content-grid">
+    <section class="panel">
+      <div class="panel-toolbar">
+        <input
+          #searchInput
+          type="search"
+          class="input"
+          [placeholder]="'common.searchPlaceholder' | translate"
+          (keyup.enter)="searchPrograms(searchInput.value)"
+        />
+        <button type="button" class="secondary-button" (click)="searchPrograms(searchInput.value)">
+          {{ 'common.search' | translate }}
+        </button>
+      </div>
+
+      @if (items().length) {
+        <div class="list">
+          @for (item of items(); track item.id) {
+            <button type="button" class="list-item" (click)="select(item)">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <p>{{ item.description }}</p>
+              </div>
+              <div class="item-meta">
+                <sn-status-badge
+                  [active]="item.status === 'active'"
+                  [activeLabel]="'common.active' | translate"
+                  [inactiveLabel]="'common.inactive' | translate"
+                />
+                <small>{{ item.updatedAt | date: 'mediumDate' }}</small>
+              </div>
+            </button>
+          }
+        </div>
+      } @else {
+        <sn-empty-state
+          title="features.charityPrograms.emptyTitle"
+          description="features.charityPrograms.emptyDescription"
+        />
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>
+            {{
+              selected()
+                ? ('features.charityPrograms.editTitle' | translate)
+                : ('features.charityPrograms.createTitle' | translate)
+            }}
+          </h3>
+          <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
+        </div>
+        @if (selected(); as selectedProgram) {
+          <button type="button" class="ghost-button" (click)="toggleStatus(selectedProgram)">
+            {{ 'features.charityPrograms.toggleStatus' | translate }}
+          </button>
+        }
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="field">
+          <span>{{ 'forms.name' | translate }}</span>
+          <input class="input" type="text" formControlName="name" />
+        </label>
+
+        <label class="field">
+          <span>{{ 'forms.description' | translate }}</span>
+          <textarea class="input textarea" formControlName="description"></textarea>
+        </label>
+
+        <label class="field">
+          <span>{{ 'forms.status' | translate }}</span>
+          <select class="input" formControlName="status">
+            <option [value]="CharityProgramStatus.Active">{{ 'common.active' | translate }}</option>
+            <option [value]="CharityProgramStatus.Inactive">{{ 'common.inactive' | translate }}</option>
+          </select>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
+          <button type="button" class="secondary-button" (click)="resetForm()">
+            {{ 'common.clear' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+

@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CharityProgramStatus {
+  active
+  inactive
+}
+
+enum AdministratorRole {
+  super_admin
+  program_manager
+  case_worker
+}
+
+enum BeneficiaryStatus {
+  active
+  inactive
+  archived
+}
+
+enum BenefitCategory {
+  food
+  hygiene
+  financial
+  education
+  clothing
+  medicine
+  other
+}
+
+model CharityProgram {
+  id                 String                     @id @default(cuid())
+  name               String
+  description        String
+  status             CharityProgramStatus       @default(active)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  administrators     AdministratorProgramLink[]
+  beneficiaries      Beneficiary[]
+  benefitDeliveries  BenefitDelivery[]
+}
+
+model Administrator {
+  id                String                     @id @default(cuid())
+  name              String
+  email             String                     @unique
+  phone             String
+  role              AdministratorRole
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  charityPrograms   AdministratorProgramLink[]
+  benefitDeliveries BenefitDelivery[]
+}
+
+model AdministratorProgramLink {
+  administratorId String
+  charityProgramId String
+  createdAt       DateTime @default(now())
+
+  administrator   Administrator @relation(fields: [administratorId], references: [id], onDelete: Cascade)
+  charityProgram  CharityProgram @relation(fields: [charityProgramId], references: [id], onDelete: Cascade)
+
+  @@id([administratorId, charityProgramId])
+}
+
+model Beneficiary {
+  id               String              @id @default(cuid())
+  fullName         String
+  document         String              @unique
+  birthDate        DateTime?
+  phone            String
+  address          Json
+  notes            String?
+  charityProgramId String
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  status           BeneficiaryStatus   @default(active)
+
+  charityProgram   CharityProgram      @relation(fields: [charityProgramId], references: [id])
+  benefitDeliveries BenefitDelivery[]
+
+  @@index([charityProgramId])
+  @@index([status])
+  @@index([fullName])
+}
+
+model Benefit {
+  id               String            @id @default(cuid())
+  name             String
+  description      String
+  category         BenefitCategory
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  benefitDeliveries BenefitDelivery[]
+}
+
+model BenefitDelivery {
+  id               String         @id @default(cuid())
+  beneficiaryId    String
+  benefitId        String
+  charityProgramId String
+  quantity         Int
+  deliveryDate     DateTime
+  notes            String?
+  administratorId  String
+  reference        String         @unique
+  createdAt        DateTime       @default(now())
+
+  beneficiary      Beneficiary    @relation(fields: [beneficiaryId], references: [id])
+  benefit          Benefit        @relation(fields: [benefitId], references: [id])
+  charityProgram   CharityProgram @relation(fields: [charityProgramId], references: [id])
+  administrator    Administrator  @relation(fields: [administratorId], references: [id])
+
+  @@index([beneficiaryId])
+  @@index([charityProgramId])
+  @@index([deliveryDate])
+}
+

@@ -1,0 +1,98 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.administrators.eyebrow"
+    title="features.administrators.title"
+    description="features.administrators.description"
+  />
+
+  <div class="content-grid">
+    <section class="panel">
+      @if (items().length) {
+        <div class="list">
+          @for (item of items(); track item.id) {
+            <button type="button" class="list-item" (click)="select(item)">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <p>{{ item.email }}</p>
+                <small>{{ ('enums.roles.' + item.role) | translate }}</small>
+              </div>
+              <span>{{ item.charityPrograms.length }}</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <sn-empty-state
+          title="features.administrators.emptyTitle"
+          description="features.administrators.emptyDescription"
+        />
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>
+            {{
+              selected()
+                ? ('features.administrators.editTitle' | translate)
+                : ('features.administrators.createTitle' | translate)
+            }}
+          </h3>
+          <p>{{ 'features.administrators.formDescription' | translate }}</p>
+        </div>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.name' | translate }}</span>
+            <input class="input" type="text" formControlName="name" />
+          </label>
+
+          <label class="field">
+            <span>{{ 'forms.email' | translate }}</span>
+            <input class="input" type="email" formControlName="email" />
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.phone' | translate }}</span>
+            <input class="input" type="text" formControlName="phone" />
+          </label>
+
+          <label class="field">
+            <span>{{ 'forms.role' | translate }}</span>
+            <select class="input" formControlName="role">
+              <option [value]="AdministratorRole.SuperAdmin">{{ 'enums.roles.super_admin' | translate }}</option>
+              <option [value]="AdministratorRole.ProgramManager">{{ 'enums.roles.program_manager' | translate }}</option>
+              <option [value]="AdministratorRole.CaseWorker">{{ 'enums.roles.case_worker' | translate }}</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>{{ 'forms.charityPrograms' | translate }}</span>
+          <select class="input textarea" multiple (change)="updatePrograms($event)">
+            @for (program of programs(); track program.id) {
+              <option
+                [value]="program.id"
+                [selected]="form.controls.charityProgramIds.value.includes(program.id)"
+              >
+                {{ program.name }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
+          <button type="button" class="secondary-button" (click)="resetForm()">
+            {{ 'common.clear' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+

@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc",
+    "strict": true,
+    "module": "es2022",
+    "target": "es2022",
+    "useDefineForClassFields": false,
+    "moduleResolution": "bundler",
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@solidarity-network/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@solidarity-network/shared/*": [
+        "../../packages/shared/src/*"
+      ],
+      "@app/*": [
+        "src/app/*"
+      ]
+    }
+  }
+}
+

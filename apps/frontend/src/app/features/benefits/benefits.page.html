@@ -1,0 +1,91 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.benefits.eyebrow"
+    title="features.benefits.title"
+    description="features.benefits.description"
+  />
+
+  <div class="content-grid">
+    <section class="panel">
+      @if (items().length) {
+        <div class="list">
+          @for (item of items(); track item.id) {
+            <button type="button" class="list-item" (click)="select(item)">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <p>{{ item.description }}</p>
+                <small>{{ ('enums.categories.' + item.category) | translate }}</small>
+              </div>
+              <sn-status-badge
+                [active]="item.active"
+                [activeLabel]="'common.active' | translate"
+                [inactiveLabel]="'common.inactive' | translate"
+              />
+            </button>
+          }
+        </div>
+      } @else {
+        <sn-empty-state
+          title="features.benefits.emptyTitle"
+          description="features.benefits.emptyDescription"
+        />
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>
+            {{
+              selected()
+                ? ('features.benefits.editTitle' | translate)
+                : ('features.benefits.createTitle' | translate)
+            }}
+          </h3>
+          <p>{{ 'features.benefits.formDescription' | translate }}</p>
+        </div>
+        @if (selected(); as benefit) {
+          <button type="button" class="ghost-button" (click)="toggleStatus(benefit)">
+            {{ 'features.benefits.toggleStatus' | translate }}
+          </button>
+        }
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="field">
+          <span>{{ 'forms.name' | translate }}</span>
+          <input class="input" type="text" formControlName="name" />
+        </label>
+
+        <label class="field">
+          <span>{{ 'forms.description' | translate }}</span>
+          <textarea class="input textarea" formControlName="description"></textarea>
+        </label>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.category' | translate }}</span>
+            <select class="input" formControlName="category">
+              @for (category of [BenefitCategory.Food, BenefitCategory.Hygiene, BenefitCategory.Financial, BenefitCategory.Education, BenefitCategory.Clothing, BenefitCategory.Medicine, BenefitCategory.Other]; track category) {
+                <option [value]="category">{{ ('enums.categories.' + category) | translate }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field checkbox-field">
+            <span>{{ 'forms.active' | translate }}</span>
+            <input type="checkbox" formControlName="active" />
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
+          <button type="button" class="secondary-button" (click)="resetForm()">
+            {{ 'common.clear' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+

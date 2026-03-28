@@ -1,0 +1,146 @@
+{
+  "app": {
+    "brandTitle": "Rede Solidaria",
+    "brandSubtitle": "Operacao comunitaria",
+    "tagline": "Coordene programas sociais, pessoas e entregas de apoio em um unico lugar."
+  },
+  "navigation": {
+    "dashboard": "Painel",
+    "charityPrograms": "Programas",
+    "administrators": "Administradores",
+    "beneficiaries": "Beneficiados",
+    "benefits": "Beneficios",
+    "benefitDeliveries": "Entregas"
+  },
+  "common": {
+    "skipToContent": "Ir para o conteudo",
+    "primaryNavigation": "Navegacao principal",
+    "search": "Buscar",
+    "searchPlaceholder": "Busque por nome, descricao ou documento",
+    "save": "Salvar",
+    "clear": "Limpar",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "all": "Todos",
+    "applyFilters": "Aplicar filtros",
+    "selectOption": "Selecione uma opcao",
+    "registerDelivery": "Registrar entrega"
+  },
+  "forms": {
+    "name": "Nome",
+    "description": "Descricao",
+    "status": "Status",
+    "email": "Email",
+    "phone": "Telefone",
+    "role": "Perfil",
+    "charityPrograms": "Programas vinculados",
+    "charityProgram": "Programa social",
+    "fullName": "Nome completo",
+    "document": "Documento",
+    "birthDate": "Data de nascimento",
+    "street": "Rua",
+    "number": "Numero",
+    "district": "Bairro",
+    "city": "Cidade",
+    "state": "Estado",
+    "postalCode": "CEP",
+    "notes": "Observacoes",
+    "category": "Categoria",
+    "active": "Ativo",
+    "beneficiary": "Beneficiado",
+    "benefit": "Beneficio",
+    "administrator": "Administrador",
+    "quantity": "Quantidade",
+    "deliveryDate": "Data da entrega",
+    "reference": "Referencia"
+  },
+  "enums": {
+    "roles": {
+      "super_admin": "Super administrador",
+      "program_manager": "Gestor de programa",
+      "case_worker": "Atendimento social"
+    },
+    "beneficiaryStatuses": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "archived": "Arquivado"
+    },
+    "categories": {
+      "food": "Apoio alimentar",
+      "hygiene": "Kit de higiene",
+      "financial": "Auxilio financeiro",
+      "education": "Material escolar",
+      "clothing": "Roupas",
+      "medicine": "Medicamento",
+      "other": "Outro"
+    }
+  },
+  "features": {
+    "dashboard": {
+      "eyebrow": "Visao geral",
+      "title": "Painel operacional",
+      "description": "Acompanhe o estado atual dos programas, pessoas e entregas sem sair da area principal.",
+      "recentDeliveriesTitle": "Entregas recentes",
+      "recentDeliveriesDescription": "Ultimos apoios registrados em toda a rede.",
+      "stats": {
+        "programs": "Programas",
+        "administrators": "Administradores",
+        "beneficiaries": "Beneficiados",
+        "benefits": "Beneficios"
+      }
+    },
+    "charityPrograms": {
+      "eyebrow": "Programas",
+      "title": "Gestao de programas sociais",
+      "description": "Crie, acompanhe e ative os programas que estruturam a operacao de caridade.",
+      "emptyTitle": "Nenhum programa cadastrado",
+      "emptyDescription": "Crie o primeiro programa social para comecar a vincular equipes e beneficiados.",
+      "createTitle": "Criar programa",
+      "editTitle": "Detalhes do programa",
+      "formDescription": "Mantenha o catalogo de programas com controle claro de status.",
+      "toggleStatus": "Alternar status"
+    },
+    "administrators": {
+      "eyebrow": "Equipe",
+      "title": "Gestao de administradores",
+      "description": "Cadastre administradores, defina perfis e vincule cada pessoa aos programas corretos.",
+      "emptyTitle": "Nenhum administrador cadastrado",
+      "emptyDescription": "Adicione administradores para distribuir as responsabilidades operacionais.",
+      "createTitle": "Criar administrador",
+      "editTitle": "Detalhes do administrador",
+      "formDescription": "Use os vinculos de programa para manter a responsabilidade de entrega alinhada."
+    },
+    "beneficiaries": {
+      "eyebrow": "Beneficiados",
+      "title": "Gestao de beneficiados",
+      "description": "Mantenha os cadastros atualizados com filtros por status e escopo de programa.",
+      "emptyTitle": "Nenhum beneficiado encontrado",
+      "emptyDescription": "Cadastre um beneficiado para iniciar o registro das entregas de beneficios.",
+      "createTitle": "Criar beneficiado",
+      "editTitle": "Detalhes do beneficiado",
+      "formDescription": "Registre identidade, endereco, observacoes e o programa associado."
+    },
+    "benefits": {
+      "eyebrow": "Beneficios",
+      "title": "Catalogo de beneficios",
+      "description": "Padronize os itens ou tipos de apoio que podem ser entregues em seus programas.",
+      "emptyTitle": "Nenhum beneficio cadastrado",
+      "emptyDescription": "Crie beneficios como cesta basica, kit de higiene ou apoio com medicamentos.",
+      "createTitle": "Criar beneficio",
+      "editTitle": "Detalhes do beneficio",
+      "formDescription": "Mantenha categorias e disponibilidade sob controle.",
+      "toggleStatus": "Alternar disponibilidade"
+    },
+    "benefitDeliveries": {
+      "eyebrow": "Entregas",
+      "title": "Historico de entregas",
+      "description": "Registre novas entregas e audite todo o historico por programa ou beneficiado.",
+      "historyTitle": "Historico de entregas",
+      "historyDescription": "Entregas recentes com quantidade, data e administrador responsavel.",
+      "emptyTitle": "Nenhuma entrega encontrada",
+      "emptyDescription": "Registre uma nova entrega para construir sua trilha de auditoria.",
+      "registerTitle": "Registrar entrega",
+      "formDescription": "Use selecoes vinculadas ao programa para evitar registros inconsistentes."
+    }
+  }
+}
