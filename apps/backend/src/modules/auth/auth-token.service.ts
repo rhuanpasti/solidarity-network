@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { AuthenticatedUser } from './auth.types';
@@ -14,7 +14,10 @@ interface TokenPayloadBase {
 
 @Injectable()
 export class AuthTokenService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(ConfigService)
+    private readonly configService: ConfigService,
+  ) {}
 
   sign(payload: TokenPayloadBase) {
     const now = Math.floor(Date.now() / 1000);

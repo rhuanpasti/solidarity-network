@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { CharityProgram } from '@prisma/client';
 import type {
   AdministratorSummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
-import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import {
+  normalizePaginationQuery,
+  PaginationQueryDto,
+} from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { toAdministratorSummary } from './administrators.mapper';
@@ -16,7 +19,9 @@ import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 @Injectable()
 export class AdministratorsService {
   constructor(
+    @Inject(AdministratorsRepository)
     private readonly repository: AdministratorsRepository,
+    @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
@@ -45,16 +50,21 @@ export class AdministratorsService {
   async findAll(
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<AdministratorSummary>> {
-    const skip = (query.page - 1) * query.pageSize;
+    const normalizedQuery = normalizePaginationQuery(query);
+    const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(skip, query.pageSize, query.search),
-      this.repository.count(query.search),
+      this.repository.findMany(
+        skip,
+        normalizedQuery.pageSize,
+        normalizedQuery.search,
+      ),
+      this.repository.count(normalizedQuery.search),
     ]);
 
     return createPaginatedResponse(
       items.map(toAdministratorSummary),
-      query.page,
-      query.pageSize,
+      normalizedQuery.page,
+      normalizedQuery.pageSize,
       totalItems,
     );
   }

@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { AdministratorProgramLink } from '@prisma/client';
 import type {
   BenefitDeliverySummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { AdministratorsRepository } from '../administrators/administrators.repository';
 import { BeneficiariesRepository } from '../beneficiaries/beneficiaries.repository';
@@ -18,10 +19,15 @@ import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
 @Injectable()
 export class BenefitDeliveriesService {
   constructor(
+    @Inject(BenefitDeliveriesRepository)
     private readonly repository: BenefitDeliveriesRepository,
+    @Inject(BeneficiariesRepository)
     private readonly beneficiariesRepository: BeneficiariesRepository,
+    @Inject(BenefitsRepository)
     private readonly benefitsRepository: BenefitsRepository,
+    @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
+    @Inject(AdministratorsRepository)
     private readonly administratorsRepository: AdministratorsRepository,
   ) {}
 
@@ -85,16 +91,21 @@ export class BenefitDeliveriesService {
   async findAll(
     query: QueryBenefitDeliveriesDto,
   ): Promise<PaginatedResponse<BenefitDeliverySummary>> {
-    const skip = (query.page - 1) * query.pageSize;
+    const normalizedQuery = normalizePaginationQuery(query);
+    const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(query, skip, query.pageSize),
-      this.repository.count(query),
+      this.repository.findMany(
+        normalizedQuery,
+        skip,
+        normalizedQuery.pageSize,
+      ),
+      this.repository.count(normalizedQuery),
     ]);
 
     return createPaginatedResponse(
       items.map(toBenefitDeliverySummary),
-      query.page,
-      query.pageSize,
+      normalizedQuery.page,
+      normalizedQuery.pageSize,
       totalItems,
     );
   }

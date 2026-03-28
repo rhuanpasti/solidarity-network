@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type {
   CharityProgramSummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
-import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import {
+  normalizePaginationQuery,
+  PaginationQueryDto,
+} from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { CreateCharityProgramDto } from './dto/create-charity-program.dto';
 import { UpdateCharityProgramDto } from './dto/update-charity-program.dto';
@@ -14,7 +17,10 @@ import { CharityProgramsRepository } from './charity-programs.repository';
 
 @Injectable()
 export class CharityProgramsService {
-  constructor(private readonly repository: CharityProgramsRepository) {}
+  constructor(
+    @Inject(CharityProgramsRepository)
+    private readonly repository: CharityProgramsRepository,
+  ) {}
 
   async create(dto: CreateCharityProgramDto): Promise<CharityProgramSummary> {
     const program = await this.repository.create({
@@ -28,16 +34,21 @@ export class CharityProgramsService {
   async findAll(
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<CharityProgramSummary>> {
-    const skip = (query.page - 1) * query.pageSize;
+    const normalizedQuery = normalizePaginationQuery(query);
+    const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(skip, query.pageSize, query.search),
-      this.repository.count(query.search),
+      this.repository.findMany(
+        skip,
+        normalizedQuery.pageSize,
+        normalizedQuery.search,
+      ),
+      this.repository.count(normalizedQuery.search),
     ]);
 
     return createPaginatedResponse(
       items.map(toCharityProgramSummary),
-      query.page,
-      query.pageSize,
+      normalizedQuery.page,
+      normalizedQuery.pageSize,
       totalItems,
     );
   }
@@ -70,4 +81,3 @@ export class CharityProgramsService {
     return toCharityProgramSummary(program);
   }
 }
-

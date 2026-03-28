@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { resolve } from 'node:path';
 import { validateEnv } from './config/env.schema';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthGuard } from './modules/auth/auth.guard';
@@ -15,6 +16,10 @@ import { BenefitDeliveriesModule } from './modules/benefit-deliveries/benefit-de
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [
+        resolve(process.cwd(), 'apps/backend/.env'),
+        resolve(process.cwd(), '.env'),
+      ],
       validate: validateEnv,
     }),
     PrismaModule,

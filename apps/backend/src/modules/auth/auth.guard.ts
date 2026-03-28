@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -21,7 +22,9 @@ export interface AuthenticatedRequest extends Request {
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
+    @Inject(Reflector)
     private readonly reflector: Reflector,
+    @Inject(AuthTokenService)
     private readonly authTokenService: AuthTokenService,
   ) {}
 

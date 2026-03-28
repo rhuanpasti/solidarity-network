@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CharityProgramsService } from './charity-programs.service';
 import { CreateCharityProgramDto } from './dto/create-charity-program.dto';
@@ -9,7 +9,10 @@ import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 @ApiTags('Charity Programs')
 @Controller('charity-programs')
 export class CharityProgramsController {
-  constructor(private readonly charityProgramsService: CharityProgramsService) {}
+  constructor(
+    @Inject(CharityProgramsService)
+    private readonly charityProgramsService: CharityProgramsService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateCharityProgramDto) {

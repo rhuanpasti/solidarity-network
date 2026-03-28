@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { BenefitsService } from './benefits.service';
@@ -9,7 +9,10 @@ import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
 @ApiTags('Benefits')
 @Controller('benefits')
 export class BenefitsController {
-  constructor(private readonly benefitsService: BenefitsService) {}
+  constructor(
+    @Inject(BenefitsService)
+    private readonly benefitsService: BenefitsService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateBenefitDto) {

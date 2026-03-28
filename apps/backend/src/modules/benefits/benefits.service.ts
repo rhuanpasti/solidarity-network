@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { BenefitSummary, PaginatedResponse } from '@solidarity-network/shared';
-import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import {
+  normalizePaginationQuery,
+  PaginationQueryDto,
+} from '../../common/dto/pagination-query.dto';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { toBenefitSummary } from './benefits.mapper';
@@ -11,7 +14,10 @@ import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
 
 @Injectable()
 export class BenefitsService {
-  constructor(private readonly repository: BenefitsRepository) {}
+  constructor(
+    @Inject(BenefitsRepository)
+    private readonly repository: BenefitsRepository,
+  ) {}
 
   async create(dto: CreateBenefitDto): Promise<BenefitSummary> {
     const benefit = await this.repository.create({
@@ -24,16 +30,21 @@ export class BenefitsService {
   async findAll(
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<BenefitSummary>> {
-    const skip = (query.page - 1) * query.pageSize;
+    const normalizedQuery = normalizePaginationQuery(query);
+    const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(skip, query.pageSize, query.search),
-      this.repository.count(query.search),
+      this.repository.findMany(
+        skip,
+        normalizedQuery.pageSize,
+        normalizedQuery.search,
+      ),
+      this.repository.count(normalizedQuery.search),
     ]);
 
     return createPaginatedResponse(
       items.map(toBenefitSummary),
-      query.page,
-      query.pageSize,
+      normalizedQuery.page,
+      normalizedQuery.pageSize,
       totalItems,
     );
   }
@@ -63,4 +74,3 @@ export class BenefitsService {
     return toBenefitSummary(benefit);
   }
 }
-

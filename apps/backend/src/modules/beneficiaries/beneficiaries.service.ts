@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
   BeneficiarySummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
+import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
@@ -16,7 +17,9 @@ import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
 @Injectable()
 export class BeneficiariesService {
   constructor(
+    @Inject(BeneficiariesRepository)
     private readonly repository: BeneficiariesRepository,
+    @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
@@ -39,16 +42,17 @@ export class BeneficiariesService {
   async findAll(
     query: QueryBeneficiariesDto,
   ): Promise<PaginatedResponse<BeneficiarySummary>> {
-    const skip = (query.page - 1) * query.pageSize;
+    const normalizedQuery = normalizePaginationQuery(query);
+    const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(query, skip, query.pageSize),
-      this.repository.count(query),
+      this.repository.findMany(normalizedQuery, skip, normalizedQuery.pageSize),
+      this.repository.count(normalizedQuery),
     ]);
 
     return createPaginatedResponse(
       items.map(toBeneficiarySummary),
-      query.page,
-      query.pageSize,
+      normalizedQuery.page,
+      normalizedQuery.pageSize,
       totalItems,
     );
   }

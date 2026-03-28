@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,7 +14,9 @@ import { LoginDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(AuthRepository)
     private readonly repository: AuthRepository,
+    @Inject(AuthTokenService)
     private readonly authTokenService: AuthTokenService,
   ) {}
 

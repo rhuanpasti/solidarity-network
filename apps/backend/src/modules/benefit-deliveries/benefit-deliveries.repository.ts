@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
@@ -12,7 +12,10 @@ const benefitDeliveryInclude = {
 
 @Injectable()
 export class BenefitDeliveriesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService,
+  ) {}
 
   create(data: Prisma.BenefitDeliveryUncheckedCreateInput) {
     return this.prisma.benefitDelivery.create({
@@ -50,4 +53,3 @@ export class BenefitDeliveriesRepository {
     });
   }
 }
-

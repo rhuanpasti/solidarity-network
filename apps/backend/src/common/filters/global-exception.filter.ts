@@ -7,6 +7,22 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 
+function isHttpExceptionLike(
+  exception: unknown,
+): exception is HttpException & {
+  getStatus(): number;
+  getResponse(): unknown;
+} {
+  return (
+    typeof exception === 'object' &&
+    exception !== null &&
+    'getStatus' in exception &&
+    typeof exception.getStatus === 'function' &&
+    'getResponse' in exception &&
+    typeof exception.getResponse === 'function'
+  );
+}
+
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -14,18 +30,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = isHttpExceptionLike(exception)
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const rawPayload = isHttpExceptionLike(exception)
+      ? exception.getResponse()
+      : null;
     const payload =
-      exception instanceof HttpException
-        ? (exception.getResponse() as Record<string, unknown>)
+      rawPayload && typeof rawPayload === 'object'
+        ? (rawPayload as Record<string, unknown>)
         : {
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'An unexpected error occurred.',
+            code:
+              status === HttpStatus.INTERNAL_SERVER_ERROR
+                ? 'INTERNAL_SERVER_ERROR'
+                : 'HTTP_ERROR',
+            message:
+              typeof rawPayload === 'string'
+                ? rawPayload
+                : 'An unexpected error occurred.',
           };
+
+    if (!isHttpExceptionLike(exception)) {
+      console.error('Unhandled exception', exception);
+    }
 
     response.status(status).json({
       statusCode: status,
@@ -37,4 +65,3 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     });
   }
 }
-

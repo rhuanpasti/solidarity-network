@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma, type AdministratorProgramLink } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AdministratorWithPrograms } from './administrators.mapper';
@@ -13,7 +13,10 @@ const administratorInclude = {
 
 @Injectable()
 export class AdministratorsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService,
+  ) {}
 
   create(data: Prisma.AdministratorCreateInput) {
     return this.prisma.administrator.create({

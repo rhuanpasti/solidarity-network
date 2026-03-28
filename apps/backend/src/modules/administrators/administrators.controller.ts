@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AdministratorsService } from './administrators.service';
@@ -8,7 +8,10 @@ import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 @ApiTags('Administrators')
 @Controller('administrators')
 export class AdministratorsController {
-  constructor(private readonly administratorsService: AdministratorsService) {}
+  constructor(
+    @Inject(AdministratorsService)
+    private readonly administratorsService: AdministratorsService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateAdministratorDto) {
