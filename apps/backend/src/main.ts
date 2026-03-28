@@ -10,11 +10,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const expressApp = app.getHttpAdapter().getInstance();
   const isProduction = process.env.NODE_ENV === 'production';
+  const allowedOrigins = (process.env.CORS_ORIGIN ??
+    'http://localhost:4200,https://solidarity-network.rhuanpasti.workers.dev')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   app.setGlobalPrefix('api/v1');
   expressApp.disable('x-powered-by');
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:4200'],
+    origin: allowedOrigins,
     credentials: true,
   });
   app.use((_request: Request, response: Response, next: NextFunction) => {

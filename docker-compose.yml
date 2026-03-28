@@ -21,7 +21,7 @@ services:
     environment:
       PORT: ${BACKEND_PORT:-3000}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}@postgres:5432/${POSTGRES_DB:-solidarity}?schema=public
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200,https://solidarity-network.rhuanpasti.workers.dev}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the root .env file}
       NODE_ENV: ${NODE_ENV:-development}
     ports:

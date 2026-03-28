@@ -30,10 +30,19 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
     throw new Error('JWT_SECRET must be replaced with a strong secret.');
   }
 
+  const corsOrigin = String(
+    config.CORS_ORIGIN ??
+      'http://localhost:4200,https://solidarity-network.rhuanpasti.workers.dev',
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .join(',');
+
   return {
     PORT: Number(config.PORT ?? 3000),
     DATABASE_URL: String(config.DATABASE_URL),
-    CORS_ORIGIN: String(config.CORS_ORIGIN ?? 'http://localhost:4200'),
+    CORS_ORIGIN: corsOrigin,
     JWT_SECRET: jwtSecret,
     NODE_ENV: String(config.NODE_ENV ?? 'development'),
   };
