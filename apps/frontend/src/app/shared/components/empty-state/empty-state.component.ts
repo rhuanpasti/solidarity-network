@@ -15,17 +15,19 @@ import { TranslateModule } from '@ngx-translate/core';
     `
       .empty-state {
         padding: 2rem;
-        border: 1px dashed rgba(24, 77, 71, 0.2);
+        border: 1px dashed #d1d5db;
         border-radius: 1.5rem;
-        background: rgba(255, 255, 255, 0.54);
+        background: #f9fafb;
         text-align: center;
       }
       h3 {
-        margin-top: 0;
+        margin: 0;
+        color: #111827;
       }
       p {
-        margin-bottom: 0;
-        color: #516662;
+        margin: 0.65rem 0 0;
+        color: #6b7280;
+        line-height: 1.6;
       }
     `,
   ],
@@ -35,4 +37,3 @@ export class EmptyStateComponent {
   readonly title = input.required<string>();
   readonly description = input.required<string>();
 }
-

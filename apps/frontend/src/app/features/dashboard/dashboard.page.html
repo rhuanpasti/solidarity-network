@@ -14,28 +14,64 @@
     }
   </section>
 
-  <section class="panel">
-    <div class="panel-heading">
-      <div>
-        <h3>{{ 'features.dashboard.recentDeliveriesTitle' | translate }}</h3>
-        <p>{{ 'features.dashboard.recentDeliveriesDescription' | translate }}</p>
+  <div class="content-grid dashboard-grid">
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>{{ 'features.dashboard.recentDeliveriesTitle' | translate }}</h3>
+          <p>{{ 'features.dashboard.recentDeliveriesDescription' | translate }}</p>
+        </div>
       </div>
-    </div>
 
-    <div class="list compact-list">
-      @for (delivery of recentDeliveries(); track delivery.id) {
-        <article class="list-item static-item">
+      <div class="list compact-list">
+        @for (delivery of recentDeliveries(); track delivery.id) {
+          <article class="list-item static-item">
+            <div>
+              <strong>{{ delivery.beneficiary.fullName }}</strong>
+              <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
+            </div>
+            <div class="item-meta">
+              <span>#{{ delivery.reference }}</span>
+              <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="panel overview-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>{{ 'features.dashboard.quickAccessTitle' | translate }}</h3>
+          <p>{{ 'features.dashboard.quickAccessDescription' | translate }}</p>
+        </div>
+      </div>
+
+      <div class="overview-links">
+        <a routerLink="/charity-programs" class="overview-link">
+          <span class="material-symbols-rounded">layers</span>
           <div>
-            <strong>{{ delivery.beneficiary.fullName }}</strong>
-            <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
+            <strong>{{ 'navigation.charityPrograms' | translate }}</strong>
+            <p>{{ 'features.dashboard.quickAccessPrograms' | translate }}</p>
           </div>
-          <div class="item-meta">
-            <span>#{{ delivery.reference }}</span>
-            <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
-          </div>
-        </article>
-      }
-    </div>
-  </section>
-</div>
+        </a>
 
+        <a routerLink="/beneficiaries" class="overview-link">
+          <span class="material-symbols-rounded">groups</span>
+          <div>
+            <strong>{{ 'navigation.beneficiaries' | translate }}</strong>
+            <p>{{ 'features.dashboard.quickAccessBeneficiaries' | translate }}</p>
+          </div>
+        </a>
+
+        <a routerLink="/benefit-deliveries" class="overview-link">
+          <span class="material-symbols-rounded">local_shipping</span>
+          <div>
+            <strong>{{ 'navigation.benefitDeliveries' | translate }}</strong>
+            <p>{{ 'features.dashboard.quickAccessDeliveries' | translate }}</p>
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+</div>

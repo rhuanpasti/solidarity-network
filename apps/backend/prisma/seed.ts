@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/modules/auth/password.util';
 
 const prisma = new PrismaClient();
 
@@ -16,9 +17,13 @@ async function main() {
 
   const administrator = await prisma.administrator.upsert({
     where: { email: 'admin@solidarity-network.local' },
-    update: {},
+    update: {
+      name: 'System Administrator',
+      phone: '+55 11 98888-0000',
+      role: 'super_admin',
+    },
     create: {
-      name: 'Alice Johnson',
+      name: 'System Administrator',
       email: 'admin@solidarity-network.local',
       phone: '+55 11 98888-0000',
       role: 'super_admin',
@@ -27,6 +32,19 @@ async function main() {
           charityProgramId: program.id,
         },
       },
+    },
+  });
+
+  await prisma.authCredential.upsert({
+    where: { username: 'admin' },
+    update: {
+      administratorId: administrator.id,
+    },
+    create: {
+      administratorId: administrator.id,
+      username: 'admin',
+      passwordHash: await hashPassword('admin'),
+      mustChangePassword: true,
     },
   });
 
@@ -90,4 +108,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-

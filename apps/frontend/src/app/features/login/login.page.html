@@ -1,0 +1,152 @@
+<main class="login-page">
+  <section class="login-hero" aria-hidden="true">
+    <div class="brand-lockup">
+      <div class="brand-mark">
+        <span class="material-symbols-rounded">volunteer_activism</span>
+      </div>
+      <div>
+        <p>{{ 'app.brandSubtitle' | translate }}</p>
+        <strong>{{ 'app.brandTitle' | translate }}</strong>
+      </div>
+    </div>
+
+    <div class="hero-copy">
+      <span class="hero-pill">{{ 'auth.heroBadge' | translate }}</span>
+      <h1>{{ 'auth.heroTitle' | translate }}</h1>
+      <p>{{ 'auth.heroDescription' | translate }}</p>
+    </div>
+
+    <div class="hero-metrics">
+      <article class="metric-card">
+        <span>{{ 'auth.metricPrograms' | translate }}</span>
+        <strong>12</strong>
+      </article>
+      <article class="metric-card">
+        <span>{{ 'auth.metricBeneficiaries' | translate }}</span>
+        <strong>2,590</strong>
+      </article>
+      <article class="metric-card">
+        <span>{{ 'auth.metricDeliveries' | translate }}</span>
+        <strong>187</strong>
+      </article>
+    </div>
+  </section>
+
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="login-panel__topbar">
+      <div class="mobile-brand">
+        <div class="brand-mark">
+          <span class="material-symbols-rounded">volunteer_activism</span>
+        </div>
+        <strong>{{ 'app.brandTitle' | translate }}</strong>
+      </div>
+
+      <div class="language-switcher">
+        <button
+          type="button"
+          class="language-button"
+          [class.active]="currentLanguage() === 'en'"
+          (click)="setLanguage('en')"
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          class="language-button"
+          [class.active]="currentLanguage() === 'pt-br'"
+          (click)="setLanguage('pt-br')"
+        >
+          PT-BR
+        </button>
+      </div>
+    </div>
+
+    <div class="login-panel__content">
+      <header class="login-header">
+        <p>{{ 'auth.kicker' | translate }}</p>
+        <h2 id="login-title">{{ 'auth.title' | translate }}</h2>
+        <span>{{ 'auth.subtitle' | translate }}</span>
+      </header>
+
+      @if (isAuthenticated() && session(); as currentSession) {
+        <section class="session-card">
+          <div>
+            <p>{{ 'auth.sessionActive' | translate }}</p>
+            <strong>{{ currentSession.displayName }}</strong>
+            <span>{{ currentSession.username }} · {{ currentSession.email }}</span>
+          </div>
+
+          <div class="session-card__actions">
+            <button type="button" class="primary-button" (click)="continueToDashboard()">
+              {{ 'auth.continueToDashboard' | translate }}
+            </button>
+            <button type="button" class="ghost-button" (click)="logout()">
+              {{ 'auth.switchAccount' | translate }}
+            </button>
+          </div>
+        </section>
+      }
+
+      <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="field">
+          <span>{{ 'auth.loginLabel' | translate }}</span>
+          <input
+            class="input"
+            type="text"
+            formControlName="identifier"
+            autocomplete="username"
+            [placeholder]="'auth.loginPlaceholder' | translate"
+          />
+        </label>
+
+        <label class="field">
+          <span>{{ 'auth.passwordLabel' | translate }}</span>
+          <div class="password-field">
+            <input
+              class="input"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              [placeholder]="'auth.passwordPlaceholder' | translate"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              [attr.aria-label]="
+                (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
+              "
+              (click)="togglePasswordVisibility()"
+            >
+              <span class="material-symbols-rounded">
+                {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+        </label>
+
+        <label class="remember-field">
+          <input type="checkbox" formControlName="rememberMe" />
+          <span>{{ 'auth.rememberMe' | translate }}</span>
+        </label>
+
+        @if (authError(); as errorKey) {
+          <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>
+        }
+
+        <button type="submit" class="primary-button login-submit">
+          {{ 'auth.signIn' | translate }}
+        </button>
+      </form>
+
+      <section class="demo-card" aria-label="Demo credentials">
+        <div>
+          <p>{{ 'auth.demoLabel' | translate }}</p>
+          <strong>{{ 'auth.demoLogin' | translate }}</strong>
+          <span>{{ 'auth.demoPassword' | translate }}</span>
+        </div>
+      </section>
+
+      <a routerLink="/dashboard" class="ghost-link">{{ 'auth.protectedHint' | translate }}</a>
+    </div>
+  </section>
+</main>

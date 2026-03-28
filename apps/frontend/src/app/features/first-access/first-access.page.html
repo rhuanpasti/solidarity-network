@@ -1,0 +1,89 @@
+<main class="first-access-page">
+  <section class="first-access-card">
+    <header class="first-access-header">
+      <p>{{ 'auth.firstAccessEyebrow' | translate }}</p>
+      <h1>{{ 'auth.firstAccessTitle' | translate }}</h1>
+      <span>{{ 'auth.firstAccessDescription' | translate }}</span>
+    </header>
+
+    @if (session(); as currentSession) {
+      <section class="first-access-user">
+        <strong>{{ currentSession.displayName }}</strong>
+        <span>{{ currentSession.username }} · {{ currentSession.email }}</span>
+      </section>
+    }
+
+    <form class="first-access-form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field">
+        <span>{{ 'auth.currentPasswordLabel' | translate }}</span>
+        <input
+          class="input"
+          type="password"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+        />
+      </label>
+
+      <label class="field">
+        <span>{{ 'auth.newPasswordLabel' | translate }}</span>
+        <div class="password-field">
+          <input
+            class="input"
+            [type]="passwordVisible() ? 'text' : 'password'"
+            formControlName="newPassword"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            [attr.aria-label]="
+              (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
+            "
+            (click)="togglePasswordVisibility('new')"
+          >
+            <span class="material-symbols-rounded">
+              {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
+            </span>
+          </button>
+        </div>
+      </label>
+
+      <label class="field">
+        <span>{{ 'auth.confirmPasswordLabel' | translate }}</span>
+        <div class="password-field">
+          <input
+            class="input"
+            [type]="confirmVisible() ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            [attr.aria-label]="
+              (confirmVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
+            "
+            (click)="togglePasswordVisibility('confirm')"
+          >
+            <span class="material-symbols-rounded">
+              {{ confirmVisible() ? 'visibility_off' : 'visibility' }}
+            </span>
+          </button>
+        </div>
+      </label>
+
+      @if (errorMessage(); as errorKey) {
+        <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>
+      }
+
+      <div class="first-access-actions">
+        <button type="submit" class="primary-button">
+          {{ 'auth.updatePassword' | translate }}
+        </button>
+        <button type="button" class="ghost-button" (click)="logout()">
+          {{ 'auth.logout' | translate }}
+        </button>
+      </div>
+    </form>
+  </section>
+</main>

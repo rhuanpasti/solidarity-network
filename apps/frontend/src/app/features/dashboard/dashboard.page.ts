@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import type { BenefitDeliverySummary } from '@solidarity-network/shared';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -12,7 +13,7 @@ import { CharityProgramsApi } from '../charity-programs/charity-programs.api';
 @Component({
   selector: 'sn-dashboard-page',
   standalone: true,
-  imports: [TranslateModule, DatePipe, PageHeaderComponent],
+  imports: [TranslateModule, DatePipe, PageHeaderComponent, RouterLink],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,4 +55,3 @@ export class DashboardPage implements OnInit {
     );
   }
 }
-

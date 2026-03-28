@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ShellComponent } from './core/layout/shell.component';
+import { RouterOutlet } from '@angular/router';
 import { LanguageService } from './core/i18n/language.service';
 
 @Component({
   selector: 'sn-root',
   standalone: true,
-  imports: [ShellComponent],
-  template: '<sn-shell />',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
@@ -16,4 +16,3 @@ export class AppComponent {
     this.languageService.initialize();
   }
 }
-

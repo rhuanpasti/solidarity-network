@@ -166,12 +166,24 @@ npm run prisma:seed
 npm run start:dev
 ```
 
+Or from the repository root:
+
+```bash
+./scripts/dev-backend.sh --prepare-db
+```
+
 ### 3. Frontend
 
 ```bash
 cd apps/frontend
 npm install
 npm run start
+```
+
+Or from the repository root:
+
+```bash
+./scripts/dev-frontend.sh
 ```
 
 Update `src/environments/environment.ts` when you need a different API URL locally.

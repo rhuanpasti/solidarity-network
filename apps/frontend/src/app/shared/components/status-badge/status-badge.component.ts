@@ -9,20 +9,28 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       .badge {
         display: inline-flex;
         align-items: center;
+        gap: 0.4rem;
         border-radius: 999px;
-        padding: 0.35rem 0.7rem;
+        padding: 0.38rem 0.72rem;
         font-size: 0.78rem;
         font-weight: 700;
-        background: rgba(24, 77, 71, 0.12);
-        color: #184d47;
+        background: #f0fdf4;
+        color: #15803d;
+      }
+      .badge::before {
+        content: '';
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 999px;
+        background: currentColor;
       }
       .badge.success {
-        background: rgba(24, 77, 71, 0.12);
-        color: #184d47;
+        background: #dcfce7;
+        color: #15803d;
       }
       .badge.warning {
-        background: rgba(157, 109, 31, 0.14);
-        color: #8a5e16;
+        background: #fef3c7;
+        color: #b45309;
       }
     `,
   ],
@@ -36,4 +44,3 @@ export class StatusBadgeComponent {
   readonly label = computed(() => (this.active() ? this.activeLabel() : this.inactiveLabel()));
   readonly tone = computed(() => (this.active() ? 'success' : 'warning'));
 }
-

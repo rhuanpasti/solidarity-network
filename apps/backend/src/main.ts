@@ -31,6 +31,7 @@ async function bootstrap() {
     )
     .setVersion('1.0.0')
     .addTag('Charity Programs')
+    .addTag('Auth')
     .addTag('Administrators')
     .addTag('Beneficiaries')
     .addTag('Benefits')

@@ -1,54 +1,111 @@
 <a class="skip-link" href="#content">{{ 'common.skipToContent' | translate }}</a>
 
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <p class="eyebrow">{{ 'app.brandSubtitle' | translate }}</p>
-      <h1>{{ 'app.brandTitle' | translate }}</h1>
-      <p>{{ 'app.tagline' | translate }}</p>
+<div class="shell" [class.mobile-navigation-open]="mobileNavigationOpen()">
+  <div
+    class="shell-overlay"
+    [class.visible]="mobileNavigationOpen()"
+    (click)="closeMobileNavigation()"
+  ></div>
+
+  <aside class="sidebar" [class.open]="mobileNavigationOpen()">
+    <div class="sidebar__header">
+      <div class="brand-mark">
+        <span class="material-symbols-rounded">volunteer_activism</span>
+      </div>
+
+      <div class="brand-copy">
+        <p>{{ 'app.brandSubtitle' | translate }}</p>
+        <strong>{{ 'app.brandTitle' | translate }}</strong>
+      </div>
     </div>
 
-    {{ 'common.skipToContent' | translate  }}
-    
     <nav class="navigation" [attr.aria-label]="'common.primaryNavigation' | translate">
+      <p class="navigation__label">{{ 'common.menu' | translate }}</p>
+
       @for (item of navigationItems; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
           class="navigation-link"
+          (click)="closeMobileNavigation()"
         >
-          {{ item.labelKey | translate }}
+          <span class="material-symbols-rounded">{{ item.icon }}</span>
+          <span>{{ item.labelKey | translate }}</span>
         </a>
       }
     </nav>
 
-    <div class="language-switcher">
-      <button
-        type="button"
-        class="language-button"
-        [class.active]="currentLanguage() === 'en'"
-        (click)="setLanguage('en')"
-      >
-        EN
-      </button>
-      <button
-        type="button"
-        class="language-button"
-        [class.active]="currentLanguage() === 'pt-br'"
-        (click)="setLanguage('pt-br')"
-      >
-        PT-BR
-      </button>
+    <div class="sidebar__footer">
+      <div class="language-switcher">
+        <button
+          type="button"
+          class="language-button"
+          [class.active]="currentLanguage() === 'en'"
+          (click)="setLanguage('en')"
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          class="language-button"
+          [class.active]="currentLanguage() === 'pt-br'"
+          (click)="setLanguage('pt-br')"
+        >
+          PT-BR
+        </button>
+      </div>
+
+      @if (session(); as currentSession) {
+        <section class="user-card">
+          <div class="user-card__avatar">
+            {{ currentSession.displayName.slice(0, 1) }}
+          </div>
+          <div class="user-card__copy">
+            <strong>{{ currentSession.displayName }}</strong>
+            <span>{{ currentSession.email }}</span>
+          </div>
+        </section>
+      }
     </div>
   </aside>
 
-  <main id="content" class="content">
-    <router-outlet />
-  </main>
+  <div class="shell-main">
+    <header class="topbar">
+      <div class="topbar__leading">
+        <button
+          type="button"
+          class="icon-button mobile-menu-button"
+          [attr.aria-label]="'common.openMenu' | translate"
+          (click)="toggleMobileNavigation()"
+        >
+          <span class="material-symbols-rounded">menu</span>
+        </button>
 
-  @if (toastService.message(); as toast) {
-    <div class="toast" role="status" aria-live="polite" [class.error]="toast.type === 'error'">
-      {{ toast.text }}
-    </div>
-  }
+        <label class="search-field">
+          <span class="material-symbols-rounded">search</span>
+          <input type="search" [placeholder]="'common.searchWorkspace' | translate" />
+        </label>
+      </div>
+
+      <div class="topbar__actions">
+        <button type="button" class="icon-button" [attr.aria-label]="'common.notifications' | translate">
+          <span class="material-symbols-rounded">notifications</span>
+        </button>
+
+        <button type="button" class="ghost-button" (click)="logout()">
+          {{ 'auth.logout' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <main id="content" class="content">
+      <router-outlet />
+    </main>
+
+    @if (toastService.message(); as toast) {
+      <div class="toast" role="status" aria-live="polite" [class.error]="toast.type === 'error'">
+        {{ toast.text }}
+      </div>
+    }
+  </div>
 </div>
