@@ -6,6 +6,7 @@ import { CharityProgramStatus, type CharityProgramSummary } from '@solidarity-ne
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -20,6 +21,7 @@ import { ToastService } from '../../core/services/toast.service';
     PageHeaderComponent,
     StatusBadgeComponent,
     EmptyStateComponent,
+    ButtonComponent,
   ],
   templateUrl: './charity-programs.page.html',
   styleUrl: './charity-programs.page.scss',
@@ -33,7 +35,6 @@ export class CharityProgramsPage implements OnInit {
 
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<CharityProgramSummary | null>(null);
-  readonly loading = signal(false);
   readonly search = signal('');
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -52,14 +53,9 @@ export class CharityProgramsPage implements OnInit {
   }
 
   load() {
-    this.loading.set(true);
-    this.charityProgramsService.list(this.search()).subscribe({
-      next: (response) => {
-        this.items.set(response.items);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.charityProgramsService
+      .list(this.search())
+      .subscribe((response) => this.items.set(response.items));
   }
 
   searchPrograms(value: string) {

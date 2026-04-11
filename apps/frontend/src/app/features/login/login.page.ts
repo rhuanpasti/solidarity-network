@@ -9,6 +9,7 @@ import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { LoginMetricsService } from '../../core/services/login-metrics.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
 
 const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
@@ -20,7 +21,7 @@ const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
 @Component({
   selector: 'sn-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, DecimalPipe],
+  imports: [ReactiveFormsModule, TranslateModule, DecimalPipe, ButtonComponent],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
 
 const PASSWORD_POLICY_REGEX =
@@ -11,7 +12,7 @@ const PASSWORD_POLICY_REGEX =
 @Component({
   selector: 'sn-first-access-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule],
+  imports: [ReactiveFormsModule, TranslateModule, ButtonComponent],
   templateUrl: './first-access.page.html',
   styleUrl: './first-access.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -15,9 +15,13 @@
           [placeholder]="'common.searchPlaceholder' | translate"
           (keyup.enter)="searchPrograms(searchInput.value)"
         />
-        <button type="button" class="secondary-button" (click)="searchPrograms(searchInput.value)">
+        <sn-button
+          type="button"
+          variant="secondary"
+          (click)="searchPrograms(searchInput.value)"
+        >
           {{ 'common.search' | translate }}
-        </button>
+        </sn-button>
       </div>
 
       @if (items().length) {
@@ -60,9 +64,13 @@
           <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
         </div>
         @if (selected(); as selectedProgram) {
-          <button type="button" class="ghost-button" (click)="toggleStatus(selectedProgram)">
+          <sn-button
+            type="button"
+            variant="ghost"
+            (click)="toggleStatus(selectedProgram)"
+          >
             {{ 'features.charityPrograms.toggleStatus' | translate }}
-          </button>
+          </sn-button>
         }
       </div>
 
@@ -86,13 +94,14 @@
         </label>
 
         <div class="actions">
-          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
-          <button type="button" class="secondary-button" (click)="resetForm()">
+          <sn-button type="submit" variant="primary">
+            {{ 'common.save' | translate }}
+          </sn-button>
+          <sn-button type="button" variant="secondary" (click)="resetForm()">
             {{ 'common.clear' | translate }}
-          </button>
+          </sn-button>
         </div>
       </form>
     </section>
   </div>
 </div>
-

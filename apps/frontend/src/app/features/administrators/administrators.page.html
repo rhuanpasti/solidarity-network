@@ -86,13 +86,14 @@
         </label>
 
         <div class="actions">
-          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
-          <button type="button" class="secondary-button" (click)="resetForm()">
+          <sn-button type="submit" variant="primary">
+            {{ 'common.save' | translate }}
+          </sn-button>
+          <sn-button type="button" variant="secondary" (click)="resetForm()">
             {{ 'common.clear' | translate }}
-          </button>
+          </sn-button>
         </div>
       </form>
     </section>
   </div>
 </div>
-

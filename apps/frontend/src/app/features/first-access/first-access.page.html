@@ -77,12 +77,12 @@
       }
 
       <div class="first-access-actions">
-        <button type="submit" class="primary-button">
+        <sn-button type="submit" variant="primary">
           {{ 'auth.updatePassword' | translate }}
-        </button>
-        <button type="button" class="ghost-button" (click)="logout()">
+        </sn-button>
+        <sn-button type="button" variant="ghost" (click)="logout()">
           {{ 'auth.logout' | translate }}
-        </button>
+        </sn-button>
       </div>
     </form>
   </section>

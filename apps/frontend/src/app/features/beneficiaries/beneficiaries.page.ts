@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BeneficiaryStatus, type BeneficiarySummary, type CharityProgramSummary } from '@solidarity-network/shared';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
@@ -13,7 +14,13 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'sn-beneficiaries-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, PageHeaderComponent, EmptyStateComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    PageHeaderComponent,
+    EmptyStateComponent,
+    ButtonComponent,
+  ],
   templateUrl: './beneficiaries.page.html',
   styleUrl: './beneficiaries.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

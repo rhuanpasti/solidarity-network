@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AdministratorRole, type AdministratorSummary, type CharityProgramSummary } from '@solidarity-network/shared';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
@@ -12,7 +13,13 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'sn-administrators-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, PageHeaderComponent, EmptyStateComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    PageHeaderComponent,
+    EmptyStateComponent,
+    ButtonComponent,
+  ],
   templateUrl: './administrators.page.html',
   styleUrl: './administrators.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

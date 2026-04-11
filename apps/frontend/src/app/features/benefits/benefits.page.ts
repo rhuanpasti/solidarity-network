@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { BenefitCategory, type BenefitSummary } from '@solidarity-network/shared';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -15,6 +16,7 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [
     ReactiveFormsModule,
     TranslateModule,
+    ButtonComponent,
     EmptyStateComponent,
     PageHeaderComponent,
     StatusBadgeComponent,

@@ -9,11 +9,12 @@ import {
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, loadingInterceptor, errorInterceptor])),
     {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,
       useValue: {

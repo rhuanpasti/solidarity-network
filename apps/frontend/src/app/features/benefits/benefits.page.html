@@ -45,9 +45,9 @@
           <p>{{ 'features.benefits.formDescription' | translate }}</p>
         </div>
         @if (selected(); as benefit) {
-          <button type="button" class="ghost-button" (click)="toggleStatus(benefit)">
+          <sn-button type="button" variant="ghost" (click)="toggleStatus(benefit)">
             {{ 'features.benefits.toggleStatus' | translate }}
-          </button>
+          </sn-button>
         }
       </div>
 
@@ -79,13 +79,14 @@
         </div>
 
         <div class="actions">
-          <button type="submit" class="primary-button">{{ 'common.save' | translate }}</button>
-          <button type="button" class="secondary-button" (click)="resetForm()">
+          <sn-button type="submit" variant="primary">
+            {{ 'common.save' | translate }}
+          </sn-button>
+          <sn-button type="button" variant="secondary" (click)="resetForm()">
             {{ 'common.clear' | translate }}
-          </button>
+          </sn-button>
         </div>
       </form>
     </section>
   </div>
 </div>
-

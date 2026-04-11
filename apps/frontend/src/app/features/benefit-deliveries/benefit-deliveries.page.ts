@@ -1,33 +1,28 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  inject,
-  signal,
-} from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { DatePipe } from "@angular/common";
-import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { TranslateModule } from "@ngx-translate/core";
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import type {
   AdministratorSummary,
   BenefitDeliverySummary,
   BenefitSummary,
   BeneficiarySummary,
   CharityProgramSummary,
-} from "@solidarity-network/shared";
-import { PageHeaderComponent } from "../../shared/components/page-header/page-header.component";
-import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
-import { touchAll } from "../../shared/utils/form.utils";
-import { AdministratorsService } from "../../core/services/administrators.service";
-import { BeneficiariesService } from "../../core/services/beneficiaries.service";
-import { BenefitDeliveriesService } from "../../core/services/benefit-deliveries.service";
-import { BenefitsService } from "../../core/services/benefits.service";
-import { CharityProgramsService } from "../../core/services/charity-programs.service";
-import { ToastService } from "../../core/services/toast.service";
+} from '@solidarity-network/shared';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { touchAll } from '../../shared/utils/form.utils';
+import { AdministratorsService } from '../../core/services/administrators.service';
+import { BeneficiariesService } from '../../core/services/beneficiaries.service';
+import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
+import { BenefitsService } from '../../core/services/benefits.service';
+import { CharityProgramsService } from '../../core/services/charity-programs.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-  selector: "sn-benefit-deliveries-page",
+  selector: 'sn-benefit-deliveries-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -35,9 +30,10 @@ import { ToastService } from "../../core/services/toast.service";
     DatePipe,
     PageHeaderComponent,
     EmptyStateComponent,
+    ButtonComponent,
   ],
-  templateUrl: "./benefit-deliveries.page.html",
-  styleUrl: "./benefit-deliveries.page.scss",
+  templateUrl: './benefit-deliveries.page.html',
+  styleUrl: './benefit-deliveries.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BenefitDeliveriesPage implements OnInit {
@@ -57,8 +53,8 @@ export class BenefitDeliveriesPage implements OnInit {
   readonly benefits = signal<BenefitSummary[]>([]);
   readonly administrators = signal<AdministratorSummary[]>([]);
   readonly filters = signal({
-    beneficiaryId: "",
-    charityProgramId: "",
+    beneficiaryId: '',
+    charityProgramId: '',
   });
 
   filteredBeneficiaries() {
@@ -84,14 +80,14 @@ export class BenefitDeliveriesPage implements OnInit {
   }
 
   readonly form = this.formBuilder.nonNullable.group({
-    beneficiaryId: ["", Validators.required],
-    benefitId: ["", Validators.required],
-    charityProgramId: ["", Validators.required],
+    beneficiaryId: ['', Validators.required],
+    benefitId: ['', Validators.required],
+    charityProgramId: ['', Validators.required],
     quantity: [1, [Validators.required, Validators.min(1)]],
     deliveryDate: [new Date().toISOString().slice(0, 10), Validators.required],
-    notes: [""],
-    administratorId: ["", Validators.required],
-    reference: ["", [Validators.required, Validators.maxLength(80)]],
+    notes: [''],
+    administratorId: ['', Validators.required],
+    reference: ['', [Validators.required, Validators.maxLength(80)]],
   });
 
   ngOnInit() {
@@ -110,8 +106,8 @@ export class BenefitDeliveriesPage implements OnInit {
 
     this.route.queryParamMap.subscribe((params) => {
       this.filters.set({
-        beneficiaryId: params.get("beneficiaryId") ?? "",
-        charityProgramId: params.get("charityProgramId") ?? "",
+        beneficiaryId: params.get('beneficiaryId') ?? '',
+        charityProgramId: params.get('charityProgramId') ?? '',
       });
       this.load();
     });
@@ -130,7 +126,7 @@ export class BenefitDeliveriesPage implements OnInit {
         beneficiaryId: beneficiaryId || null,
         charityProgramId: charityProgramId || null,
       },
-      queryParamsHandling: "merge",
+      queryParamsHandling: 'merge',
     });
   }
 
@@ -148,18 +144,18 @@ export class BenefitDeliveriesPage implements OnInit {
       })
       .subscribe(() => {
         this.toastService.show({
-          type: "success",
-          text: "Delivery registered successfully.",
+          type: 'success',
+          text: 'Delivery registered successfully.',
         });
         this.form.patchValue({
-          beneficiaryId: "",
-          benefitId: "",
-          charityProgramId: "",
+          beneficiaryId: '',
+          benefitId: '',
+          charityProgramId: '',
           quantity: 1,
           deliveryDate: new Date().toISOString().slice(0, 10),
-          notes: "",
-          administratorId: "",
-          reference: "",
+          notes: '',
+          administratorId: '',
+          reference: '',
         });
         this.load();
       });
