@@ -7,8 +7,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
-import { CharityProgramsApi } from './charity-programs.api';
 
 @Component({
   selector: 'sn-charity-programs-page',
@@ -28,7 +28,7 @@ import { CharityProgramsApi } from './charity-programs.api';
 export class CharityProgramsPage implements OnInit {
   readonly CharityProgramStatus = CharityProgramStatus;
   private readonly formBuilder = inject(FormBuilder);
-  private readonly api = inject(CharityProgramsApi);
+  private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
 
   readonly items = signal<CharityProgramSummary[]>([]);
@@ -53,7 +53,7 @@ export class CharityProgramsPage implements OnInit {
 
   load() {
     this.loading.set(true);
-    this.api.list(this.search()).subscribe({
+    this.charityProgramsService.list(this.search()).subscribe({
       next: (response) => {
         this.items.set(response.items);
         this.loading.set(false);
@@ -93,8 +93,8 @@ export class CharityProgramsPage implements OnInit {
 
     const payload = this.form.getRawValue();
     const request = this.selected()
-      ? this.api.update(this.selected()!.id, payload)
-      : this.api.create(payload);
+      ? this.charityProgramsService.update(this.selected()!.id, payload)
+      : this.charityProgramsService.create(payload);
 
     request.subscribe(() => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });
@@ -109,6 +109,6 @@ export class CharityProgramsPage implements OnInit {
         ? CharityProgramStatus.Inactive
         : CharityProgramStatus.Active;
 
-    this.api.updateStatus(program.id, nextStatus).subscribe(() => this.load());
+    this.charityProgramsService.updateStatus(program.id, nextStatus).subscribe(() => this.load());
   }
 }

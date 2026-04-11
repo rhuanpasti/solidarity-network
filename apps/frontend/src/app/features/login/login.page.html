@@ -17,18 +17,12 @@
     </div>
 
     <div class="hero-metrics">
-      <article class="metric-card">
-        <span>{{ 'auth.metricPrograms' | translate }}</span>
-        <strong>12</strong>
-      </article>
-      <article class="metric-card">
-        <span>{{ 'auth.metricBeneficiaries' | translate }}</span>
-        <strong>2,590</strong>
-      </article>
-      <article class="metric-card">
-        <span>{{ 'auth.metricDeliveries' | translate }}</span>
-        <strong>187</strong>
-      </article>
+      @for (metric of heroMetrics(); track metric.key) {
+        <article class="metric-card">
+          <span>{{ metric.label | translate }}</span>
+          <strong>{{ metric.value | number }}</strong>
+        </article>
+      }
     </div>
   </section>
 

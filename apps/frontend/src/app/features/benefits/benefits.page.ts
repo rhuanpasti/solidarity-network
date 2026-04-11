@@ -6,8 +6,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { BenefitsService } from '../../core/services/benefits.service';
 import { ToastService } from '../../core/services/toast.service';
-import { BenefitsApi } from './benefits.api';
 
 @Component({
   selector: 'sn-benefits-page',
@@ -26,7 +26,7 @@ import { BenefitsApi } from './benefits.api';
 export class BenefitsPage implements OnInit {
   readonly BenefitCategory = BenefitCategory;
   private readonly formBuilder = inject(FormBuilder);
-  private readonly api = inject(BenefitsApi);
+  private readonly benefitsService = inject(BenefitsService);
   private readonly toastService = inject(ToastService);
 
   readonly items = signal<BenefitSummary[]>([]);
@@ -46,7 +46,7 @@ export class BenefitsPage implements OnInit {
   }
 
   load() {
-    this.api.list().subscribe((response) => this.items.set(response.items));
+    this.benefitsService.list().subscribe((response) => this.items.set(response.items));
   }
 
   select(item: BenefitSummary) {
@@ -77,8 +77,8 @@ export class BenefitsPage implements OnInit {
 
     const payload = this.form.getRawValue();
     const request = this.selected()
-      ? this.api.update(this.selected()!.id, payload)
-      : this.api.create(payload);
+      ? this.benefitsService.update(this.selected()!.id, payload)
+      : this.benefitsService.create(payload);
 
     request.subscribe(() => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });
@@ -88,6 +88,6 @@ export class BenefitsPage implements OnInit {
   }
 
   toggleStatus(item: BenefitSummary) {
-    this.api.updateStatus(item.id, !item.active).subscribe(() => this.load());
+    this.benefitsService.updateStatus(item.id, !item.active).subscribe(() => this.load());
   }
 }

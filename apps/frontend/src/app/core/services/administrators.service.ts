@@ -12,7 +12,7 @@ export interface AdministratorPayload {
 }
 
 @Injectable({ providedIn: 'root' })
-export class AdministratorsApi {
+export class AdministratorsService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/administrators`;
 

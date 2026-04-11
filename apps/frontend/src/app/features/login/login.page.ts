@@ -1,15 +1,26 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import type { LoginMetricsResponse } from '@solidarity-network/shared';
+import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
+import { LoginMetricsService } from '../../core/services/login-metrics.service';
 import { touchAll } from '../../shared/utils/form.utils';
+
+const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
+  programs: 0,
+  beneficiaries: 0,
+  deliveries: 0,
+};
 
 @Component({
   selector: 'sn-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule],
+  imports: [ReactiveFormsModule, TranslateModule, DecimalPipe],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +28,7 @@ import { touchAll } from '../../shared/utils/form.utils';
 export class LoginPage {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly loginMetricsService = inject(LoginMetricsService);
   private readonly languageService = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -33,6 +45,23 @@ export class LoginPage {
   readonly session = this.authService.session;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly currentLanguage = this.languageService.currentLanguage;
+  readonly loginMetrics = toSignal(
+    this.loginMetricsService.get().pipe(catchError(() => of(EMPTY_LOGIN_METRICS))),
+    { initialValue: EMPTY_LOGIN_METRICS },
+  );
+  readonly heroMetrics = computed(() => {
+    const metrics = this.loginMetrics();
+
+    return [
+      { key: 'programs', label: 'auth.metricPrograms', value: metrics.programs },
+      {
+        key: 'beneficiaries',
+        label: 'auth.metricBeneficiaries',
+        value: metrics.beneficiaries,
+      },
+      { key: 'deliveries', label: 'auth.metricDeliveries', value: metrics.deliveries },
+    ];
+  });
 
   togglePasswordVisibility() {
     this.passwordVisible.update((current) => !current);

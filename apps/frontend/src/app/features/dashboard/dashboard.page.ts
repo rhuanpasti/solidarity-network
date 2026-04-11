@@ -4,11 +4,11 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import type { BenefitDeliverySummary } from '@solidarity-network/shared';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { AdministratorsApi } from '../administrators/administrators.api';
-import { BenefitDeliveriesApi } from '../benefit-deliveries/benefit-deliveries.api';
-import { BeneficiariesApi } from '../beneficiaries/beneficiaries.api';
-import { BenefitsApi } from '../benefits/benefits.api';
-import { CharityProgramsApi } from '../charity-programs/charity-programs.api';
+import { AdministratorsService } from '../../core/services/administrators.service';
+import { BeneficiariesService } from '../../core/services/beneficiaries.service';
+import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
+import { BenefitsService } from '../../core/services/benefits.service';
+import { CharityProgramsService } from '../../core/services/charity-programs.service';
 
 @Component({
   selector: 'sn-dashboard-page',
@@ -19,11 +19,11 @@ import { CharityProgramsApi } from '../charity-programs/charity-programs.api';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardPage implements OnInit {
-  private readonly programsApi = inject(CharityProgramsApi);
-  private readonly administratorsApi = inject(AdministratorsApi);
-  private readonly beneficiariesApi = inject(BeneficiariesApi);
-  private readonly benefitsApi = inject(BenefitsApi);
-  private readonly deliveriesApi = inject(BenefitDeliveriesApi);
+  private readonly charityProgramsService = inject(CharityProgramsService);
+  private readonly administratorsService = inject(AdministratorsService);
+  private readonly beneficiariesService = inject(BeneficiariesService);
+  private readonly benefitsService = inject(BenefitsService);
+  private readonly benefitDeliveriesService = inject(BenefitDeliveriesService);
 
   readonly stats = signal([
     { key: 'programs', label: 'features.dashboard.stats.programs', value: 0 },
@@ -34,19 +34,21 @@ export class DashboardPage implements OnInit {
   readonly recentDeliveries = signal<BenefitDeliverySummary[]>([]);
 
   ngOnInit() {
-    this.programsApi.list().subscribe((response) =>
+    this.charityProgramsService.list().subscribe((response) =>
       this.patchStat('programs', response.meta.totalItems),
     );
-    this.administratorsApi.list().subscribe((response) =>
+    this.administratorsService.list().subscribe((response) =>
       this.patchStat('administrators', response.meta.totalItems),
     );
-    this.beneficiariesApi.list().subscribe((response) =>
+    this.beneficiariesService.list().subscribe((response) =>
       this.patchStat('beneficiaries', response.meta.totalItems),
     );
-    this.benefitsApi.list().subscribe((response) =>
+    this.benefitsService.list().subscribe((response) =>
       this.patchStat('benefits', response.meta.totalItems),
     );
-    this.deliveriesApi.list().subscribe((response) => this.recentDeliveries.set(response.items.slice(0, 5)));
+    this.benefitDeliveriesService.list().subscribe((response) =>
+      this.recentDeliveries.set(response.items.slice(0, 5)),
+    );
   }
 
   private patchStat(key: string, value: number) {

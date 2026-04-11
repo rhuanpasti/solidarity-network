@@ -34,3 +34,9 @@ export interface ApiErrorResponse {
   timestamp: string;
   path: string;
 }
+
+export interface LoginMetricsResponse {
+  programs: number;
+  beneficiaries: number;
+  deliveries: number;
+}

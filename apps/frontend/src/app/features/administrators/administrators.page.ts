@@ -5,9 +5,9 @@ import { AdministratorRole, type AdministratorSummary, type CharityProgramSummar
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { AdministratorsService } from '../../core/services/administrators.service';
+import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
-import { CharityProgramsApi } from '../charity-programs/charity-programs.api';
-import { AdministratorsApi } from './administrators.api';
 
 @Component({
   selector: 'sn-administrators-page',
@@ -20,8 +20,8 @@ import { AdministratorsApi } from './administrators.api';
 export class AdministratorsPage implements OnInit {
   readonly AdministratorRole = AdministratorRole;
   private readonly formBuilder = inject(FormBuilder);
-  private readonly api = inject(AdministratorsApi);
-  private readonly programsApi = inject(CharityProgramsApi);
+  private readonly administratorsService = inject(AdministratorsService);
+  private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
 
   readonly items = signal<AdministratorSummary[]>([]);
@@ -43,11 +43,11 @@ export class AdministratorsPage implements OnInit {
 
   ngOnInit() {
     this.load();
-    this.programsApi.list().subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService.list().subscribe((response) => this.programs.set(response.items));
   }
 
   load() {
-    this.api.list().subscribe((response) => this.items.set(response.items));
+    this.administratorsService.list().subscribe((response) => this.items.set(response.items));
   }
 
   select(item: AdministratorSummary) {
@@ -87,8 +87,8 @@ export class AdministratorsPage implements OnInit {
 
     const payload = this.form.getRawValue();
     const request = this.selected()
-      ? this.api.update(this.selected()!.id, payload)
-      : this.api.create(payload);
+      ? this.administratorsService.update(this.selected()!.id, payload)
+      : this.administratorsService.create(payload);
 
     request.subscribe(() => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });

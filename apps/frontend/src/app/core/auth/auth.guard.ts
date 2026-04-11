@@ -2,6 +2,16 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
+const resolveAuthenticatedUrl = (
+  authService: AuthService,
+  returnUrl?: string | null,
+) => {
+  const safeReturnUrl =
+    returnUrl && !returnUrl.startsWith('/login') ? returnUrl : undefined;
+
+  return authService.resolvePostLoginUrl(safeReturnUrl);
+};
+
 export const authGuard: CanActivateFn = (_route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -27,4 +37,17 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return router.createUrlTree(['/login'], {
     queryParams: { returnUrl: state.url },
   });
+};
+
+export const loginGuard: CanActivateFn = (route) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    return true;
+  }
+
+  return router.createUrlTree([
+    resolveAuthenticatedUrl(authService, route.queryParamMap.get('returnUrl')),
+  ]);
 };

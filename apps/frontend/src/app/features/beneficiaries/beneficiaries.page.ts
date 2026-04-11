@@ -6,9 +6,9 @@ import { BeneficiaryStatus, type BeneficiarySummary, type CharityProgramSummary 
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { BeneficiariesService } from '../../core/services/beneficiaries.service';
+import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
-import { CharityProgramsApi } from '../charity-programs/charity-programs.api';
-import { BeneficiariesApi } from './beneficiaries.api';
 
 @Component({
   selector: 'sn-beneficiaries-page',
@@ -21,8 +21,8 @@ import { BeneficiariesApi } from './beneficiaries.api';
 export class BeneficiariesPage implements OnInit {
   readonly BeneficiaryStatus = BeneficiaryStatus;
   private readonly formBuilder = inject(FormBuilder);
-  private readonly api = inject(BeneficiariesApi);
-  private readonly programsApi = inject(CharityProgramsApi);
+  private readonly beneficiariesService = inject(BeneficiariesService);
+  private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly toastService = inject(ToastService);
@@ -62,7 +62,7 @@ export class BeneficiariesPage implements OnInit {
   });
 
   ngOnInit() {
-    this.programsApi.list().subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService.list().subscribe((response) => this.programs.set(response.items));
     this.route.queryParamMap.subscribe((params) => {
       const nextFilters = {
         search: params.get('search') ?? '',
@@ -75,7 +75,7 @@ export class BeneficiariesPage implements OnInit {
   }
 
   load() {
-    this.api.list(this.filters()).subscribe((response) => this.items.set(response.items));
+    this.beneficiariesService.list(this.filters()).subscribe((response) => this.items.set(response.items));
   }
 
   applyFilters(search: string, charityProgramId: string, status: string) {
@@ -149,8 +149,8 @@ export class BeneficiariesPage implements OnInit {
       notes: raw.notes || null,
     };
     const request = this.selected()
-      ? this.api.update(this.selected()!.id, payload)
-      : this.api.create(payload);
+      ? this.beneficiariesService.update(this.selected()!.id, payload)
+      : this.beneficiariesService.create(payload);
 
     request.subscribe(() => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });

@@ -11,6 +11,7 @@ import { AdministratorsModule } from './modules/administrators/administrators.mo
 import { BeneficiariesModule } from './modules/beneficiaries/beneficiaries.module';
 import { BenefitsModule } from './modules/benefits/benefits.module';
 import { BenefitDeliveriesModule } from './modules/benefit-deliveries/benefit-deliveries.module';
+import { PublicModule } from './modules/public/public.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BenefitDeliveriesModule } from './modules/benefit-deliveries/benefit-de
     BeneficiariesModule,
     BenefitsModule,
     BenefitDeliveriesModule,
+    PublicModule,
   ],
   providers: [
     {

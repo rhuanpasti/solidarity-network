@@ -10,7 +10,7 @@ export interface CharityProgramPayload {
 }
 
 @Injectable({ providedIn: 'root' })
-export class CharityProgramsApi {
+export class CharityProgramsService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/charity-programs`;
 
