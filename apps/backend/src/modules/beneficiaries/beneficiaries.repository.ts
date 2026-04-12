@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { ProgramAccessScope } from '../authorization/authorization.types';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
 
 const beneficiaryInclude = {
@@ -21,21 +22,14 @@ export class BeneficiariesRepository {
     });
   }
 
-  findMany(query: QueryBeneficiariesDto, skip: number, take: number) {
+  findMany(
+    query: QueryBeneficiariesDto,
+    skip: number,
+    take: number,
+    scope?: ProgramAccessScope,
+  ) {
     return this.prisma.beneficiary.findMany({
-      where: {
-        charityProgramId: query.charityProgramId,
-        status: query.status,
-        ...(query.search
-          ? {
-              OR: [
-                { fullName: { contains: query.search, mode: 'insensitive' } },
-                { document: { contains: query.search, mode: 'insensitive' } },
-                { email: { contains: query.search, mode: 'insensitive' } },
-              ],
-            }
-          : {}),
-      },
+      where: this.buildWhere(query, scope),
       include: beneficiaryInclude,
       orderBy: { createdAt: 'desc' },
       skip,
@@ -43,27 +37,15 @@ export class BeneficiariesRepository {
     });
   }
 
-  count(query: QueryBeneficiariesDto) {
+  count(query: QueryBeneficiariesDto, scope?: ProgramAccessScope) {
     return this.prisma.beneficiary.count({
-      where: {
-        charityProgramId: query.charityProgramId,
-        status: query.status,
-        ...(query.search
-          ? {
-              OR: [
-                { fullName: { contains: query.search, mode: 'insensitive' } },
-                { document: { contains: query.search, mode: 'insensitive' } },
-                { email: { contains: query.search, mode: 'insensitive' } },
-              ],
-            }
-          : {}),
-      },
+      where: this.buildWhere(query, scope),
     });
   }
 
-  findById(id: string) {
-    return this.prisma.beneficiary.findUnique({
-      where: { id },
+  findById(id: string, scope?: ProgramAccessScope) {
+    return this.prisma.beneficiary.findFirst({
+      where: this.buildWhere({}, scope, { id }),
       include: beneficiaryInclude,
     });
   }
@@ -74,5 +56,49 @@ export class BeneficiariesRepository {
       data,
       include: beneficiaryInclude,
     });
+  }
+
+  private buildWhere(
+    query: Partial<QueryBeneficiariesDto>,
+    scope?: ProgramAccessScope,
+    extra?: Prisma.BeneficiaryWhereInput,
+  ): Prisma.BeneficiaryWhereInput {
+    const filters: Prisma.BeneficiaryWhereInput[] = [];
+
+    if (extra) {
+      filters.push(extra);
+    }
+
+    if (query.charityProgramId) {
+      filters.push({ charityProgramId: query.charityProgramId });
+    }
+
+    if (query.status) {
+      filters.push({ status: query.status });
+    }
+
+    if (query.search) {
+      filters.push({
+        OR: [
+          { fullName: { contains: query.search, mode: 'insensitive' } },
+          { document: { contains: query.search, mode: 'insensitive' } },
+          { email: { contains: query.search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    if (scope && !scope.hasGlobalAccess) {
+      filters.push({
+        charityProgramId: {
+          in: scope.allowedProgramIds,
+        },
+      });
+    }
+
+    if (!filters.length) {
+      return {};
+    }
+
+    return filters.length === 1 ? filters[0]! : { AND: filters };
   }
 }

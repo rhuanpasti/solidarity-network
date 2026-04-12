@@ -6,6 +6,8 @@ import {
 } from '../../common/dto/pagination-query.dto';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { toBenefitSummary } from './benefits.mapper';
 import { BenefitsRepository } from './benefits.repository';
 import { CreateBenefitDto } from './dto/create-benefit.dto';
@@ -15,11 +17,19 @@ import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
 @Injectable()
 export class BenefitsService {
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authorizationService: AuthorizationService,
     @Inject(BenefitsRepository)
     private readonly repository: BenefitsRepository,
   ) {}
 
-  async create(dto: CreateBenefitDto): Promise<BenefitSummary> {
+  async create(
+    dto: CreateBenefitDto,
+    actor: AuthenticatedUser,
+  ): Promise<BenefitSummary> {
+    this.authorizationService.assertCanManageBenefit(actor, {
+      action: 'benefit.create',
+    });
     const benefit = await this.repository.create({
       ...dto,
       active: dto.active ?? true,
@@ -29,7 +39,11 @@ export class BenefitsService {
 
   async findAll(
     query: PaginationQueryDto,
+    actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BenefitSummary>> {
+    this.authorizationService.assertCanManageBenefit(actor, {
+      action: 'benefit.find_all',
+    });
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const [items, totalItems] = await Promise.all([
@@ -49,7 +63,11 @@ export class BenefitsService {
     );
   }
 
-  async findOne(id: string): Promise<BenefitSummary> {
+  async findOne(id: string, actor: AuthenticatedUser): Promise<BenefitSummary> {
+    this.authorizationService.assertCanManageBenefit(actor, {
+      action: 'benefit.find_one',
+      benefitId: id,
+    });
     const benefit = await this.repository.findById(id);
 
     if (!benefit) {
@@ -59,8 +77,16 @@ export class BenefitsService {
     return toBenefitSummary(benefit);
   }
 
-  async update(id: string, dto: UpdateBenefitDto): Promise<BenefitSummary> {
-    await this.findOne(id);
+  async update(
+    id: string,
+    dto: UpdateBenefitDto,
+    actor: AuthenticatedUser,
+  ): Promise<BenefitSummary> {
+    this.authorizationService.assertCanManageBenefit(actor, {
+      action: 'benefit.update',
+      benefitId: id,
+    });
+    await this.findOne(id, actor);
     const benefit = await this.repository.update(id, dto);
     return toBenefitSummary(benefit);
   }
@@ -68,8 +94,13 @@ export class BenefitsService {
   async updateStatus(
     id: string,
     dto: UpdateBenefitStatusDto,
+    actor: AuthenticatedUser,
   ): Promise<BenefitSummary> {
-    await this.findOne(id);
+    this.authorizationService.assertCanManageBenefit(actor, {
+      action: 'benefit.update_status',
+      benefitId: id,
+    });
+    await this.findOne(id, actor);
     const benefit = await this.repository.update(id, { active: dto.active });
     return toBenefitSummary(benefit);
   }

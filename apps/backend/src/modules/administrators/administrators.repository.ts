@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Prisma, type AdministratorProgramLink } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { ProgramAccessScope } from '../authorization/authorization.types';
 import type { AdministratorWithPrograms } from './administrators.mapper';
 
 const administratorInclude = {
@@ -25,9 +26,14 @@ export class AdministratorsRepository {
     });
   }
 
-  findMany(skip: number, take: number, search?: string) {
+  findMany(
+    skip: number,
+    take: number,
+    search?: string,
+    scope?: ProgramAccessScope,
+  ) {
     return this.prisma.administrator.findMany({
-      where: this.buildVisibleAdministratorWhere(search),
+      where: this.buildVisibleAdministratorWhere(search, scope),
       include: administratorInclude,
       orderBy: { createdAt: 'desc' },
       skip,
@@ -35,13 +41,20 @@ export class AdministratorsRepository {
     });
   }
 
-  count(search?: string) {
+  count(search?: string, scope?: ProgramAccessScope) {
     return this.prisma.administrator.count({
-      where: this.buildVisibleAdministratorWhere(search),
+      where: this.buildVisibleAdministratorWhere(search, scope),
     });
   }
 
-  findById(id: string) {
+  findById(id: string, scope?: ProgramAccessScope) {
+    return this.prisma.administrator.findFirst({
+      where: this.buildVisibleAdministratorWhere(undefined, scope, { id }),
+      include: administratorInclude,
+    });
+  }
+
+  findAnyById(id: string) {
     return this.prisma.administrator.findUnique({
       where: { id },
       include: administratorInclude,
@@ -93,17 +106,49 @@ export class AdministratorsRepository {
     });
   }
 
-  private buildVisibleAdministratorWhere(search?: string): Prisma.AdministratorWhereInput {
+  private buildVisibleAdministratorWhere(
+    search?: string,
+    scope?: ProgramAccessScope,
+    extra?: Prisma.AdministratorWhereInput,
+  ): Prisma.AdministratorWhereInput {
+    const filters: Prisma.AdministratorWhereInput[] = [
+      { isSystemRoot: false },
+    ];
+
+    if (extra) {
+      filters.push(extra);
+    }
+
+    if (search) {
+      filters.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    const scopeWhere = this.buildProgramScopeWhere(scope);
+    if (scopeWhere) {
+      filters.push(scopeWhere);
+    }
+
+    return filters.length === 1 ? filters[0]! : { AND: filters };
+  }
+
+  private buildProgramScopeWhere(scope?: ProgramAccessScope) {
+    if (!scope || scope.hasGlobalAccess) {
+      return undefined;
+    }
+
     return {
-      isSystemRoot: false,
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-    };
+      charityPrograms: {
+        some: {
+          charityProgramId: {
+            in: scope.allowedProgramIds,
+          },
+        },
+      },
+    } satisfies Prisma.AdministratorWhereInput;
   }
 }

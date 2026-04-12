@@ -13,6 +13,8 @@ import {
   generateNumericPasskey,
   hashPassword,
 } from '../auth/password.util';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
 import {
@@ -27,13 +29,25 @@ import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
 @Injectable()
 export class BeneficiariesService {
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authorizationService: AuthorizationService,
     @Inject(BeneficiariesRepository)
     private readonly repository: BeneficiariesRepository,
     @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
-  async create(dto: CreateBeneficiaryDto): Promise<CreateBeneficiaryResult> {
+  async create(
+    dto: CreateBeneficiaryDto,
+    actor: AuthenticatedUser,
+  ): Promise<CreateBeneficiaryResult> {
+    this.authorizationService.assertCanEditBeneficiary(
+      actor,
+      dto.charityProgramId,
+      {
+        action: 'beneficiary.create',
+      },
+    );
     await this.assertProgramExists(dto.charityProgramId);
     const normalizedInput = normalizeBeneficiaryInput({
       document: dto.document,
@@ -65,12 +79,19 @@ export class BeneficiariesService {
 
   async findAll(
     query: QueryBeneficiariesDto,
+    actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BeneficiarySummary>> {
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
+    const scope = this.authorizationService.getProgramScope(actor);
     const [items, totalItems] = await Promise.all([
-      this.repository.findMany(normalizedQuery, skip, normalizedQuery.pageSize),
-      this.repository.count(normalizedQuery),
+      this.repository.findMany(
+        normalizedQuery,
+        skip,
+        normalizedQuery.pageSize,
+        scope,
+      ),
+      this.repository.count(normalizedQuery, scope),
     ]);
 
     return createPaginatedResponse(
@@ -81,8 +102,11 @@ export class BeneficiariesService {
     );
   }
 
-  async findOne(id: string): Promise<BeneficiarySummary> {
-    const beneficiary = await this.repository.findById(id);
+  async findOne(id: string, actor: AuthenticatedUser): Promise<BeneficiarySummary> {
+    const beneficiary = await this.repository.findById(
+      id,
+      this.authorizationService.getProgramScope(actor),
+    );
 
     if (!beneficiary) {
       throw new DomainNotFoundException('beneficiary', id);
@@ -91,14 +115,29 @@ export class BeneficiariesService {
     return toBeneficiarySummary(beneficiary);
   }
 
-  async update(id: string, dto: UpdateBeneficiaryDto): Promise<BeneficiarySummary> {
-    const existingBeneficiary = await this.repository.findById(id);
+  async update(
+    id: string,
+    dto: UpdateBeneficiaryDto,
+    actor: AuthenticatedUser,
+  ): Promise<BeneficiarySummary> {
+    const existingBeneficiary = await this.repository.findById(
+      id,
+      this.authorizationService.getProgramScope(actor),
+    );
 
     if (!existingBeneficiary) {
       throw new DomainNotFoundException('beneficiary', id);
     }
 
     if (dto.charityProgramId !== undefined) {
+      this.authorizationService.assertCanEditBeneficiary(
+        actor,
+        dto.charityProgramId,
+        {
+          action: 'beneficiary.reassign_program',
+          beneficiaryId: id,
+        },
+      );
       await this.assertProgramExists(dto.charityProgramId);
     }
 
@@ -112,6 +151,15 @@ export class BeneficiariesService {
       address: mergedAddress,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+
+    this.authorizationService.assertCanEditBeneficiary(
+      actor,
+      existingBeneficiary.charityProgramId,
+      {
+        action: 'beneficiary.update',
+        beneficiaryId: id,
+      },
+    );
 
     const beneficiary = await this.repository.update(id, {
       fullName: dto.fullName,

@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   email: string;
   role: AdministratorRole | null;
   accountType: AccountType;
+  programIds: string[];
   mustChangePassword: boolean;
   csrfToken: string;
   iat: number;

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { ProgramAccessScope } from '../authorization/authorization.types';
 import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
 
 const benefitDeliveryInclude = {
@@ -24,12 +25,14 @@ export class BenefitDeliveriesRepository {
     });
   }
 
-  findMany(query: QueryBenefitDeliveriesDto, skip: number, take: number) {
+  findMany(
+    query: QueryBenefitDeliveriesDto,
+    skip: number,
+    take: number,
+    scope?: ProgramAccessScope,
+  ) {
     return this.prisma.benefitDelivery.findMany({
-      where: {
-        beneficiaryId: query.beneficiaryId,
-        charityProgramId: query.charityProgramId,
-      },
+      where: this.buildWhere(query, scope),
       include: benefitDeliveryInclude,
       orderBy: [{ deliveryDate: 'desc' }, { createdAt: 'desc' }],
       skip,
@@ -37,19 +40,50 @@ export class BenefitDeliveriesRepository {
     });
   }
 
-  count(query: QueryBenefitDeliveriesDto) {
+  count(query: QueryBenefitDeliveriesDto, scope?: ProgramAccessScope) {
     return this.prisma.benefitDelivery.count({
-      where: {
-        beneficiaryId: query.beneficiaryId,
-        charityProgramId: query.charityProgramId,
-      },
+      where: this.buildWhere(query, scope),
     });
   }
 
-  findById(id: string) {
-    return this.prisma.benefitDelivery.findUnique({
-      where: { id },
+  findById(id: string, scope?: ProgramAccessScope) {
+    return this.prisma.benefitDelivery.findFirst({
+      where: this.buildWhere({}, scope, { id }),
       include: benefitDeliveryInclude,
     });
+  }
+
+  private buildWhere(
+    query: Partial<QueryBenefitDeliveriesDto>,
+    scope?: ProgramAccessScope,
+    extra?: Prisma.BenefitDeliveryWhereInput,
+  ): Prisma.BenefitDeliveryWhereInput {
+    const filters: Prisma.BenefitDeliveryWhereInput[] = [];
+
+    if (extra) {
+      filters.push(extra);
+    }
+
+    if (query.beneficiaryId) {
+      filters.push({ beneficiaryId: query.beneficiaryId });
+    }
+
+    if (query.charityProgramId) {
+      filters.push({ charityProgramId: query.charityProgramId });
+    }
+
+    if (scope && !scope.hasGlobalAccess) {
+      filters.push({
+        charityProgramId: {
+          in: scope.allowedProgramIds,
+        },
+      });
+    }
+
+    if (!filters.length) {
+      return {};
+    }
+
+    return filters.length === 1 ? filters[0]! : { AND: filters };
   }
 }

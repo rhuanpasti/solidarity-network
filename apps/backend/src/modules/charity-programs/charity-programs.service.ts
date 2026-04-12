@@ -9,6 +9,8 @@ import {
   PaginationQueryDto,
 } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateCharityProgramDto } from './dto/create-charity-program.dto';
 import { UpdateCharityProgramDto } from './dto/update-charity-program.dto';
 import { UpdateCharityProgramStatusDto } from './dto/update-charity-program-status.dto';
@@ -18,11 +20,19 @@ import { CharityProgramsRepository } from './charity-programs.repository';
 @Injectable()
 export class CharityProgramsService {
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authorizationService: AuthorizationService,
     @Inject(CharityProgramsRepository)
     private readonly repository: CharityProgramsRepository,
   ) {}
 
-  async create(dto: CreateCharityProgramDto): Promise<CharityProgramSummary> {
+  async create(
+    dto: CreateCharityProgramDto,
+    actor: AuthenticatedUser,
+  ): Promise<CharityProgramSummary> {
+    this.authorizationService.assertCanCreateCharityProgram(actor, {
+      action: 'charity_program.create',
+    });
     const program = await this.repository.create({
       ...dto,
       status: dto.status ?? 'active',
@@ -33,16 +43,19 @@ export class CharityProgramsService {
 
   async findAll(
     query: PaginationQueryDto,
+    actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<CharityProgramSummary>> {
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
+    const scope = this.authorizationService.getProgramScope(actor);
     const [items, totalItems] = await Promise.all([
       this.repository.findMany(
         skip,
         normalizedQuery.pageSize,
         normalizedQuery.search,
+        scope,
       ),
-      this.repository.count(normalizedQuery.search),
+      this.repository.count(normalizedQuery.search, scope),
     ]);
 
     return createPaginatedResponse(
@@ -53,8 +66,11 @@ export class CharityProgramsService {
     );
   }
 
-  async findOne(id: string): Promise<CharityProgramSummary> {
-    const program = await this.repository.findById(id);
+  async findOne(id: string, actor: AuthenticatedUser): Promise<CharityProgramSummary> {
+    const program = await this.repository.findById(
+      id,
+      this.authorizationService.getProgramScope(actor),
+    );
 
     if (!program) {
       throw new DomainNotFoundException('charity_program', id);
@@ -66,8 +82,9 @@ export class CharityProgramsService {
   async update(
     id: string,
     dto: UpdateCharityProgramDto,
+    actor: AuthenticatedUser,
   ): Promise<CharityProgramSummary> {
-    await this.findOne(id);
+    await this.findOne(id, actor);
     const program = await this.repository.update(id, dto);
     return toCharityProgramSummary(program);
   }
@@ -75,8 +92,9 @@ export class CharityProgramsService {
   async updateStatus(
     id: string,
     dto: UpdateCharityProgramStatusDto,
+    actor: AuthenticatedUser,
   ): Promise<CharityProgramSummary> {
-    await this.findOne(id);
+    await this.findOne(id, actor);
     const program = await this.repository.update(id, { status: dto.status });
     return toCharityProgramSummary(program);
   }

@@ -6,6 +6,8 @@ import { validateEnv } from './config/env.schema';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { AuthorizationGuard } from './modules/authorization/authorization.guard';
 import { CharityProgramsModule } from './modules/charity-programs/charity-programs.module';
 import { AdministratorsModule } from './modules/administrators/administrators.module';
 import { BeneficiariesModule } from './modules/beneficiaries/beneficiaries.module';
@@ -25,6 +27,7 @@ import { PublicModule } from './modules/public/public.module';
     }),
     PrismaModule,
     AuthModule,
+    AuthorizationModule,
     CharityProgramsModule,
     AdministratorsModule,
     BeneficiariesModule,
@@ -36,6 +39,10 @@ import { PublicModule } from './modules/public/public.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizationGuard,
     },
   ],
 })

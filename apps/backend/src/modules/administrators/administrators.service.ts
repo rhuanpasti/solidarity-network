@@ -11,6 +11,7 @@ import {
   PaginationQueryDto,
 } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import {
   generateNumericPasskey,
@@ -27,6 +28,8 @@ export class AdministratorsService {
   private readonly logger = new Logger(AdministratorsService.name);
 
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authorizationService: AuthorizationService,
     @Inject(AdministratorsRepository)
     private readonly repository: AdministratorsRepository,
     @Inject(CharityProgramsRepository)
@@ -37,6 +40,9 @@ export class AdministratorsService {
     dto: CreateAdministratorDto,
     actor: AuthenticatedUser,
   ): Promise<CreateAdministratorResult> {
+    this.authorizationService.assertCanManageAdministrator(actor, {
+      action: 'administrator.create',
+    });
     await this.assertProgramsExist(dto.charityProgramIds);
     const generatedPasskey = generateNumericPasskey(16);
 
@@ -78,16 +84,19 @@ export class AdministratorsService {
 
   async findAll(
     query: PaginationQueryDto,
+    actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<AdministratorSummary>> {
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
+    const scope = this.authorizationService.getProgramScope(actor);
     const [items, totalItems] = await Promise.all([
       this.repository.findMany(
         skip,
         normalizedQuery.pageSize,
         normalizedQuery.search,
+        scope,
       ),
-      this.repository.count(normalizedQuery.search),
+      this.repository.count(normalizedQuery.search, scope),
     ]);
 
     return createPaginatedResponse(
@@ -98,8 +107,8 @@ export class AdministratorsService {
     );
   }
 
-  async findOne(id: string): Promise<AdministratorSummary> {
-    const administrator = await this.findVisibleAdministrator(id);
+  async findOne(id: string, actor: AuthenticatedUser): Promise<AdministratorSummary> {
+    const administrator = await this.findVisibleAdministrator(id, actor);
 
     if (!administrator) {
       throw new DomainNotFoundException('administrator', id);
@@ -113,6 +122,11 @@ export class AdministratorsService {
     dto: UpdateAdministratorDto,
     actor: AuthenticatedUser,
   ): Promise<AdministratorSummary> {
+    this.authorizationService.assertCanManageAdministrator(actor, {
+      action: 'administrator.update',
+      targetAdministratorId: id,
+    });
+
     const administrator = await this.repository.findById(id);
 
     if (!administrator) {
@@ -144,8 +158,11 @@ export class AdministratorsService {
     return toAdministratorSummary(updatedAdministrator);
   }
 
-  private async findVisibleAdministrator(id: string) {
-    const administrator = await this.repository.findById(id);
+  private async findVisibleAdministrator(id: string, actor: AuthenticatedUser) {
+    const administrator = await this.repository.findById(
+      id,
+      this.authorizationService.getProgramScope(actor),
+    );
 
     if (!administrator || administrator.isSystemRoot) {
       return null;

@@ -11,6 +11,7 @@ export interface AuthAccountRecord {
   email: string;
   role: AdministratorRole | null;
   accountType: AccountType;
+  programIds: string[];
   passwordHash: string;
   mustChangePassword: boolean;
 }
@@ -33,7 +34,11 @@ export class AuthRepository {
         ],
       },
       include: {
-        administrator: true,
+        administrator: {
+          include: {
+            charityPrograms: true,
+          },
+        },
       },
     });
 
@@ -45,6 +50,9 @@ export class AuthRepository {
         email: administratorCredential.administrator.email,
         role: administratorCredential.administrator.role,
         accountType: 'administrator',
+        programIds: administratorCredential.administrator.charityPrograms.map(
+          (link) => link.charityProgramId,
+        ),
         passwordHash: administratorCredential.passwordHash,
         mustChangePassword: administratorCredential.mustChangePassword,
       };
@@ -72,6 +80,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType: 'beneficiary',
+      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };
@@ -85,7 +94,11 @@ export class AuthRepository {
       const credential = await this.prisma.authCredential.findUnique({
         where: { administratorId: accountId },
         include: {
-          administrator: true,
+          administrator: {
+            include: {
+              charityPrograms: true,
+            },
+          },
         },
       });
 
@@ -100,6 +113,9 @@ export class AuthRepository {
         email: credential.administrator.email,
         role: credential.administrator.role,
         accountType,
+        programIds: credential.administrator.charityPrograms.map(
+          (link) => link.charityProgramId,
+        ),
         mustChangePassword: credential.mustChangePassword,
         csrfToken: '',
       };
@@ -124,6 +140,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
+      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
       mustChangePassword: beneficiary.mustChangePassword,
       csrfToken: '',
     };
@@ -137,7 +154,11 @@ export class AuthRepository {
       const credential = await this.prisma.authCredential.findUnique({
         where: { administratorId: accountId },
         include: {
-          administrator: true,
+          administrator: {
+            include: {
+              charityPrograms: true,
+            },
+          },
         },
       });
 
@@ -152,6 +173,9 @@ export class AuthRepository {
         email: credential.administrator.email,
         role: credential.administrator.role,
         accountType,
+        programIds: credential.administrator.charityPrograms.map(
+          (link) => link.charityProgramId,
+        ),
         passwordHash: credential.passwordHash,
         mustChangePassword: credential.mustChangePassword,
       };
@@ -176,6 +200,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
+      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };
@@ -195,7 +220,11 @@ export class AuthRepository {
           lastPasswordChangedAt: new Date(),
         },
         include: {
-          administrator: true,
+          administrator: {
+            include: {
+              charityPrograms: true,
+            },
+          },
         },
       });
 
@@ -206,6 +235,9 @@ export class AuthRepository {
         email: credential.administrator.email,
         role: credential.administrator.role,
         accountType,
+        programIds: credential.administrator.charityPrograms.map(
+          (link) => link.charityProgramId,
+        ),
         passwordHash: credential.passwordHash,
         mustChangePassword: credential.mustChangePassword,
       };
@@ -231,6 +263,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
+      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
       passwordHash: beneficiary.passwordHash ?? passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };

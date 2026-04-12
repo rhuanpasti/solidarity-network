@@ -8,6 +8,8 @@ import { DomainNotFoundException } from '../../common/exceptions/domain-not-foun
 import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { AdministratorsRepository } from '../administrators/administrators.repository';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { BeneficiariesRepository } from '../beneficiaries/beneficiaries.repository';
 import { BenefitsRepository } from '../benefits/benefits.repository';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
@@ -21,6 +23,8 @@ export class BenefitDeliveriesService {
   private readonly logger = new Logger(BenefitDeliveriesService.name);
 
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authorizationService: AuthorizationService,
     @Inject(BenefitDeliveriesRepository)
     private readonly repository: BenefitDeliveriesRepository,
     @Inject(BeneficiariesRepository)
@@ -35,13 +39,17 @@ export class BenefitDeliveriesService {
 
   async create(
     dto: CreateBenefitDeliveryDto,
-    authenticatedAdministratorId: string,
+    actor: AuthenticatedUser,
   ): Promise<BenefitDeliverySummary> {
+    this.authorizationService.assertCanRegisterDelivery(actor, dto.charityProgramId, {
+      action: 'benefit_delivery.create',
+    });
+
     const [beneficiary, benefit, charityProgram, administrator] = await Promise.all([
       this.beneficiariesRepository.findById(dto.beneficiaryId),
       this.benefitsRepository.findById(dto.benefitId),
       this.charityProgramsRepository.findById(dto.charityProgramId),
-      this.administratorsRepository.findById(authenticatedAdministratorId),
+      this.administratorsRepository.findAnyById(actor.sub),
     ]);
 
     if (!beneficiary) {
@@ -54,7 +62,7 @@ export class BenefitDeliveriesService {
       throw new DomainNotFoundException('charity_program', dto.charityProgramId);
     }
     if (!administrator) {
-      throw new DomainNotFoundException('administrator', authenticatedAdministratorId);
+      throw new DomainNotFoundException('administrator', actor.sub);
     }
     if (!benefit.active) {
       throw new BadRequestException({
@@ -89,12 +97,12 @@ export class BenefitDeliveriesService {
       quantity: dto.quantity,
       deliveryDate: new Date(dto.deliveryDate),
       notes: dto.notes,
-      administratorId: authenticatedAdministratorId,
+      administratorId: actor.sub,
       reference: dto.reference,
     });
 
     this.logAudit('benefit_delivery.create', {
-      actorAdministratorId: authenticatedAdministratorId,
+      actorAdministratorId: actor.sub,
       deliveryId: delivery.id,
       beneficiaryId: dto.beneficiaryId,
       benefitId: dto.benefitId,
@@ -107,16 +115,19 @@ export class BenefitDeliveriesService {
 
   async findAll(
     query: QueryBenefitDeliveriesDto,
+    actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BenefitDeliverySummary>> {
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
+    const scope = this.authorizationService.getProgramScope(actor);
     const [items, totalItems] = await Promise.all([
       this.repository.findMany(
         normalizedQuery,
         skip,
         normalizedQuery.pageSize,
+        scope,
       ),
-      this.repository.count(normalizedQuery),
+      this.repository.count(normalizedQuery, scope),
     ]);
 
     return createPaginatedResponse(
@@ -127,8 +138,11 @@ export class BenefitDeliveriesService {
     );
   }
 
-  async findOne(id: string): Promise<BenefitDeliverySummary> {
-    const delivery = await this.repository.findById(id);
+  async findOne(id: string, actor: AuthenticatedUser): Promise<BenefitDeliverySummary> {
+    const delivery = await this.repository.findById(
+      id,
+      this.authorizationService.getProgramScope(actor),
+    );
 
     if (!delivery) {
       throw new DomainNotFoundException('benefit_delivery', id);

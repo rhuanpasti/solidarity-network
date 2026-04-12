@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { BeneficiaryPortalSummary } from '@solidarity-network/shared';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../../prisma/prisma.service';
 
 type BeneficiaryPortalBeneficiary = Prisma.BeneficiaryGetPayload<{
@@ -19,7 +20,8 @@ export class BeneficiaryPortalService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async getOverview(beneficiaryId: string): Promise<BeneficiaryPortalSummary> {
+  async getOverview(user: AuthenticatedUser): Promise<BeneficiaryPortalSummary> {
+    const beneficiaryId = user.sub;
     const [beneficiary, upcomingDeliveries] = await Promise.all([
       this.prisma.beneficiary.findUnique({
         where: { id: beneficiaryId },

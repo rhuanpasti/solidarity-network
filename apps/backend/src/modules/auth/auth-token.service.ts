@@ -11,6 +11,7 @@ interface TokenPayloadBase {
   email: string;
   role: string | null;
   accountType: AccountType;
+  programIds: string[];
   mustChangePassword: boolean;
   csrfToken: string;
 }
