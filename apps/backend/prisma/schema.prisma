@@ -52,6 +52,7 @@ model Administrator {
   email             String                     @unique
   phone             String
   role              AdministratorRole
+  isSystemRoot      Boolean                    @default(false)
   createdAt         DateTime                   @default(now())
   updatedAt         DateTime                   @updatedAt
   credential        AuthCredential?
@@ -95,12 +96,12 @@ model Beneficiary {
   lastPasswordChangedAt DateTime?
   address          Json
   notes            String?
-  charityProgramId String
+  charityProgramId String?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   status           BeneficiaryStatus   @default(active)
 
-  charityProgram   CharityProgram      @relation(fields: [charityProgramId], references: [id])
+  charityProgram   CharityProgram?     @relation(fields: [charityProgramId], references: [id])
   benefitDeliveries BenefitDelivery[]
 
   @@index([charityProgramId])

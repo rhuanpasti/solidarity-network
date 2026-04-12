@@ -13,12 +13,12 @@ import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
 export interface BeneficiaryPayload {
   fullName: string;
   document: string;
-  birthDate?: string | null;
+  birthDate: string;
   email: string;
   phone: string;
   address: Address;
   notes?: string | null;
-  charityProgramId: string;
+  charityProgramId?: string | null;
   status: 'active' | 'inactive' | 'archived';
 }
 

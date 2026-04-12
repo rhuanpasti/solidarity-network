@@ -26,6 +26,7 @@
     "clear": "Limpar",
     "active": "Ativo",
     "inactive": "Inativo",
+    "unassigned": "Nao vinculado",
     "all": "Todos",
     "applyFilters": "Aplicar filtros",
     "selectOption": "Selecione uma opcao",
@@ -107,7 +108,8 @@
     "relatedRecordUnavailable": "Um dos registros selecionados nao esta mais disponivel. Atualize a pagina e tente novamente.",
     "benefitInactive": "Este beneficio esta inativo e nao pode ser entregue agora.",
     "beneficiaryProgramMismatch": "O beneficiado selecionado nao pertence ao programa social escolhido.",
-    "administratorNotAssigned": "O administrador selecionado nao esta vinculado ao programa social escolhido."
+    "administratorNotAssigned": "O administrador selecionado nao esta vinculado ao programa social escolhido.",
+    "rootAdministratorImmutable": "O administrador raiz e protegido e nao pode ser alterado."
   },
   "features": {
     "dashboard": {
@@ -172,6 +174,8 @@
       "nextDelivery": "Proxima entrega",
       "programsTitle": "Programa vinculado",
       "programsDescription": "Este e o programa ativo associado ao seu cadastro.",
+      "noProgramTitle": "Nenhum programa vinculado",
+      "noProgramDescription": "Seu cadastro de beneficiado ainda nao possui um programa social vinculado.",
       "deliveriesTitle": "Proximas entregas",
       "deliveriesDescription": "Datas futuras de apoio ja registradas para o seu cadastro.",
       "emptyTitle": "Nenhuma entrega futura",

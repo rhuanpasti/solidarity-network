@@ -53,7 +53,7 @@ export class BeneficiariesService {
       mustChangePassword: true,
       address: normalizedInput.address as unknown as Prisma.InputJsonValue,
       notes: dto.notes,
-      charityProgramId: dto.charityProgramId,
+      charityProgramId: dto.charityProgramId ?? undefined,
       status: dto.status ?? 'active',
     });
 
@@ -98,7 +98,7 @@ export class BeneficiariesService {
       throw new DomainNotFoundException('beneficiary', id);
     }
 
-    if (dto.charityProgramId) {
+    if (dto.charityProgramId !== undefined) {
       await this.assertProgramExists(dto.charityProgramId);
     }
 
@@ -130,7 +130,11 @@ export class BeneficiariesService {
     return toBeneficiarySummary(beneficiary);
   }
 
-  private async assertProgramExists(charityProgramId: string) {
+  private async assertProgramExists(charityProgramId?: string | null) {
+    if (!charityProgramId) {
+      return;
+    }
+
     const program = await this.charityProgramsRepository.findById(charityProgramId);
 
     if (!program) {

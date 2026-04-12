@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import type { CharityProgram } from '@prisma/client';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import type { Administrator, CharityProgram } from '@prisma/client';
 import type {
   AdministratorSummary,
   CreateAdministratorResult,
@@ -86,7 +86,7 @@ export class AdministratorsService {
   }
 
   async findOne(id: string): Promise<AdministratorSummary> {
-    const administrator = await this.repository.findById(id);
+    const administrator = await this.findVisibleAdministrator(id);
 
     if (!administrator) {
       throw new DomainNotFoundException('administrator', id);
@@ -99,10 +99,16 @@ export class AdministratorsService {
     id: string,
     dto: UpdateAdministratorDto,
   ): Promise<AdministratorSummary> {
-    await this.findOne(id);
+    const administrator = await this.repository.findById(id);
+
+    if (!administrator) {
+      throw new DomainNotFoundException('administrator', id);
+    }
+
+    this.assertMutableAdministrator(administrator);
     await this.assertProgramsExist(dto.charityProgramIds);
 
-    const administrator = await this.repository.update(
+    const updatedAdministrator = await this.repository.update(
       id,
       {
         name: dto.name,
@@ -113,7 +119,28 @@ export class AdministratorsService {
       dto.charityProgramIds,
     );
 
-    return toAdministratorSummary(administrator);
+    return toAdministratorSummary(updatedAdministrator);
+  }
+
+  private async findVisibleAdministrator(id: string) {
+    const administrator = await this.repository.findById(id);
+
+    if (!administrator || administrator.isSystemRoot) {
+      return null;
+    }
+
+    return administrator;
+  }
+
+  private assertMutableAdministrator(administrator: Administrator) {
+    if (!administrator.isSystemRoot) {
+      return;
+    }
+
+    throw new ForbiddenException({
+      code: 'ROOT_ADMIN_IMMUTABLE',
+      message: 'The root administrator cannot be modified.',
+    });
   }
 
   private async assertProgramsExist(charityProgramIds?: string[]) {

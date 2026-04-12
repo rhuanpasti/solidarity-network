@@ -38,6 +38,13 @@ export function getApiErrorToast(
     };
   }
 
+  if (payload?.code === 'ROOT_ADMIN_IMMUTABLE') {
+    return {
+      type: 'error',
+      translationKey: 'errors.rootAdministratorImmutable',
+    };
+  }
+
   if (payload?.code === 'INVALID_POSTAL_CODE') {
     return {
       type: 'error',

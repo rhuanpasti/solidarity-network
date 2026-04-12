@@ -26,10 +26,10 @@ export class CreateBeneficiaryDto {
   @MaxLength(40)
   document!: string;
 
-  @ApiPropertyOptional({ type: String, format: 'date-time' })
-  @IsOptional()
+  @ApiProperty({ type: String, format: 'date-time' })
+  @IsNotEmpty()
   @IsDateString()
-  birthDate?: string;
+  birthDate!: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -53,10 +53,11 @@ export class CreateBeneficiaryDto {
   @MaxLength(2000)
   notes?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
-  charityProgramId!: string;
+  charityProgramId?: string | null;
 
   @ApiPropertyOptional({ enum: BeneficiaryStatus })
   @IsOptional()

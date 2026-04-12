@@ -67,7 +67,7 @@ export class BenefitDeliveriesPage implements OnInit {
     }
 
     return this.beneficiaries().filter(
-      (beneficiary) => beneficiary.charityProgram.id === programId,
+      (beneficiary) => beneficiary.charityProgram?.id === programId,
     );
   }
 

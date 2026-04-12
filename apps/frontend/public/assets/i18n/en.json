@@ -26,6 +26,7 @@
     "clear": "Clear",
     "active": "Active",
     "inactive": "Inactive",
+    "unassigned": "Unassigned",
     "all": "All",
     "applyFilters": "Apply filters",
     "selectOption": "Select an option",
@@ -107,7 +108,8 @@
     "relatedRecordUnavailable": "One of the selected records is no longer available. Refresh the page and try again.",
     "benefitInactive": "This benefit is inactive and cannot be delivered right now.",
     "beneficiaryProgramMismatch": "The selected beneficiary does not belong to the chosen charity program.",
-    "administratorNotAssigned": "The selected administrator is not assigned to the chosen charity program."
+    "administratorNotAssigned": "The selected administrator is not assigned to the chosen charity program.",
+    "rootAdministratorImmutable": "The root administrator is protected and cannot be changed."
   },
   "features": {
     "dashboard": {
@@ -172,6 +174,8 @@
       "nextDelivery": "Next delivery",
       "programsTitle": "Registered program",
       "programsDescription": "This is the active program linked to your beneficiary record.",
+      "noProgramTitle": "No program assigned",
+      "noProgramDescription": "Your beneficiary record does not have an assigned charity program yet.",
       "deliveriesTitle": "Upcoming deliveries",
       "deliveriesDescription": "Future support dates already scheduled for your record.",
       "emptyTitle": "No upcoming deliveries",

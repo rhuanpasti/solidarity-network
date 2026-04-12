@@ -9,7 +9,7 @@
     <section class="stats-grid">
       <article class="stat-card">
         <p>{{ 'forms.charityProgram' | translate }}</p>
-        <strong>{{ portal.beneficiary.charityProgram.name }}</strong>
+        <strong>{{ portal.beneficiary.charityProgram?.name ?? ('common.unassigned' | translate) }}</strong>
       </article>
 
       <article class="stat-card">
@@ -33,17 +33,24 @@
           </div>
         </div>
 
-        <article class="program-card">
-          <strong>{{ portal.beneficiary.charityProgram.name }}</strong>
-          <p>{{ portal.beneficiary.charityProgram.description }}</p>
-          <small>
-            {{
-              portal.beneficiary.charityProgram.status === 'active'
-                ? ('common.active' | translate)
-                : ('common.inactive' | translate)
-            }}
-          </small>
-        </article>
+        @if (portal.beneficiary.charityProgram; as charityProgram) {
+          <article class="program-card">
+            <strong>{{ charityProgram.name }}</strong>
+            <p>{{ charityProgram.description }}</p>
+            <small>
+              {{
+                charityProgram.status === 'active'
+                  ? ('common.active' | translate)
+                  : ('common.inactive' | translate)
+              }}
+            </small>
+          </article>
+        } @else {
+          <app-empty-state
+            title="features.beneficiaryPortal.noProgramTitle"
+            description="features.beneficiaryPortal.noProgramDescription"
+          />
+        }
       </section>
 
       <section class="panel">

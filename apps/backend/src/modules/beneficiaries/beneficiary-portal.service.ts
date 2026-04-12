@@ -66,14 +66,16 @@ export class BeneficiaryPortalService {
       email: beneficiary.email,
       phone: beneficiary.phone,
       status: beneficiary.status,
-      charityProgram: {
-        id: beneficiary.charityProgram.id,
-        name: beneficiary.charityProgram.name,
-        description: beneficiary.charityProgram.description,
-        status: beneficiary.charityProgram.status,
-        createdAt: beneficiary.charityProgram.createdAt.toISOString(),
-        updatedAt: beneficiary.charityProgram.updatedAt.toISOString(),
-      },
+      charityProgram: beneficiary.charityProgram
+        ? {
+            id: beneficiary.charityProgram.id,
+            name: beneficiary.charityProgram.name,
+            description: beneficiary.charityProgram.description,
+            status: beneficiary.charityProgram.status,
+            createdAt: beneficiary.charityProgram.createdAt.toISOString(),
+            updatedAt: beneficiary.charityProgram.updatedAt.toISOString(),
+          }
+        : null,
     };
   }
 

@@ -58,7 +58,7 @@
                 @if (item.email) {
                   <small>{{ item.email }}</small>
                 }
-                <small>{{ item.charityProgram.name }}</small>
+                <small>{{ item.charityProgram?.name ?? ('common.unassigned' | translate) }}</small>
               </div>
               <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
             </button>
@@ -161,7 +161,16 @@
           </label>
           <label class="field">
             <span>{{ 'forms.birthDate' | translate }}</span>
-            <input class="input" type="date" formControlName="birthDate" />
+            <input
+              class="input"
+              [class.input-invalid]="showControlError(form.controls.birthDate)"
+              type="date"
+              formControlName="birthDate"
+              [attr.aria-invalid]="showControlError(form.controls.birthDate)"
+            />
+            @if (birthDateErrorKey(); as errorKey) {
+              <small class="field-error">{{ errorKey | translate }}</small>
+            }
           </label>
         </div>
 
@@ -187,15 +196,11 @@
               formControlName="charityProgramId"
               [attr.aria-invalid]="showControlError(form.controls.charityProgramId)"
             >
-              <option value="">{{ 'common.selectOption' | translate }}</option>
+              <option value="">{{ 'common.unassigned' | translate }}</option>
               @for (program of programs(); track program.id) {
                 <option [value]="program.id">{{ program.name }}</option>
               }
             </select>
-            <app-form-error
-              [control]="form.controls.charityProgramId"
-              [errors]="[['required', 'validation.required']]"
-            />
           </label>
           <label class="field">
             <span>{{ 'forms.status' | translate }}</span>

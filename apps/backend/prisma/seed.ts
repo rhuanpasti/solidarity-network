@@ -35,12 +35,14 @@ async function main() {
       name: 'System Administrator',
       phone: '+55 11 98888-0000',
       role: 'super_admin',
+      isSystemRoot: true,
     },
     create: {
       name: 'System Administrator',
       email: seedAdminEmail,
       phone: '+55 11 98888-0000',
       role: 'super_admin',
+      isSystemRoot: true,
     },
   });
 

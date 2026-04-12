@@ -81,11 +81,11 @@ export class BeneficiariesPage implements OnInit {
   readonly form = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
     document: ['', [Validators.required, Validators.maxLength(40)]],
-    birthDate: [''],
+    birthDate: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
     notes: [''],
-    charityProgramId: ['', Validators.required],
+    charityProgramId: [''],
     status: this.formBuilder.nonNullable.control<BeneficiaryStatus>(
       BeneficiaryStatus.Active,
       {
@@ -148,7 +148,7 @@ export class BeneficiariesPage implements OnInit {
       email: item.email ?? '',
       phone: item.phone,
       notes: item.notes ?? '',
-      charityProgramId: item.charityProgram.id,
+      charityProgramId: item.charityProgram?.id ?? '',
       status: item.status,
       address: {
         postalCode: item.address.postalCode,
@@ -204,8 +204,8 @@ export class BeneficiariesPage implements OnInit {
     const raw = this.form.getRawValue();
     const payload = {
       ...raw,
-      birthDate: raw.birthDate || null,
       notes: raw.notes || null,
+      charityProgramId: raw.charityProgramId || null,
     };
 
     if (this.selected()) {
@@ -299,6 +299,12 @@ export class BeneficiariesPage implements OnInit {
     return this.getErrorKey(this.form.controls.email, [
       ['required', 'validation.required'],
       ['email', 'validation.invalidEmail'],
+    ]);
+  }
+
+  birthDateErrorKey() {
+    return this.getErrorKey(this.form.controls.birthDate, [
+      ['required', 'validation.required'],
     ]);
   }
 

@@ -27,14 +27,7 @@ export class AdministratorsRepository {
 
   findMany(skip: number, take: number, search?: string) {
     return this.prisma.administrator.findMany({
-      where: search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : undefined,
+      where: this.buildVisibleAdministratorWhere(search),
       include: administratorInclude,
       orderBy: { createdAt: 'desc' },
       skip,
@@ -44,14 +37,7 @@ export class AdministratorsRepository {
 
   count(search?: string) {
     return this.prisma.administrator.count({
-      where: search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : undefined,
+      where: this.buildVisibleAdministratorWhere(search),
     });
   }
 
@@ -105,5 +91,19 @@ export class AdministratorsRepository {
     return this.prisma.administratorProgramLink.findMany({
       where: { administratorId },
     });
+  }
+
+  private buildVisibleAdministratorWhere(search?: string): Prisma.AdministratorWhereInput {
+    return {
+      isSystemRoot: false,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
   }
 }
