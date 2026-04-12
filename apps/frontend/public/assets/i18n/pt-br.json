@@ -231,6 +231,7 @@
     "updatePassword": "Atualizar senha",
     "logout": "Sair",
     "invalidCredentials": "Login ou senha invalidos.",
+    "tooManyLoginAttempts": "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
     "invalidCurrentPassword": "A senha atual esta invalida.",
     "passwordReuseNotAllowed": "A nova senha deve ser diferente da senha atual.",
     "passwordPolicy": "Use ao menos 12 caracteres com letra maiuscula, minuscula, numero e caractere especial.",

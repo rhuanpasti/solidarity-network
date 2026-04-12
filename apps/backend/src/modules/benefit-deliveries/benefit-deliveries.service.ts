@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { AdministratorProgramLink } from '@prisma/client';
 import type {
   BenefitDeliverySummary,
@@ -18,6 +18,8 @@ import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
 
 @Injectable()
 export class BenefitDeliveriesService {
+  private readonly logger = new Logger(BenefitDeliveriesService.name);
+
   constructor(
     @Inject(BenefitDeliveriesRepository)
     private readonly repository: BenefitDeliveriesRepository,
@@ -31,12 +33,15 @@ export class BenefitDeliveriesService {
     private readonly administratorsRepository: AdministratorsRepository,
   ) {}
 
-  async create(dto: CreateBenefitDeliveryDto): Promise<BenefitDeliverySummary> {
+  async create(
+    dto: CreateBenefitDeliveryDto,
+    authenticatedAdministratorId: string,
+  ): Promise<BenefitDeliverySummary> {
     const [beneficiary, benefit, charityProgram, administrator] = await Promise.all([
       this.beneficiariesRepository.findById(dto.beneficiaryId),
       this.benefitsRepository.findById(dto.benefitId),
       this.charityProgramsRepository.findById(dto.charityProgramId),
-      this.administratorsRepository.findById(dto.administratorId),
+      this.administratorsRepository.findById(authenticatedAdministratorId),
     ]);
 
     if (!beneficiary) {
@@ -49,7 +54,7 @@ export class BenefitDeliveriesService {
       throw new DomainNotFoundException('charity_program', dto.charityProgramId);
     }
     if (!administrator) {
-      throw new DomainNotFoundException('administrator', dto.administratorId);
+      throw new DomainNotFoundException('administrator', authenticatedAdministratorId);
     }
     if (!benefit.active) {
       throw new BadRequestException({
@@ -67,7 +72,10 @@ export class BenefitDeliveriesService {
     const programIds = administrator.charityPrograms.map(
       (link: AdministratorProgramLink) => link.charityProgramId,
     );
-    if (!programIds.includes(dto.charityProgramId)) {
+    if (
+      administrator.role !== 'super_admin' &&
+      !programIds.includes(dto.charityProgramId)
+    ) {
       throw new BadRequestException({
         code: 'ADMINISTRATOR_NOT_ASSIGNED',
         message: 'Administrator must be assigned to the selected charity program.',
@@ -81,8 +89,17 @@ export class BenefitDeliveriesService {
       quantity: dto.quantity,
       deliveryDate: new Date(dto.deliveryDate),
       notes: dto.notes,
-      administratorId: dto.administratorId,
+      administratorId: authenticatedAdministratorId,
       reference: dto.reference,
+    });
+
+    this.logAudit('benefit_delivery.create', {
+      actorAdministratorId: authenticatedAdministratorId,
+      deliveryId: delivery.id,
+      beneficiaryId: dto.beneficiaryId,
+      benefitId: dto.benefitId,
+      charityProgramId: dto.charityProgramId,
+      quantity: dto.quantity,
     });
 
     return toBenefitDeliverySummary(delivery);
@@ -118,5 +135,16 @@ export class BenefitDeliveriesService {
     }
 
     return toBenefitDeliverySummary(delivery);
+  }
+
+  private logAudit(action: string, details: Record<string, unknown>) {
+    this.logger.log(
+      JSON.stringify({
+        type: 'audit',
+        action,
+        timestamp: new Date().toISOString(),
+        ...details,
+      }),
+    );
   }
 }

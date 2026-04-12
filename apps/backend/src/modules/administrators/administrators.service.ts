@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { Administrator, CharityProgram } from '@prisma/client';
 import type {
   AdministratorSummary,
@@ -16,6 +16,7 @@ import {
   generateNumericPasskey,
   hashPassword,
 } from '../auth/password.util';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { toAdministratorSummary } from './administrators.mapper';
 import { AdministratorsRepository } from './administrators.repository';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
@@ -23,6 +24,8 @@ import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 
 @Injectable()
 export class AdministratorsService {
+  private readonly logger = new Logger(AdministratorsService.name);
+
   constructor(
     @Inject(AdministratorsRepository)
     private readonly repository: AdministratorsRepository,
@@ -30,7 +33,10 @@ export class AdministratorsService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
-  async create(dto: CreateAdministratorDto): Promise<CreateAdministratorResult> {
+  async create(
+    dto: CreateAdministratorDto,
+    actor: AuthenticatedUser,
+  ): Promise<CreateAdministratorResult> {
     await this.assertProgramsExist(dto.charityProgramIds);
     const generatedPasskey = generateNumericPasskey(16);
 
@@ -55,6 +61,13 @@ export class AdministratorsService {
             })),
           }
         : undefined,
+    });
+
+    this.logAudit('administrator.create', {
+      actorAccountId: actor.sub,
+      targetAdministratorId: administrator.id,
+      assignedProgramIds: dto.charityProgramIds ?? [],
+      role: administrator.role,
     });
 
     return {
@@ -98,6 +111,7 @@ export class AdministratorsService {
   async update(
     id: string,
     dto: UpdateAdministratorDto,
+    actor: AuthenticatedUser,
   ): Promise<AdministratorSummary> {
     const administrator = await this.repository.findById(id);
 
@@ -106,6 +120,7 @@ export class AdministratorsService {
     }
 
     this.assertMutableAdministrator(administrator);
+    this.assertRoleUpdateAllowed(administrator, dto, actor);
     await this.assertProgramsExist(dto.charityProgramIds);
 
     const updatedAdministrator = await this.repository.update(
@@ -118,6 +133,13 @@ export class AdministratorsService {
       },
       dto.charityProgramIds,
     );
+
+    this.logAudit('administrator.update', {
+      actorAccountId: actor.sub,
+      targetAdministratorId: updatedAdministrator.id,
+      roleChanged: dto.role !== undefined,
+      assignedProgramIds: dto.charityProgramIds ?? undefined,
+    });
 
     return toAdministratorSummary(updatedAdministrator);
   }
@@ -143,6 +165,31 @@ export class AdministratorsService {
     });
   }
 
+  private assertRoleUpdateAllowed(
+    administrator: Administrator,
+    dto: UpdateAdministratorDto,
+    actor: AuthenticatedUser,
+  ) {
+    if (dto.role === undefined) {
+      return;
+    }
+
+    if (actor.role === 'super_admin') {
+      return;
+    }
+
+    this.logAudit('administrator.role_change.denied', {
+      actorAccountId: actor.sub,
+      targetAdministratorId: administrator.id,
+      attemptedRole: dto.role,
+    });
+
+    throw new ForbiddenException({
+      code: 'ADMINISTRATOR_ROLE_CHANGE_FORBIDDEN',
+      message: 'Only super admins can change administrator roles.',
+    });
+  }
+
   private async assertProgramsExist(charityProgramIds?: string[]) {
     if (!charityProgramIds?.length) {
       return;
@@ -163,5 +210,16 @@ export class AdministratorsService {
         charityProgramIds[missingProgramId]!,
       );
     }
+  }
+
+  private logAudit(action: string, details: Record<string, unknown>) {
+    this.logger.log(
+      JSON.stringify({
+        type: 'audit',
+        action,
+        timestamp: new Date().toISOString(),
+        ...details,
+      }),
+    );
   }
 }

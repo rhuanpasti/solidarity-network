@@ -4,7 +4,6 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import type {
-  AdministratorSummary,
   BenefitDeliverySummary,
   BenefitSummary,
   BeneficiarySummary,
@@ -16,7 +15,6 @@ import { FormErrorComponent } from '../../shared/components/form-error/form-erro
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
-import { AdministratorsService } from '../../core/services/administrators.service';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
 import { BenefitsService } from '../../core/services/benefits.service';
@@ -48,14 +46,12 @@ export class BenefitDeliveriesPage implements OnInit {
   private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly beneficiariesService = inject(BeneficiariesService);
   private readonly benefitsService = inject(BenefitsService);
-  private readonly administratorsService = inject(AdministratorsService);
   private readonly toastService = inject(ToastService);
 
   readonly deliveries = signal<BenefitDeliverySummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly beneficiaries = signal<BeneficiarySummary[]>([]);
   readonly benefits = signal<BenefitSummary[]>([]);
-  readonly administrators = signal<AdministratorSummary[]>([]);
   readonly showControlError = shouldShowControlError;
   readonly filters = signal({
     beneficiaryId: '',
@@ -77,17 +73,6 @@ export class BenefitDeliveriesPage implements OnInit {
     );
   }
 
-  filteredAdministrators() {
-    const programId = this.form.controls.charityProgramId.value;
-    if (!programId) {
-      return this.administrators();
-    }
-
-    return this.administrators().filter((administrator) =>
-      administrator.charityPrograms.some((program) => program.id === programId),
-    );
-  }
-
   readonly form = this.formBuilder.nonNullable.group({
     beneficiaryId: ['', Validators.required],
     benefitId: ['', Validators.required],
@@ -95,7 +80,6 @@ export class BenefitDeliveriesPage implements OnInit {
     quantity: [1, [Validators.required, Validators.min(1)]],
     deliveryDate: [new Date().toISOString().slice(0, 10), Validators.required],
     notes: [''],
-    administratorId: ['', Validators.required],
     reference: ['', [Validators.required, Validators.maxLength(80)]],
   });
 
@@ -109,9 +93,6 @@ export class BenefitDeliveriesPage implements OnInit {
     this.benefitsService
       .list()
       .subscribe((response) => this.benefits.set(response.items));
-    this.administratorsService
-      .list()
-      .subscribe((response) => this.administrators.set(response.items));
 
     this.route.queryParamMap.subscribe((params) => {
       const nextFilters = {
@@ -171,7 +152,6 @@ export class BenefitDeliveriesPage implements OnInit {
           quantity: 1,
           deliveryDate: new Date().toISOString().slice(0, 10),
           notes: '',
-          administratorId: '',
           reference: '',
         });
         this.load();

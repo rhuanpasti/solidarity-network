@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { AccountType } from '@solidarity-network/shared';
 import type { AdministratorRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { AuthenticatedUser } from './auth.types';
 
 export interface AuthAccountRecord {
   id: string;
@@ -53,6 +54,7 @@ export class AuthRepository {
       where: {
         email: { equals: identifier, mode: 'insensitive' },
         passwordHash: { not: null },
+        status: 'active',
       },
       include: {
         charityProgram: true,
@@ -72,6 +74,58 @@ export class AuthRepository {
       accountType: 'beneficiary',
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
+    };
+  }
+
+  async findAuthenticatedUser(
+    accountType: AccountType,
+    accountId: string,
+  ): Promise<Omit<AuthenticatedUser, 'iat' | 'exp'> | null> {
+    if (accountType === 'administrator') {
+      const credential = await this.prisma.authCredential.findUnique({
+        where: { administratorId: accountId },
+        include: {
+          administrator: true,
+        },
+      });
+
+      if (!credential) {
+        return null;
+      }
+
+      return {
+        sub: credential.administrator.id,
+        username: credential.username,
+        name: credential.administrator.name,
+        email: credential.administrator.email,
+        role: credential.administrator.role,
+        accountType,
+        mustChangePassword: credential.mustChangePassword,
+        csrfToken: '',
+      };
+    }
+
+    const beneficiary = await this.prisma.beneficiary.findUnique({
+      where: { id: accountId },
+    });
+
+    if (
+      !beneficiary?.email ||
+      !beneficiary.passwordHash ||
+      beneficiary.status !== 'active'
+    ) {
+      return null;
+    }
+
+    return {
+      sub: beneficiary.id,
+      username: beneficiary.email,
+      name: beneficiary.fullName,
+      email: beneficiary.email,
+      role: null,
+      accountType,
+      mustChangePassword: beneficiary.mustChangePassword,
+      csrfToken: '',
     };
   }
 
@@ -107,7 +161,11 @@ export class AuthRepository {
       where: { id: accountId },
     });
 
-    if (!beneficiary?.email || !beneficiary.passwordHash) {
+    if (
+      !beneficiary?.email ||
+      !beneficiary.passwordHash ||
+      beneficiary.status !== 'active'
+    ) {
       return null;
     }
 

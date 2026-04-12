@@ -9,12 +9,14 @@ export interface AuthenticatedUser {
   role: AdministratorRole | null;
   accountType: AccountType;
   mustChangePassword: boolean;
+  csrfToken: string;
   iat: number;
   exp: number;
 }
 
 export interface AuthResponse {
   token: string;
+  csrfToken: string;
   user: {
     id: string;
     username: string;

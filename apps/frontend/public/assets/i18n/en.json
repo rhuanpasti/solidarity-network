@@ -231,6 +231,7 @@
     "updatePassword": "Update password",
     "logout": "Logout",
     "invalidCredentials": "Invalid login or password.",
+    "tooManyLoginAttempts": "Too many login attempts. Please wait a few minutes and try again.",
     "invalidCurrentPassword": "Current password is invalid.",
     "passwordReuseNotAllowed": "The new password must be different from the current password.",
     "passwordPolicy": "Use at least 12 characters with uppercase, lowercase, number, and special character.",

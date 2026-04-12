@@ -1,9 +1,11 @@
-import { Body, Controller, Inject, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import {
   AllowPasswordChangeWhenRequired,
   Public,
 } from './auth.decorators';
+import { attachAuthCookie, clearAuthCookie } from './auth-cookie.util';
 import { AuthService } from './auth.service';
 import type { AuthenticatedRequest } from './auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -19,16 +21,43 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() dto: LoginDto,
+  ) {
+    const authResponse = await this.authService.login(dto, request);
+    attachAuthCookie(response, request, authResponse.token);
+    return authResponse;
+  }
+
+  @Get('session')
+  getSession(@Req() request: AuthenticatedRequest) {
+    return this.authService.getSession(request.authUser);
+  }
+
+  @Public()
+  @Post('logout')
+  logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    clearAuthCookie(response, request);
+    return { success: true };
   }
 
   @AllowPasswordChangeWhenRequired()
   @Post('change-password')
-  changePassword(
+  async changePassword(
     @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: true }) response: Response,
     @Body() dto: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(request.authUser, dto);
+    const authResponse = await this.authService.changePassword(
+      request.authUser,
+      dto,
+    );
+    attachAuthCookie(response, request, authResponse.token);
+    return authResponse;
   }
 }

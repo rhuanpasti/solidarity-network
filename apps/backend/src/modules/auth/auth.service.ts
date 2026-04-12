@@ -1,9 +1,16 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
+import type { AuthUserSummary } from '@solidarity-network/shared';
+import { randomBytes } from 'node:crypto';
+import { AuthRateLimitService } from './auth-rate-limit.service';
 import { AuthTokenService } from './auth-token.service';
 import { AuthRepository } from './auth.repository';
 import { hashPassword, verifyPassword } from './password.util';
@@ -13,19 +20,52 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
+    @Inject(AuthRateLimitService)
+    private readonly authRateLimitService: AuthRateLimitService,
     @Inject(AuthRepository)
     private readonly repository: AuthRepository,
     @Inject(AuthTokenService)
     private readonly authTokenService: AuthTokenService,
   ) {}
 
-  async login(dto: LoginDto): Promise<AuthResponse> {
+  async login(dto: LoginDto, request: Request): Promise<AuthResponse> {
+    const normalizedIdentifier = dto.identifier.trim();
+    const rateLimitKeys = this.authRateLimitService.buildKeys(
+      request,
+      normalizedIdentifier,
+    );
+    const retryAfterSeconds =
+      this.authRateLimitService.getRetryAfterSeconds(rateLimitKeys);
+
+    if (retryAfterSeconds > 0) {
+      this.logAudit('auth.login.rate_limited', {
+        identifier: normalizedIdentifier.toLowerCase(),
+        retryAfterSeconds,
+        ip: request.ip,
+      });
+      throw new HttpException({
+        code: 'TOO_MANY_LOGIN_ATTEMPTS',
+        message: 'Too many login attempts. Please try again later.',
+        details: {
+          retryAfterSeconds,
+        },
+      }, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
     const credential = await this.repository.findCredentialByIdentifier(
-      dto.identifier.trim(),
+      normalizedIdentifier,
     );
 
     if (!credential) {
+      this.authRateLimitService.registerFailure(rateLimitKeys);
+      this.logAudit('auth.login.failed', {
+        identifier: normalizedIdentifier.toLowerCase(),
+        reason: 'credential_not_found_or_inactive',
+        ip: request.ip,
+      });
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'Invalid login or password.',
@@ -38,11 +78,26 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
+      this.authRateLimitService.registerFailure(rateLimitKeys);
+      this.logAudit('auth.login.failed', {
+        accountId: credential.id,
+        accountType: credential.accountType,
+        identifier: normalizedIdentifier.toLowerCase(),
+        reason: 'password_mismatch',
+        ip: request.ip,
+      });
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'Invalid login or password.',
       });
     }
+
+    this.authRateLimitService.registerSuccess(rateLimitKeys);
+    this.logAudit('auth.login.succeeded', {
+      accountId: credential.id,
+      accountType: credential.accountType,
+      ip: request.ip,
+    });
 
     return this.toAuthResponse({
       sub: credential.id,
@@ -52,6 +107,7 @@ export class AuthService {
       role: credential.role,
       accountType: credential.accountType,
       mustChangePassword: credential.mustChangePassword,
+      csrfToken: this.createCsrfToken(),
       iat: 0,
       exp: 0,
     });
@@ -98,6 +154,11 @@ export class AuthService {
       await hashPassword(dto.newPassword),
     );
 
+    this.logAudit('auth.password.changed', {
+      accountId: updatedCredential.id,
+      accountType: updatedCredential.accountType,
+    });
+
     return this.toAuthResponse({
       sub: updatedCredential.id,
       username: updatedCredential.username,
@@ -106,23 +167,51 @@ export class AuthService {
       role: updatedCredential.role,
       accountType: updatedCredential.accountType,
       mustChangePassword: updatedCredential.mustChangePassword,
+      csrfToken: this.createCsrfToken(),
       iat: 0,
       exp: 0,
     });
   }
 
+  getSession(user: AuthenticatedUser) {
+    return {
+      user: this.toUserSummary(user),
+      csrfToken: user.csrfToken,
+    };
+  }
+
   private toAuthResponse(user: AuthenticatedUser): AuthResponse {
     return {
       token: this.authTokenService.sign(user),
-      user: {
-        id: user.sub,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        accountType: user.accountType,
-        mustChangePassword: user.mustChangePassword,
-      },
+      csrfToken: user.csrfToken,
+      user: this.toUserSummary(user),
     };
+  }
+
+  private toUserSummary(user: AuthenticatedUser): AuthUserSummary {
+    return {
+      id: user.sub,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      accountType: user.accountType,
+      mustChangePassword: user.mustChangePassword,
+    };
+  }
+
+  private logAudit(action: string, details: Record<string, unknown>) {
+    this.logger.log(
+      JSON.stringify({
+        type: 'audit',
+        action,
+        timestamp: new Date().toISOString(),
+        ...details,
+      }),
+    );
+  }
+
+  private createCsrfToken() {
+    return randomBytes(32).toString('hex');
   }
 }

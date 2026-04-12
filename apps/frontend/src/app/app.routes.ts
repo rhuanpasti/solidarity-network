@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdministratorRole } from '@solidarity-network/shared';
 import { authGuard, loginGuard } from './core/auth/auth.guard';
 import { ShellComponent } from './core/layout/shell.component';
 
@@ -59,6 +60,7 @@ export const appRoutes: Routes = [
         path: 'administrators',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [AdministratorRole.SuperAdmin],
         },
         loadComponent: () =>
           import('./features/administrators/administrators.page').then(

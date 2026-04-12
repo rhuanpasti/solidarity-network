@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AccountTypes } from '../auth/auth.decorators';
+import type { AuthenticatedRequest } from '../auth/auth.guard';
 import { BenefitDeliveriesService } from './benefit-deliveries.service';
 import { CreateBenefitDeliveryDto } from './dto/create-benefit-delivery.dto';
 import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
@@ -15,8 +16,8 @@ export class BenefitDeliveriesController {
   ) {}
 
   @Post()
-  create(@Body() dto: CreateBenefitDeliveryDto) {
-    return this.benefitDeliveriesService.create(dto);
+  create(@Req() request: AuthenticatedRequest, @Body() dto: CreateBenefitDeliveryDto) {
+    return this.benefitDeliveriesService.create(dto, request.authUser.sub);
   }
 
   @Get()

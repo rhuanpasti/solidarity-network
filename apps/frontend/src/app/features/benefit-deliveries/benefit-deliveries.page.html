@@ -141,25 +141,6 @@
               [errors]="[['required', 'validation.required']]"
             />
           </label>
-
-          <label class="field">
-            <span>{{ 'forms.administrator' | translate }}</span>
-            <select
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.administratorId)"
-              formControlName="administratorId"
-              [attr.aria-invalid]="showControlError(form.controls.administratorId)"
-            >
-              <option value="">{{ 'common.selectOption' | translate }}</option>
-              @for (administrator of filteredAdministrators(); track administrator.id) {
-                <option [value]="administrator.id">{{ administrator.name }}</option>
-              }
-            </select>
-            <app-form-error
-              [control]="form.controls.administratorId"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
         </div>
 
         <div class="field-grid">

@@ -14,7 +14,6 @@ export interface BenefitDeliveryPayload {
   quantity: number;
   deliveryDate: string;
   notes?: string | null;
-  administratorId: string;
   reference: string;
 }
 

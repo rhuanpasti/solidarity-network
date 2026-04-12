@@ -12,6 +12,7 @@ interface TokenPayloadBase {
   role: string | null;
   accountType: AccountType;
   mustChangePassword: boolean;
+  csrfToken: string;
 }
 
 @Injectable()

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { AdministratorRole } from '@solidarity-network/shared';
 import { AuthService } from '../auth/auth.service';
 import { LanguageService } from '../i18n/language.service';
 
@@ -22,17 +23,26 @@ export class ShellComponent {
   readonly isAdministrator = computed(
     () => this.session()?.accountType === 'administrator',
   );
+  readonly canManageAdministrators = computed(
+    () =>
+      this.session()?.accountType === 'administrator' &&
+      this.session()?.role === AdministratorRole.SuperAdmin,
+  );
 
   readonly navigationItems = computed(() =>
     this.isAdministrator()
       ? [
           { path: '/dashboard', labelKey: 'navigation.dashboard', icon: 'space_dashboard' },
           { path: '/charity-programs', labelKey: 'navigation.charityPrograms', icon: 'layers' },
-          {
-            path: '/administrators',
-            labelKey: 'navigation.administrators',
-            icon: 'manage_accounts',
-          },
+          ...(this.canManageAdministrators()
+            ? [
+                {
+                  path: '/administrators',
+                  labelKey: 'navigation.administrators',
+                  icon: 'manage_accounts',
+                },
+              ]
+            : []),
           { path: '/beneficiaries', labelKey: 'navigation.beneficiaries', icon: 'groups' },
           { path: '/benefits', labelKey: 'navigation.benefits', icon: 'inventory_2' },
           {
@@ -68,7 +78,7 @@ export class ShellComponent {
   }
 
   logout() {
-    this.authService.logout();
+    void this.authService.logout();
     this.closeMobileNavigation();
     void this.router.navigate(['/login']);
   }

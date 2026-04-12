@@ -1,7 +1,18 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AccountTypes, AdministratorRoles } from '../auth/auth.decorators';
+import type { AuthenticatedRequest } from '../auth/auth.guard';
 import { AdministratorsService } from './administrators.service';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
@@ -17,8 +28,8 @@ export class AdministratorsController {
 
   @Post()
   @AdministratorRoles('super_admin')
-  create(@Body() dto: CreateAdministratorDto) {
-    return this.administratorsService.create(dto);
+  create(@Req() request: AuthenticatedRequest, @Body() dto: CreateAdministratorDto) {
+    return this.administratorsService.create(dto, request.authUser);
   }
 
   @Get()
@@ -32,7 +43,11 @@ export class AdministratorsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateAdministratorDto) {
-    return this.administratorsService.update(id, dto);
+  update(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdministratorDto,
+  ) {
+    return this.administratorsService.update(id, dto, request.authUser);
   }
 }

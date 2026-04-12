@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { AccountType } from '@solidarity-network/shared';
+import type { AccountType, AuthUserSummary } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import {
   clearStoredAuthSession,
@@ -29,16 +29,14 @@ export interface ChangePasswordPayload {
 }
 
 interface AuthApiResponse {
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    name: string;
-    email: string;
-    role: string | null;
-    accountType: AccountType;
-    mustChangePassword: boolean;
-  };
+  token?: string;
+  csrfToken: string;
+  user: AuthUserSummary;
+}
+
+interface AuthSessionApiResponse {
+  csrfToken: string;
+  user: AuthUserSummary;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +44,7 @@ export class AuthService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/auth`;
   private readonly sessionState = signal<AuthSession | null>(readStoredAuthSession());
+  private sessionValidationPromise: Promise<AuthSession | null> | null = null;
 
   readonly session = computed(() => this.sessionState());
   readonly currentUser = computed(() => this.sessionState());
@@ -63,19 +62,9 @@ export class AuthService {
         }),
       );
 
-      const session: AuthSession = {
-        id: response.user.id,
-        username: response.user.username,
-        email: response.user.email,
-        displayName: response.user.name,
-        role: response.user.role,
-        accountType: response.user.accountType,
-        token: response.token,
-        mustChangePassword: response.user.mustChangePassword,
-      };
+      const session = this.toAuthSession(response.user, response.csrfToken);
 
-      persistAuthSession(session, payload.rememberMe);
-      this.sessionState.set(session);
+      this.persistSession(session, payload.rememberMe);
 
       return {
         success: true,
@@ -95,19 +84,10 @@ export class AuthService {
         this.httpClient.post<AuthApiResponse>(`${this.baseUrl}/change-password`, payload),
       );
 
-      const session: AuthSession = {
-        id: response.user.id,
-        username: response.user.username,
-        email: response.user.email,
-        displayName: response.user.name,
-        role: response.user.role,
-        accountType: response.user.accountType,
-        token: response.token,
-        mustChangePassword: response.user.mustChangePassword,
-      };
-
-      persistAuthSession(session, isSessionStoredInLocalStorage());
-      this.sessionState.set(session);
+      this.persistSession(
+        this.toAuthSession(response.user, response.csrfToken),
+        isSessionStoredInLocalStorage(),
+      );
 
       return { success: true };
     } catch (error) {
@@ -118,9 +98,48 @@ export class AuthService {
     }
   }
 
-  logout() {
-    clearStoredAuthSession();
-    this.sessionState.set(null);
+  async validateSession(force = false): Promise<AuthSession | null> {
+    const session = this.sessionState();
+
+    if (!session) {
+      return null;
+    }
+
+    if (!force && this.sessionValidationPromise) {
+      return this.sessionValidationPromise;
+    }
+
+    this.sessionValidationPromise = firstValueFrom(
+      this.httpClient.get<AuthSessionApiResponse>(`${this.baseUrl}/session`),
+    )
+      .then((response) => {
+        const nextSession = this.toAuthSession(response.user, response.csrfToken);
+        this.persistSession(nextSession, isSessionStoredInLocalStorage());
+        return nextSession;
+      })
+      .catch(() => {
+        this.clearSessionState();
+        return null;
+      })
+      .finally(() => {
+        this.sessionValidationPromise = null;
+      });
+
+    return this.sessionValidationPromise;
+  }
+
+  async logout(options?: { remote?: boolean }) {
+    const remote = options?.remote ?? true;
+
+    try {
+      if (remote) {
+        await firstValueFrom(this.httpClient.post(`${this.baseUrl}/logout`, {}));
+      }
+    } catch {
+      // The local session still needs to be cleared if the logout request fails.
+    } finally {
+      this.clearSessionState();
+    }
   }
 
   markPasswordChangeRequired() {
@@ -135,8 +154,7 @@ export class AuthService {
       mustChangePassword: true,
     };
 
-    persistAuthSession(nextSession, isSessionStoredInLocalStorage());
-    this.sessionState.set(nextSession);
+    this.persistSession(nextSession, isSessionStoredInLocalStorage());
   }
 
   resolvePostLoginUrl(returnUrl?: string | null) {
@@ -167,8 +185,33 @@ export class AuthService {
         return 'auth.invalidCurrentPassword';
       case 'PASSWORD_REUSE_NOT_ALLOWED':
         return 'auth.passwordReuseNotAllowed';
+      case 'TOO_MANY_LOGIN_ATTEMPTS':
+        return 'auth.tooManyLoginAttempts';
       default:
         return fallback;
     }
+  }
+
+  private toAuthSession(user: AuthUserSummary, csrfToken: string): AuthSession {
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      displayName: user.name,
+      role: user.role,
+      accountType: user.accountType as AccountType,
+      mustChangePassword: user.mustChangePassword,
+      csrfToken,
+    };
+  }
+
+  private persistSession(session: AuthSession, rememberMe: boolean) {
+    persistAuthSession(session, rememberMe);
+    this.sessionState.set(session);
+  }
+
+  private clearSessionState() {
+    clearStoredAuthSession();
+    this.sessionState.set(null);
   }
 }

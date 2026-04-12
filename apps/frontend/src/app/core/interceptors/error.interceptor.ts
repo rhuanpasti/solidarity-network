@@ -28,8 +28,18 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
-      if (payload?.code === 'AUTH_REQUIRED' || payload?.code === 'INVALID_TOKEN') {
-        authService.logout();
+      if (payload?.code === 'ADMINISTRATOR_ROLE_NOT_ALLOWED') {
+        void router.navigateByUrl(authService.resolveHomeUrl());
+        return throwError(() => error);
+      }
+
+      if (
+        payload?.code === 'AUTH_REQUIRED' ||
+        payload?.code === 'INVALID_TOKEN' ||
+        payload?.code === 'AUTH_ACCOUNT_UNAVAILABLE' ||
+        payload?.code === 'CSRF_TOKEN_INVALID'
+      ) {
+        void authService.logout({ remote: false });
         void router.navigate(['/login']);
         return throwError(() => error);
       }

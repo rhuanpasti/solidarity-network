@@ -42,10 +42,13 @@ export class CreateBenefitDeliveryDto {
   @MaxLength(1000)
   notes?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    deprecated: true,
+    description: 'Ignored. The authenticated administrator is always used.',
+  })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  administratorId!: string;
+  administratorId?: string;
 
   @ApiProperty()
   @IsString()

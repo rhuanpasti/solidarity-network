@@ -88,7 +88,7 @@ export class LoginPage {
   }
 
   logout() {
-    this.authService.logout();
+    void this.authService.logout();
   }
 
   setLanguage(language: string) {

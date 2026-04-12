@@ -1,18 +1,17 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { readStoredAuthToken } from '../auth/auth.storage';
+import { readStoredAuthSession } from '../auth/auth.storage';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const token = readStoredAuthToken();
-
-  if (!token) {
-    return next(request);
-  }
+  const session = readStoredAuthSession();
 
   return next(
     request.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
+      withCredentials: true,
+      setHeaders: session?.csrfToken
+        ? {
+            'X-CSRF-Token': session.csrfToken,
+          }
+        : {},
     }),
   );
 };
