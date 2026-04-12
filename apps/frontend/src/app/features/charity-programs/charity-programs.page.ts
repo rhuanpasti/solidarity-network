@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { CharityProgramStatus, type CharityProgramSummary } from '@solidarity-network/shared';
+import {
+  AccountType,
+  AdministratorRole,
+  CharityProgramStatus,
+  type CharityProgramSummary,
+} from '@solidarity-network/shared';
+import { AuthService } from '../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
@@ -30,12 +36,21 @@ import { ToastService } from '../../core/services/toast.service';
 export class CharityProgramsPage implements OnInit {
   readonly CharityProgramStatus = CharityProgramStatus;
   private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
   private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
 
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<CharityProgramSummary | null>(null);
   readonly search = signal('');
+  readonly canCreatePrograms = computed(() => {
+    const session = this.authService.session();
+
+    return (
+      session?.accountType === AccountType.Administrator &&
+      session.role === AdministratorRole.SuperAdmin
+    );
+  });
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -84,6 +99,10 @@ export class CharityProgramsPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      return;
+    }
+
+    if (!this.selected() && !this.canCreatePrograms()) {
       return;
     }
 

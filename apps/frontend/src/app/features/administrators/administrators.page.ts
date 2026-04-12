@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { AdministratorRole, type AdministratorSummary, type CharityProgramSummary } from '@solidarity-network/shared';
+import {
+  AccountType,
+  AdministratorRole,
+  type AdministratorSummary,
+  type CharityProgramSummary,
+} from '@solidarity-network/shared';
+import { AuthService } from '../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -10,6 +16,12 @@ import { genericPhoneValidator } from '../../shared/utils/validation.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
+
+interface GeneratedAdministratorCredential {
+  name: string;
+  email: string;
+  passkey: string;
+}
 
 @Component({
   selector: 'sn-administrators-page',
@@ -28,6 +40,7 @@ import { ToastService } from '../../core/services/toast.service';
 export class AdministratorsPage implements OnInit {
   readonly AdministratorRole = AdministratorRole;
   private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
   private readonly administratorsService = inject(AdministratorsService);
   private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
@@ -35,6 +48,15 @@ export class AdministratorsPage implements OnInit {
   readonly items = signal<AdministratorSummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<AdministratorSummary | null>(null);
+  readonly generatedCredential = signal<GeneratedAdministratorCredential | null>(null);
+  readonly canCreateAdministrators = computed(() => {
+    const session = this.authService.session();
+
+    return (
+      session?.accountType === AccountType.Administrator &&
+      session.role === AdministratorRole.SuperAdmin
+    );
+  });
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -60,6 +82,7 @@ export class AdministratorsPage implements OnInit {
 
   select(item: AdministratorSummary) {
     this.selected.set(item);
+    this.generatedCredential.set(null);
     this.form.reset({
       name: item.name,
       email: item.email,
@@ -71,6 +94,7 @@ export class AdministratorsPage implements OnInit {
 
   resetForm() {
     this.selected.set(null);
+    this.generatedCredential.set(null);
     this.form.reset({
       name: '',
       email: '',
@@ -94,13 +118,28 @@ export class AdministratorsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
-    const request = this.selected()
-      ? this.administratorsService.update(this.selected()!.id, payload)
-      : this.administratorsService.create(payload);
 
-    request.subscribe(() => {
+    if (this.selected()) {
+      this.administratorsService.update(this.selected()!.id, payload).subscribe(() => {
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.resetForm();
+        this.load();
+      });
+      return;
+    }
+
+    if (!this.canCreateAdministrators()) {
+      return;
+    }
+
+    this.administratorsService.create(payload).subscribe((response) => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.resetForm();
+      this.generatedCredential.set({
+        name: response.administrator.name,
+        email: response.administrator.email,
+        passkey: response.generatedPasskey,
+      });
+      this.resetFormForNextCreate();
       this.load();
     });
   }
@@ -112,5 +151,16 @@ export class AdministratorsPage implements OnInit {
     }
 
     return errorCode ? control.hasError(errorCode) : true;
+  }
+
+  private resetFormForNextCreate() {
+    this.selected.set(null);
+    this.form.reset({
+      name: '',
+      email: '',
+      phone: '',
+      role: AdministratorRole.ProgramManager,
+      charityProgramIds: [],
+    });
   }
 }

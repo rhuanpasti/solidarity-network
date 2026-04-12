@@ -39,8 +39,30 @@
             }}
           </h3>
           <p>{{ 'features.administrators.formDescription' | translate }}</p>
+          @if (!selected() && !canCreateAdministrators()) {
+            <small class="permission-note">
+              {{ 'features.administrators.createRestrictedNote' | translate }}
+            </small>
+          }
         </div>
       </div>
+
+      @if (generatedCredential(); as credential) {
+        <section class="generated-passkey-card" aria-live="polite">
+          <div>
+            <p class="generated-passkey-card__eyebrow">
+              {{ 'features.administrators.generatedPasskeyEyebrow' | translate }}
+            </p>
+            <strong>{{ credential.name }}</strong>
+            <span>{{ credential.email }}</span>
+          </div>
+
+          <div class="generated-passkey-card__secret">
+            <small>{{ 'features.administrators.generatedPasskeyLabel' | translate }}</small>
+            <strong>{{ credential.passkey }}</strong>
+          </div>
+        </section>
+      }
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="field-grid">
@@ -96,7 +118,11 @@
         </label>
 
         <div class="actions">
-          <sn-button type="submit" variant="primary">
+          <sn-button
+            type="submit"
+            variant="primary"
+            [disabled]="!selected() && !canCreateAdministrators()"
+          >
             {{ 'common.save' | translate }}
           </sn-button>
           <sn-button type="button" variant="secondary" (click)="resetForm()">

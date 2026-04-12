@@ -27,6 +27,11 @@ export interface AdministratorSummary {
   updatedAt: string;
 }
 
+export interface CreateAdministratorResult {
+  administrator: AdministratorSummary;
+  generatedPasskey: string;
+}
+
 export interface BeneficiarySummary {
   id: string;
   fullName: string;

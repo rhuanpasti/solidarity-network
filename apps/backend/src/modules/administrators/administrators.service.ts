@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { CharityProgram } from '@prisma/client';
 import type {
   AdministratorSummary,
+  CreateAdministratorResult,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
@@ -11,6 +12,10 @@ import {
 } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
+import {
+  generateNumericPasskey,
+  hashPassword,
+} from '../auth/password.util';
 import { toAdministratorSummary } from './administrators.mapper';
 import { AdministratorsRepository } from './administrators.repository';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
@@ -25,14 +30,22 @@ export class AdministratorsService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
-  async create(dto: CreateAdministratorDto): Promise<AdministratorSummary> {
+  async create(dto: CreateAdministratorDto): Promise<CreateAdministratorResult> {
     await this.assertProgramsExist(dto.charityProgramIds);
+    const generatedPasskey = generateNumericPasskey(16);
 
     const administrator = await this.repository.create({
       name: dto.name,
       email: dto.email,
       phone: dto.phone,
       role: dto.role,
+      credential: {
+        create: {
+          username: dto.email.trim().toLowerCase(),
+          passwordHash: await hashPassword(generatedPasskey),
+          mustChangePassword: true,
+        },
+      },
       charityPrograms: dto.charityProgramIds?.length
         ? {
             create: dto.charityProgramIds.map((charityProgramId) => ({
@@ -44,7 +57,10 @@ export class AdministratorsService {
         : undefined,
     });
 
-    return toAdministratorSummary(administrator);
+    return {
+      administrator: toAdministratorSummary(administrator),
+      generatedPasskey,
+    };
   }
 
   async findAll(

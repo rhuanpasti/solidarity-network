@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import {
   ACCOUNT_TYPES_KEY,
+  ADMINISTRATOR_ROLES_KEY,
   ALLOW_PASSWORD_CHANGE_WHEN_REQUIRED_KEY,
   IS_PUBLIC_KEY,
 } from './auth.decorators';
@@ -69,6 +70,11 @@ export class AuthGuard implements CanActivate {
         ACCOUNT_TYPES_KEY,
         [context.getHandler(), context.getClass()],
       ) ?? [];
+    const allowedAdministratorRoles =
+      this.reflector.getAllAndOverride<AuthenticatedUser['role'][]>(
+        ADMINISTRATOR_ROLES_KEY,
+        [context.getHandler(), context.getClass()],
+      ) ?? [];
 
     if (user.mustChangePassword && !allowPasswordChangeWhenRequired) {
       throw new ForbiddenException({
@@ -81,6 +87,18 @@ export class AuthGuard implements CanActivate {
       throw new ForbiddenException({
         code: 'ACCOUNT_TYPE_NOT_ALLOWED',
         message: 'Authenticated account cannot access this resource.',
+      });
+    }
+
+    if (
+      allowedAdministratorRoles.length &&
+      (user.accountType !== 'administrator' ||
+        !user.role ||
+        !allowedAdministratorRoles.includes(user.role))
+    ) {
+      throw new ForbiddenException({
+        code: 'ADMINISTRATOR_ROLE_NOT_ALLOWED',
+        message: 'Administrator role cannot access this resource.',
       });
     }
 

@@ -126,7 +126,8 @@
       "createTitle": "Create program",
       "editTitle": "Program details",
       "formDescription": "Maintain the program catalog with clear status control.",
-      "toggleStatus": "Toggle status"
+      "toggleStatus": "Toggle status",
+      "createRestrictedNote": "Only super admins can create new programs."
     },
     "administrators": {
       "eyebrow": "Team",
@@ -136,7 +137,10 @@
       "emptyDescription": "Add administrators to distribute operational responsibilities.",
       "createTitle": "Create administrator",
       "editTitle": "Administrator details",
-      "formDescription": "Use program links to keep delivery responsibility aligned."
+      "formDescription": "Use program links to keep delivery responsibility aligned.",
+      "generatedPasskeyEyebrow": "Initial access password",
+      "generatedPasskeyLabel": "Generated passkey",
+      "createRestrictedNote": "Only super admins can create new administrators."
     },
     "beneficiaries": {
       "eyebrow": "Beneficiaries",

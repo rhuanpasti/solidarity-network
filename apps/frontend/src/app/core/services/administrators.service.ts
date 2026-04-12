@@ -1,6 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { AdministratorSummary, PaginatedResponse } from '@solidarity-network/shared';
+import type {
+  AdministratorSummary,
+  CreateAdministratorResult,
+  PaginatedResponse,
+} from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 
 export interface AdministratorPayload {
@@ -25,7 +29,7 @@ export class AdministratorsService {
   }
 
   create(payload: AdministratorPayload) {
-    return this.httpClient.post<AdministratorSummary>(this.baseUrl, payload);
+    return this.httpClient.post<CreateAdministratorResult>(this.baseUrl, payload);
   }
 
   update(id: string, payload: Partial<AdministratorPayload>) {

@@ -126,7 +126,8 @@
       "createTitle": "Criar programa",
       "editTitle": "Detalhes do programa",
       "formDescription": "Mantenha o catalogo de programas com controle claro de status.",
-      "toggleStatus": "Alternar status"
+      "toggleStatus": "Alternar status",
+      "createRestrictedNote": "Somente super administradores podem criar novos programas."
     },
     "administrators": {
       "eyebrow": "Equipe",
@@ -136,7 +137,10 @@
       "emptyDescription": "Adicione administradores para distribuir as responsabilidades operacionais.",
       "createTitle": "Criar administrador",
       "editTitle": "Detalhes do administrador",
-      "formDescription": "Use os vinculos de programa para manter a responsabilidade de entrega alinhada."
+      "formDescription": "Use os vinculos de programa para manter a responsabilidade de entrega alinhada.",
+      "generatedPasskeyEyebrow": "Senha inicial de acesso",
+      "generatedPasskeyLabel": "Passkey gerada",
+      "createRestrictedNote": "Somente super administradores podem criar novos administradores."
     },
     "beneficiaries": {
       "eyebrow": "Beneficiados",

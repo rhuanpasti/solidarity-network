@@ -62,6 +62,11 @@
             }}
           </h3>
           <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
+          @if (!selected() && !canCreatePrograms()) {
+            <small class="permission-note">
+              {{ 'features.charityPrograms.createRestrictedNote' | translate }}
+            </small>
+          }
         </div>
         @if (selected(); as selectedProgram) {
           <sn-button
@@ -94,7 +99,11 @@
         </label>
 
         <div class="actions">
-          <sn-button type="submit" variant="primary">
+          <sn-button
+            type="submit"
+            variant="primary"
+            [disabled]="!selected() && !canCreatePrograms()"
+          >
             {{ 'common.save' | translate }}
           </sn-button>
           <sn-button type="button" variant="secondary" (click)="resetForm()">
