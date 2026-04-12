@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { Administrator, CharityProgram } from '@prisma/client';
 import type {
   AdministratorSummary,
@@ -11,6 +11,7 @@ import {
   PaginationQueryDto,
 } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import {
@@ -25,9 +26,9 @@ import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 
 @Injectable()
 export class AdministratorsService {
-  private readonly logger = new Logger(AdministratorsService.name);
-
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(AdministratorsRepository)
@@ -69,11 +70,15 @@ export class AdministratorsService {
         : undefined,
     });
 
-    this.logAudit('administrator.create', {
-      actorAccountId: actor.sub,
-      targetAdministratorId: administrator.id,
-      assignedProgramIds: dto.charityProgramIds ?? [],
-      role: administrator.role,
+    await this.auditTrailService.record({
+      action: 'administrator.create',
+      entityType: 'administrator',
+      entityId: administrator.id,
+      actor,
+      metadata: {
+        assignedProgramIds: dto.charityProgramIds ?? [],
+        role: administrator.role,
+      },
     });
 
     return {
@@ -148,11 +153,16 @@ export class AdministratorsService {
       dto.charityProgramIds,
     );
 
-    this.logAudit('administrator.update', {
-      actorAccountId: actor.sub,
-      targetAdministratorId: updatedAdministrator.id,
-      roleChanged: dto.role !== undefined,
-      assignedProgramIds: dto.charityProgramIds ?? undefined,
+    await this.auditTrailService.record({
+      action: 'administrator.update',
+      entityType: 'administrator',
+      entityId: updatedAdministrator.id,
+      actor,
+      metadata: {
+        roleChanged: dto.role !== undefined,
+        assignedProgramIds: dto.charityProgramIds ?? undefined,
+        nextRole: dto.role,
+      },
     });
 
     return toAdministratorSummary(updatedAdministrator);
@@ -195,10 +205,15 @@ export class AdministratorsService {
       return;
     }
 
-    this.logAudit('administrator.role_change.denied', {
-      actorAccountId: actor.sub,
-      targetAdministratorId: administrator.id,
-      attemptedRole: dto.role,
+    void this.auditTrailService.record({
+      action: 'administrator.role_change.denied',
+      status: 'failure',
+      entityType: 'administrator',
+      entityId: administrator.id,
+      actor,
+      metadata: {
+        attemptedRole: dto.role,
+      },
     });
 
     throw new ForbiddenException({
@@ -227,16 +242,5 @@ export class AdministratorsService {
         charityProgramIds[missingProgramId]!,
       );
     }
-  }
-
-  private logAudit(action: string, details: Record<string, unknown>) {
-    this.logger.log(
-      JSON.stringify({
-        type: 'audit',
-        action,
-        timestamp: new Date().toISOString(),
-        ...details,
-      }),
-    );
   }
 }

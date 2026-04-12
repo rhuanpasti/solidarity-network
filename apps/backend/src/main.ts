@@ -4,7 +4,6 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { createValidationException } from './common/validation/validation-exception.factory';
 
 async function bootstrap() {
@@ -44,7 +43,6 @@ async function bootstrap() {
       },
     }),
   );
-  app.useGlobalFilters(new GlobalExceptionFilter());
 
   if (!isProduction) {
     const swaggerConfig = new DocumentBuilder()

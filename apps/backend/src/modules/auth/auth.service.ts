@@ -4,12 +4,12 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import type { AuthUserSummary } from '@solidarity-network/shared';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthRateLimitService } from './auth-rate-limit.service';
 import { AuthTokenService } from './auth-token.service';
 import { AuthRepository } from './auth.repository';
@@ -20,9 +20,9 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthRateLimitService)
     private readonly authRateLimitService: AuthRateLimitService,
     @Inject(AuthRepository)
@@ -39,20 +39,29 @@ export class AuthService {
     );
     const retryAfterSeconds =
       this.authRateLimitService.getRetryAfterSeconds(rateLimitKeys);
+    const identifierFingerprint = this.buildIdentifierFingerprint(
+      normalizedIdentifier,
+    );
 
     if (retryAfterSeconds > 0) {
-      this.logAudit('auth.login.rate_limited', {
-        identifier: normalizedIdentifier.toLowerCase(),
-        retryAfterSeconds,
-        ip: request.ip,
-      });
-      throw new HttpException({
-        code: 'TOO_MANY_LOGIN_ATTEMPTS',
-        message: 'Too many login attempts. Please try again later.',
-        details: {
+      await this.auditTrailService.record({
+        action: 'auth.login.rate_limited',
+        status: 'failure',
+        metadata: {
+          identifierFingerprint,
           retryAfterSeconds,
         },
-      }, HttpStatus.TOO_MANY_REQUESTS);
+      });
+      throw new HttpException(
+        {
+          code: 'TOO_MANY_LOGIN_ATTEMPTS',
+          message: 'Too many login attempts. Please try again later.',
+          details: {
+            retryAfterSeconds,
+          },
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const credential = await this.repository.findCredentialByIdentifier(
@@ -61,10 +70,13 @@ export class AuthService {
 
     if (!credential) {
       this.authRateLimitService.registerFailure(rateLimitKeys);
-      this.logAudit('auth.login.failed', {
-        identifier: normalizedIdentifier.toLowerCase(),
-        reason: 'credential_not_found_or_inactive',
-        ip: request.ip,
+      await this.auditTrailService.record({
+        action: 'auth.login.failed',
+        status: 'failure',
+        metadata: {
+          identifierFingerprint,
+          reason: 'credential_not_found_or_inactive',
+        },
       });
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
@@ -79,12 +91,18 @@ export class AuthService {
 
     if (!passwordMatches) {
       this.authRateLimitService.registerFailure(rateLimitKeys);
-      this.logAudit('auth.login.failed', {
-        accountId: credential.id,
-        accountType: credential.accountType,
-        identifier: normalizedIdentifier.toLowerCase(),
-        reason: 'password_mismatch',
-        ip: request.ip,
+      await this.auditTrailService.record({
+        action: 'auth.login.failed',
+        status: 'failure',
+        actor: {
+          sub: credential.id,
+          accountType: credential.accountType,
+          role: credential.role,
+        },
+        metadata: {
+          identifierFingerprint,
+          reason: 'password_mismatch',
+        },
       });
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
@@ -93,10 +111,17 @@ export class AuthService {
     }
 
     this.authRateLimitService.registerSuccess(rateLimitKeys);
-    this.logAudit('auth.login.succeeded', {
-      accountId: credential.id,
-      accountType: credential.accountType,
-      ip: request.ip,
+    await this.auditTrailService.record({
+      action: 'auth.login.succeeded',
+      status: 'success',
+      actor: {
+        sub: credential.id,
+        accountType: credential.accountType,
+        role: credential.role,
+      },
+      metadata: {
+        identifierFingerprint,
+      },
     });
 
     return this.toAuthResponse({
@@ -136,6 +161,14 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
+      await this.auditTrailService.record({
+        action: 'auth.password_change.failed',
+        status: 'failure',
+        actor: user,
+        metadata: {
+          reason: 'invalid_current_password',
+        },
+      });
       throw new UnauthorizedException({
         code: 'INVALID_CURRENT_PASSWORD',
         message: 'Current password is invalid.',
@@ -155,9 +188,14 @@ export class AuthService {
       await hashPassword(dto.newPassword),
     );
 
-    this.logAudit('auth.password.changed', {
-      accountId: updatedCredential.id,
-      accountType: updatedCredential.accountType,
+    await this.auditTrailService.record({
+      action: 'auth.password.changed',
+      status: 'success',
+      actor: user,
+      metadata: {
+        accountId: updatedCredential.id,
+        accountType: updatedCredential.accountType,
+      },
     });
 
     return this.toAuthResponse({
@@ -202,15 +240,11 @@ export class AuthService {
     };
   }
 
-  private logAudit(action: string, details: Record<string, unknown>) {
-    this.logger.log(
-      JSON.stringify({
-        type: 'audit',
-        action,
-        timestamp: new Date().toISOString(),
-        ...details,
-      }),
-    );
+  private buildIdentifierFingerprint(identifier: string) {
+    return createHash('sha256')
+      .update(identifier.trim().toLowerCase())
+      .digest('hex')
+      .slice(0, 16);
   }
 
   private createCsrfToken() {

@@ -141,3 +141,28 @@ model BenefitDelivery {
   @@index([charityProgramId])
   @@index([deliveryDate])
 }
+
+model AuditTrail {
+  id               String   @id @default(cuid())
+  action           String
+  status           String
+  entityType       String?
+  entityId         String?
+  charityProgramId String?
+  actorAccountId   String?
+  actorAccountType String?
+  actorRole        String?
+  requestId        String?
+  ipAddress        String?
+  userAgent        String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  @@index([action])
+  @@index([status])
+  @@index([entityType, entityId])
+  @@index([actorAccountId, actorAccountType])
+  @@index([charityProgramId])
+  @@index([requestId])
+  @@index([createdAt])
+}

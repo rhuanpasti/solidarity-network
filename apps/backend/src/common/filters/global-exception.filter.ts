@@ -4,8 +4,10 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Injectable,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { StructuredLoggerService } from '../../modules/observability/structured-logger.service';
 
 function isHttpExceptionLike(
   exception: unknown,
@@ -24,7 +26,10 @@ function isHttpExceptionLike(
 }
 
 @Catch()
+@Injectable()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  constructor(private readonly logger: StructuredLoggerService) {}
+
   catch(exception: unknown, host: ArgumentsHost) {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
@@ -51,8 +56,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
                 : 'An unexpected error occurred.',
           };
 
-    if (!isHttpExceptionLike(exception)) {
-      console.error('Unhandled exception', exception);
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(
+        'request.exception',
+        {
+          event: 'request.exception',
+          statusCode: status,
+          path: request.url,
+        },
+        exception,
+      );
+    } else {
+      this.logger.warn('request.exception', {
+        event: 'request.exception',
+        statusCode: status,
+        path: request.url,
+        code: String(payload.code ?? 'HTTP_ERROR'),
+        message: String(payload.message ?? 'Request failed.'),
+      });
     }
 
     response.status(status).json({
@@ -62,6 +83,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       details: payload.details ?? payload.errors,
       timestamp: new Date().toISOString(),
       path: request.url,
+      requestId: response.getHeader('X-Request-Id'),
     });
   }
 }

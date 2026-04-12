@@ -14,6 +14,7 @@ import {
   hashPassword,
 } from '../auth/password.util';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
@@ -29,6 +30,8 @@ import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
 @Injectable()
 export class BeneficiariesService {
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BeneficiariesRepository)
@@ -69,6 +72,17 @@ export class BeneficiariesService {
       notes: dto.notes,
       charityProgramId: dto.charityProgramId ?? undefined,
       status: dto.status ?? 'active',
+    });
+
+    await this.auditTrailService.record({
+      action: 'beneficiary.create',
+      entityType: 'beneficiary',
+      entityId: beneficiary.id,
+      charityProgramId: beneficiary.charityProgramId,
+      actor,
+      metadata: {
+        status: beneficiary.status,
+      },
     });
 
     return {
@@ -173,6 +187,23 @@ export class BeneficiariesService {
       notes: dto.notes,
       charityProgramId: dto.charityProgramId,
       status: dto.status,
+    });
+
+    await this.auditTrailService.record({
+      action: 'beneficiary.update',
+      entityType: 'beneficiary',
+      entityId: beneficiary.id,
+      charityProgramId: beneficiary.charityProgramId,
+      actor,
+      metadata: {
+        updatedFields: Object.keys(dto).filter(
+          (key) =>
+            (dto as Record<string, unknown>)[key] !== undefined &&
+            key !== 'address',
+        ),
+        updatedAddress: dto.address !== undefined,
+        status: beneficiary.status,
+      },
     });
 
     return toBeneficiarySummary(beneficiary);

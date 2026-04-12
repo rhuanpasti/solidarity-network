@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { AdministratorProgramLink } from '@prisma/client';
 import type {
   BenefitDeliverySummary,
@@ -9,6 +9,7 @@ import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto'
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { AdministratorsRepository } from '../administrators/administrators.repository';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { BeneficiariesRepository } from '../beneficiaries/beneficiaries.repository';
 import { BenefitsRepository } from '../benefits/benefits.repository';
@@ -20,9 +21,9 @@ import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
 
 @Injectable()
 export class BenefitDeliveriesService {
-  private readonly logger = new Logger(BenefitDeliveriesService.name);
-
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BenefitDeliveriesRepository)
@@ -101,13 +102,18 @@ export class BenefitDeliveriesService {
       reference: dto.reference,
     });
 
-    this.logAudit('benefit_delivery.create', {
-      actorAdministratorId: actor.sub,
-      deliveryId: delivery.id,
-      beneficiaryId: dto.beneficiaryId,
-      benefitId: dto.benefitId,
+    await this.auditTrailService.record({
+      action: 'benefit_delivery.create',
+      entityType: 'benefit_delivery',
+      entityId: delivery.id,
       charityProgramId: dto.charityProgramId,
-      quantity: dto.quantity,
+      actor,
+      metadata: {
+        beneficiaryId: dto.beneficiaryId,
+        benefitId: dto.benefitId,
+        quantity: dto.quantity,
+        reference: dto.reference,
+      },
     });
 
     return toBenefitDeliverySummary(delivery);
@@ -149,16 +155,5 @@ export class BenefitDeliveriesService {
     }
 
     return toBenefitDeliverySummary(delivery);
-  }
-
-  private logAudit(action: string, details: Record<string, unknown>) {
-    this.logger.log(
-      JSON.stringify({
-        type: 'audit',
-        action,
-        timestamp: new Date().toISOString(),
-        ...details,
-      }),
-    );
   }
 }

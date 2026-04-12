@@ -1,9 +1,9 @@
 import {
   ForbiddenException,
   Injectable,
-  Logger,
 } from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { StructuredLoggerService } from '../observability/structured-logger.service';
 import {
   AuthorizationRoutePolicy,
   type ProgramAccessScope,
@@ -12,7 +12,7 @@ import {
 
 @Injectable()
 export class AuthorizationService {
-  private readonly logger = new Logger(AuthorizationService.name);
+  constructor(private readonly logger: StructuredLoggerService) {}
 
   getProgramScope(user: AuthenticatedUser): ProgramAccessScope {
     if (user.accountType !== 'administrator') {
@@ -255,18 +255,15 @@ export class AuthorizationService {
     user: AuthenticatedUser,
     details?: Record<string, unknown>,
   ) {
-    this.logger.warn(
-      JSON.stringify({
-        type: 'authorization_failure',
-        policy,
-        timestamp: new Date().toISOString(),
-        accountId: user.sub,
-        accountType: user.accountType,
-        role: user.role,
-        programIds: user.programIds,
-        ...details,
-      }),
-    );
+    this.logger.warn('authorization.denied', {
+      event: 'authorization.denied',
+      policy,
+      timestamp: new Date().toISOString(),
+      accountId: user.sub,
+      accountType: user.accountType,
+      role: user.role,
+      programIds: user.programIds,
+      ...details,
+    });
   }
 }
-

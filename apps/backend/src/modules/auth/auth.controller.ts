@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import {
   AllowPasswordChangeWhenRequired,
   Public,
@@ -15,6 +16,8 @@ import { LoginDto } from './dto/login.dto';
 @Controller('auth')
 export class AuthController {
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthService)
     private readonly authService: AuthService,
   ) {}
@@ -43,6 +46,10 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     clearAuthCookie(response, request);
+    void this.auditTrailService.record({
+      action: 'auth.logout.requested',
+      status: 'success',
+    });
     return { success: true };
   }
 
