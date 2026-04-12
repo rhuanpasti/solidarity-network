@@ -11,6 +11,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { genericPhoneValidator } from '../../shared/utils/validation.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
@@ -33,6 +34,7 @@ interface GeneratedAdministratorCredential {
     EmptyStateComponent,
     ButtonComponent,
     FormErrorComponent,
+    InputFieldComponent,
   ],
   templateUrl: './administrators.page.html',
   styleUrl: './administrators.page.scss',

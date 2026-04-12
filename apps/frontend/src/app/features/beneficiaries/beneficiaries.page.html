@@ -5,19 +5,19 @@
     description="features.beneficiaries.description"
   />
 
-  <section class="panel filter-panel">
+  <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
     <div class="field-grid">
       <label class="field">
         <span>{{ 'common.search' | translate }}</span>
-        <input #searchInput class="input" type="search" [value]="filters().search" />
+        <input class="input" type="search" formControlName="search" />
       </label>
 
       <label class="field">
         <span>{{ 'forms.charityProgram' | translate }}</span>
-        <select #programInput class="input">
+        <select class="input" formControlName="charityProgramId">
           <option value="">{{ 'common.all' | translate }}</option>
           @for (program of programs(); track program.id) {
-            <option [value]="program.id" [selected]="filters().charityProgramId === program.id">
+            <option [value]="program.id">
               {{ program.name }}
             </option>
           }
@@ -26,7 +26,7 @@
 
       <label class="field">
         <span>{{ 'forms.status' | translate }}</span>
-        <select #statusInput class="input">
+        <select class="input" formControlName="status">
           <option value="">{{ 'common.all' | translate }}</option>
           <option [value]="BeneficiaryStatus.Active">{{ 'enums.beneficiaryStatuses.active' | translate }}</option>
           <option [value]="BeneficiaryStatus.Inactive">{{ 'enums.beneficiaryStatuses.inactive' | translate }}</option>
@@ -36,15 +36,11 @@
     </div>
 
     <div class="actions">
-      <app-button
-        type="button"
-        variant="secondary"
-        (click)="applyFilters(searchInput.value, programInput.value, statusInput.value)"
-      >
+      <app-button type="submit" variant="secondary">
         {{ 'common.applyFilters' | translate }}
       </app-button>
     </div>
-  </section>
+  </form>
 
   <div class="content-grid">
     <section class="panel">
@@ -105,36 +101,23 @@
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="field-grid">
-          <label class="field">
-            <span>{{ 'forms.fullName' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.fullName)"
-              type="text"
-              formControlName="fullName"
-              [attr.aria-invalid]="showControlError(form.controls.fullName)"
-            />
-            <app-form-error
-              [control]="form.controls.fullName"
-              [errors]="[
-                ['required', 'validation.required'],
-                ['maxlength', 'validation.maxLength']
-              ]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.email' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.email)"
-              type="email"
-              formControlName="email"
-              [attr.aria-invalid]="showControlError(form.controls.email)"
-            />
-            @if (emailErrorKey(); as errorKey) {
-              <small class="field-error">{{ errorKey | translate }}</small>
-            }
-          </label>
+          <app-input-field
+            [control]="form.controls.fullName"
+            label="forms.fullName"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
+          <app-input-field
+            [control]="form.controls.email"
+            label="forms.email"
+            type="email"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['email', 'validation.invalidEmail']
+            ]"
+          />
           <label class="field">
             <span>{{ 'forms.country' | translate }}</span>
             <select class="input" [formControl]="form.controls.address.controls.country">
@@ -146,48 +129,33 @@
         </div>
 
         <div class="field-grid">
-          <label class="field">
-            <span>{{ documentLabelKey() | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.document)"
-              type="text"
-              formControlName="document"
-              [attr.aria-invalid]="showControlError(form.controls.document)"
-            />
-            @if (documentErrorKey(); as errorKey) {
-              <small class="field-error">{{ errorKey | translate }}</small>
-            }
-          </label>
-          <label class="field">
-            <span>{{ 'forms.birthDate' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.birthDate)"
-              type="date"
-              formControlName="birthDate"
-              [attr.aria-invalid]="showControlError(form.controls.birthDate)"
-            />
-            @if (birthDateErrorKey(); as errorKey) {
-              <small class="field-error">{{ errorKey | translate }}</small>
-            }
-          </label>
+          <app-input-field
+            [control]="form.controls.document"
+            [label]="documentLabelKey()"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['cpf', 'validation.invalidCpf'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
+          <app-input-field
+            [control]="form.controls.birthDate"
+            label="forms.birthDate"
+            type="date"
+            [errors]="[['required', 'validation.required']]"
+          />
         </div>
 
         <div class="field-grid">
-          <label class="field">
-            <span>{{ 'forms.phone' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.phone)"
-              type="text"
-              formControlName="phone"
-              [attr.aria-invalid]="showControlError(form.controls.phone)"
-            />
-            @if (phoneErrorKey(); as errorKey) {
-              <small class="field-error">{{ errorKey | translate }}</small>
-            }
-          </label>
+          <app-input-field
+            [control]="form.controls.phone"
+            label="forms.phone"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['brazilianPhone', 'validation.invalidBrazilianPhone'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
           <label class="field">
             <span>{{ 'forms.charityProgram' | translate }}</span>
             <select
@@ -213,102 +181,52 @@
         </div>
 
         <div class="field-grid" formGroupName="address">
-          <label class="field">
-            <span>{{ 'forms.postalCode' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.postalCode)"
-              type="text"
-              formControlName="postalCode"
-              (blur)="lookupAddressByPostalCode()"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.postalCode)"
-            />
-            @if (postalCodeErrorKey(); as errorKey) {
-              <small class="field-error">{{ errorKey | translate }}</small>
-            } @else if (addressLookupMessageKey(); as messageKey) {
-              <small class="field-hint">{{ messageKey | translate }}</small>
-            }
-          </label>
-          <label class="field">
-            <span>{{ 'forms.street' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.street)"
-              type="text"
-              formControlName="street"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.street)"
-            />
-            <app-form-error
-              [control]="form.controls.address.controls.street"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.number' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.number)"
-              type="text"
-              formControlName="number"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.number)"
-            />
-            <app-form-error
-              [control]="form.controls.address.controls.number"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.district' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.district)"
-              type="text"
-              formControlName="district"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.district)"
-            />
-            <app-form-error
-              [control]="form.controls.address.controls.district"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.city' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.city)"
-              type="text"
-              formControlName="city"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.city)"
-            />
-            <app-form-error
-              [control]="form.controls.address.controls.city"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.state' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.address.controls.state)"
-              type="text"
-              formControlName="state"
-              [attr.aria-invalid]="showControlError(form.controls.address.controls.state)"
-            />
-            <app-form-error
-              [control]="form.controls.address.controls.state"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-          <label class="field">
-            <span>{{ 'forms.complement' | translate }}</span>
-            <input class="input" type="text" formControlName="complement" />
-          </label>
+          <app-input-field
+            [control]="form.controls.address.controls.postalCode"
+            label="forms.postalCode"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['postalCode', 'validation.invalidPostalCode']
+            ]"
+            [hint]="addressLookupMessageKey()"
+            (blurred)="lookupAddressByPostalCode()"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.street"
+            label="forms.street"
+            [errors]="[['required', 'validation.required']]"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.number"
+            label="forms.number"
+            [errors]="[['required', 'validation.required']]"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.district"
+            label="forms.district"
+            [errors]="[['required', 'validation.required']]"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.city"
+            label="forms.city"
+            [errors]="[['required', 'validation.required']]"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.state"
+            label="forms.state"
+            [errors]="[['required', 'validation.required']]"
+          />
+          <app-input-field
+            [control]="form.controls.address.controls.complement"
+            label="forms.complement"
+          />
         </div>
 
-        <label class="field">
-          <span>{{ 'forms.notes' | translate }}</span>
-          <textarea class="input textarea" formControlName="notes"></textarea>
-        </label>
+        <app-input-field
+          [control]="form.controls.notes"
+          label="forms.notes"
+          [textarea]="true"
+        />
 
         <div class="actions">
           <app-button type="submit" variant="primary">

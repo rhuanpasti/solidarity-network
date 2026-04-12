@@ -66,62 +66,36 @@
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="field-grid">
-          <label class="field">
-            <span>{{ 'forms.name' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.name)"
-              type="text"
-              formControlName="name"
-              [attr.aria-invalid]="showControlError(form.controls.name)"
-            />
-            <app-form-error
-              [control]="form.controls.name"
-              [errors]="[
-                ['required', 'validation.required'],
-                ['maxlength', 'validation.maxLength']
-              ]"
-            />
-          </label>
+          <app-input-field
+            [control]="form.controls.name"
+            label="forms.name"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
 
-          <label class="field">
-            <span>{{ 'forms.email' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.email)"
-              type="email"
-              formControlName="email"
-              [attr.aria-invalid]="showControlError(form.controls.email)"
-            />
-            <app-form-error
-              [control]="form.controls.email"
-              [errors]="[
-                ['required', 'validation.required'],
-                ['email', 'validation.invalidEmail']
-              ]"
-            />
-          </label>
+          <app-input-field
+            [control]="form.controls.email"
+            label="forms.email"
+            type="email"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['email', 'validation.invalidEmail']
+            ]"
+          />
         </div>
 
         <div class="field-grid">
-          <label class="field">
-            <span>{{ 'forms.phone' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.phone)"
-              type="text"
-              formControlName="phone"
-              [attr.aria-invalid]="showControlError(form.controls.phone)"
-            />
-            <app-form-error
-              [control]="form.controls.phone"
-              [errors]="[
-                ['required', 'validation.required'],
-                ['phone', 'validation.invalidPhone'],
-                ['maxlength', 'validation.maxLength']
-              ]"
-            />
-          </label>
+          <app-input-field
+            [control]="form.controls.phone"
+            label="forms.phone"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['phone', 'validation.invalidPhone'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
 
           <label class="field">
             <span>{{ 'forms.role' | translate }}</span>

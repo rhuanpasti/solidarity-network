@@ -13,6 +13,7 @@ import type {
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
@@ -33,6 +34,7 @@ import { ToastService } from '../../core/services/toast.service';
     EmptyStateComponent,
     ButtonComponent,
     FormErrorComponent,
+    InputFieldComponent,
   ],
   templateUrl: './benefit-deliveries.page.html',
   styleUrl: './benefit-deliveries.page.scss',
@@ -58,6 +60,10 @@ export class BenefitDeliveriesPage implements OnInit {
   readonly filters = signal({
     beneficiaryId: '',
     charityProgramId: '',
+  });
+  readonly filterForm = this.formBuilder.nonNullable.group({
+    beneficiaryId: [''],
+    charityProgramId: [''],
   });
 
   filteredBeneficiaries() {
@@ -108,10 +114,12 @@ export class BenefitDeliveriesPage implements OnInit {
       .subscribe((response) => this.administrators.set(response.items));
 
     this.route.queryParamMap.subscribe((params) => {
-      this.filters.set({
+      const nextFilters = {
         beneficiaryId: params.get('beneficiaryId') ?? '',
         charityProgramId: params.get('charityProgramId') ?? '',
-      });
+      };
+      this.filters.set(nextFilters);
+      this.filterForm.patchValue(nextFilters, { emitEvent: false });
       this.load();
     });
   }
@@ -122,7 +130,9 @@ export class BenefitDeliveriesPage implements OnInit {
       .subscribe((response) => this.deliveries.set(response.items));
   }
 
-  applyFilters(beneficiaryId: string, charityProgramId: string) {
+  applyFilters() {
+    const { beneficiaryId, charityProgramId } = this.filterForm.getRawValue();
+
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

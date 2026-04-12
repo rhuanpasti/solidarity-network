@@ -68,19 +68,8 @@
   gap: 1rem;
 }
 
-.password-field {
-  position: relative;
-}
-
-.password-field .input {
-  padding-right: 3.5rem;
-}
-
-.password-toggle {
+.field-action-button {
   position: absolute;
-  top: 50%;
-  right: 0.6rem;
-  transform: translateY(-50%);
   width: 2.6rem;
   height: 2.6rem;
   display: inline-flex;

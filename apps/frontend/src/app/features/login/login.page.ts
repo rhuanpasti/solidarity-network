@@ -11,8 +11,9 @@ import { LanguageService } from '../../core/i18n/language.service';
 import { LoginMetricsService } from '../../core/services/login-metrics.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
-import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
+import { FieldActionDirective } from '../../shared/components/input-field/field-action.directive';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
+import { touchAll } from '../../shared/utils/form.utils';
 
 const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
   programs: 0,
@@ -28,7 +29,8 @@ const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
     TranslateModule,
     DecimalPipe,
     ButtonComponent,
-    FormErrorComponent,
+    InputFieldComponent,
+    FieldActionDirective,
   ],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
@@ -45,7 +47,6 @@ export class LoginPage {
 
   readonly passwordVisible = signal(false);
   readonly authError = signal<string | null>(null);
-  readonly showControlError = shouldShowControlError;
 
   readonly form = this.formBuilder.nonNullable.group({
     identifier: ['', [Validators.required, Validators.maxLength(120)]],

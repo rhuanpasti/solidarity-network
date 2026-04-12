@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   BRAZIL_COUNTRY,
@@ -17,7 +17,7 @@ import { distinctUntilChanged, startWith } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import {
   brazilianPhoneValidator,
@@ -43,7 +43,7 @@ interface GeneratedCredentialInfo {
     PageHeaderComponent,
     EmptyStateComponent,
     ButtonComponent,
-    FormErrorComponent,
+    InputFieldComponent,
   ],
   templateUrl: './beneficiaries.page.html',
   styleUrl: './beneficiaries.page.scss',
@@ -76,6 +76,11 @@ export class BeneficiariesPage implements OnInit {
     search: '',
     charityProgramId: '',
     status: '',
+  });
+  readonly filterForm = this.formBuilder.nonNullable.group({
+    search: [''],
+    charityProgramId: [''],
+    status: [''],
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -119,6 +124,7 @@ export class BeneficiariesPage implements OnInit {
         status: params.get('status') ?? '',
       };
       this.filters.set(nextFilters);
+      this.filterForm.patchValue(nextFilters, { emitEvent: false });
       this.load();
     });
   }
@@ -127,7 +133,9 @@ export class BeneficiariesPage implements OnInit {
     this.beneficiariesService.list(this.filters()).subscribe((response) => this.items.set(response.items));
   }
 
-  applyFilters(search: string, charityProgramId: string, status: string) {
+  applyFilters() {
+    const { search, charityProgramId, status } = this.filterForm.getRawValue();
+
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
@@ -273,48 +281,6 @@ export class BeneficiariesPage implements OnInit {
     });
   }
 
-  hasError(control: AbstractControl | null, errorCode?: string) {
-    if (!control?.invalid || (!control.touched && !control.dirty)) {
-      return false;
-    }
-
-    return errorCode ? control.hasError(errorCode) : true;
-  }
-
-  documentErrorKey() {
-    return this.getErrorKey(this.form.controls.document, [
-      ['required', 'validation.required'],
-      ['cpf', 'validation.invalidCpf'],
-    ]);
-  }
-
-  phoneErrorKey() {
-    return this.getErrorKey(this.form.controls.phone, [
-      ['required', 'validation.required'],
-      ['brazilianPhone', 'validation.invalidBrazilianPhone'],
-    ]);
-  }
-
-  emailErrorKey() {
-    return this.getErrorKey(this.form.controls.email, [
-      ['required', 'validation.required'],
-      ['email', 'validation.invalidEmail'],
-    ]);
-  }
-
-  birthDateErrorKey() {
-    return this.getErrorKey(this.form.controls.birthDate, [
-      ['required', 'validation.required'],
-    ]);
-  }
-
-  postalCodeErrorKey() {
-    return this.getErrorKey(this.form.controls.address.controls.postalCode, [
-      ['required', 'validation.required'],
-      ['postalCode', 'validation.invalidPostalCode'],
-    ]);
-  }
-
   countryLabelKey(country: SupportedCountry) {
     return country === BRAZIL_COUNTRY ? 'countries.brazil' : 'countries.world';
   }
@@ -384,20 +350,4 @@ export class BeneficiariesPage implements OnInit {
     });
   }
 
-  private getErrorKey(
-    control: AbstractControl | null,
-    errors: Array<[string, string]>,
-  ) {
-    if (!this.hasError(control)) {
-      return null;
-    }
-
-    for (const [errorCode, translationKey] of errors) {
-      if (control?.hasError(errorCode)) {
-        return translationKey;
-      }
-    }
-
-    return null;
-  }
 }

@@ -11,8 +11,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
-import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
+import { FieldActionDirective } from '../../shared/components/input-field/field-action.directive';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
+import { touchAll } from '../../shared/utils/form.utils';
 
 const PASSWORD_POLICY_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -31,7 +32,13 @@ function passwordMismatchValidator(control: AbstractControl): ValidationErrors |
 @Component({
   selector: 'app-first-access-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, ButtonComponent, FormErrorComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    ButtonComponent,
+    InputFieldComponent,
+    FieldActionDirective,
+  ],
   templateUrl: './first-access.page.html',
   styleUrl: './first-access.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,7 +52,6 @@ export class FirstAccessPage {
   readonly passwordVisible = signal(false);
   readonly confirmVisible = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly showControlError = shouldShowControlError;
 
   readonly form = this.formBuilder.nonNullable.group({
     currentPassword: ['', [Validators.required, Validators.maxLength(120)]],

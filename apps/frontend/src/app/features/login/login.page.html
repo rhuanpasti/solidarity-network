@@ -82,59 +82,42 @@
       }
 
       <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
-        <label class="field">
-          <span>{{ 'auth.loginLabel' | translate }}</span>
-          <input
-            class="input"
-            [class.input-invalid]="showControlError(form.controls.identifier)"
-            type="text"
-            formControlName="identifier"
-            autocomplete="username"
-            [attr.aria-invalid]="showControlError(form.controls.identifier)"
-            [placeholder]="'auth.loginPlaceholder' | translate"
-          />
-          <app-form-error
-            [control]="form.controls.identifier"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.identifier"
+          label="auth.loginLabel"
+          autocomplete="username"
+          placeholder="auth.loginPlaceholder"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
 
-        <label class="field">
-          <span>{{ 'auth.passwordLabel' | translate }}</span>
-          <div class="password-field">
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.password)"
-              [type]="passwordVisible() ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="current-password"
-              [attr.aria-invalid]="showControlError(form.controls.password)"
-              [placeholder]="'auth.passwordPlaceholder' | translate"
-            />
-            <button
-              type="button"
-              class="password-toggle"
-              [attr.aria-label]="
-                (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
-              "
-              (click)="togglePasswordVisibility()"
-            >
-              <span class="material-symbols-rounded">
-                {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
-              </span>
-            </button>
-          </div>
-          <app-form-error
-            [control]="form.controls.password"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.password"
+          label="auth.passwordLabel"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          autocomplete="current-password"
+          placeholder="auth.passwordPlaceholder"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        >
+          <button
+            appFieldAction
+            type="button"
+            class="field-action-button"
+            [attr.aria-label]="
+              (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
+            "
+            (click)="togglePasswordVisibility()"
+          >
+            <span class="material-symbols-rounded">
+              {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
+            </span>
+          </button>
+        </app-input-field>
 
         <label class="remember-field">
           <input type="checkbox" formControlName="rememberMe" />

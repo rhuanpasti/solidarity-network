@@ -5,6 +5,7 @@ import { BenefitCategory, type BenefitSummary } from '@solidarity-network/shared
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
@@ -20,6 +21,7 @@ import { ToastService } from '../../core/services/toast.service';
     ButtonComponent,
     EmptyStateComponent,
     FormErrorComponent,
+    InputFieldComponent,
     PageHeaderComponent,
     StatusBadgeComponent,
   ],

@@ -13,6 +13,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -29,6 +30,7 @@ import { ToastService } from '../../core/services/toast.service';
     EmptyStateComponent,
     ButtonComponent,
     FormErrorComponent,
+    InputFieldComponent,
   ],
   templateUrl: './charity-programs.page.html',
   styleUrl: './charity-programs.page.scss',
@@ -43,7 +45,6 @@ export class CharityProgramsPage implements OnInit {
 
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<CharityProgramSummary | null>(null);
-  readonly search = signal('');
   readonly showControlError = shouldShowControlError;
   readonly canCreatePrograms = computed(() => {
     const session = this.authService.session();
@@ -52,6 +53,10 @@ export class CharityProgramsPage implements OnInit {
       session?.accountType === 'administrator' &&
       session.role === AdministratorRole.SuperAdmin
     );
+  });
+
+  readonly filterForm = this.formBuilder.nonNullable.group({
+    search: [''],
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -71,12 +76,11 @@ export class CharityProgramsPage implements OnInit {
 
   load() {
     this.charityProgramsService
-      .list(this.search())
+      .list(this.filterForm.controls.search.value)
       .subscribe((response) => this.items.set(response.items));
   }
 
-  searchPrograms(value: string) {
-    this.search.set(value);
+  searchPrograms() {
     this.load();
   }
 

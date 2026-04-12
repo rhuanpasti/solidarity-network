@@ -5,14 +5,14 @@
     description="features.benefitDeliveries.description"
   />
 
-  <section class="panel filter-panel">
+  <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
     <div class="field-grid">
       <label class="field">
         <span>{{ 'forms.beneficiary' | translate }}</span>
-        <select #beneficiaryFilter class="input">
+        <select class="input" formControlName="beneficiaryId">
           <option value="">{{ 'common.all' | translate }}</option>
           @for (beneficiary of beneficiaries(); track beneficiary.id) {
-            <option [value]="beneficiary.id" [selected]="filters().beneficiaryId === beneficiary.id">
+            <option [value]="beneficiary.id">
               {{ beneficiary.fullName }}
             </option>
           }
@@ -21,10 +21,10 @@
 
       <label class="field">
         <span>{{ 'forms.charityProgram' | translate }}</span>
-        <select #programFilter class="input">
+        <select class="input" formControlName="charityProgramId">
           <option value="">{{ 'common.all' | translate }}</option>
           @for (program of programs(); track program.id) {
-            <option [value]="program.id" [selected]="filters().charityProgramId === program.id">
+            <option [value]="program.id">
               {{ program.name }}
             </option>
           }
@@ -33,15 +33,11 @@
     </div>
 
     <div class="actions">
-      <app-button
-        type="button"
-        variant="secondary"
-        (click)="applyFilters(beneficiaryFilter.value, programFilter.value)"
-      >
+      <app-button type="submit" variant="secondary">
         {{ 'common.applyFilters' | translate }}
       </app-button>
     </div>
-  </section>
+  </form>
 
   <div class="content-grid">
     <section class="panel">
@@ -167,62 +163,39 @@
         </div>
 
         <div class="field-grid">
-          <label class="field">
-            <span>{{ 'forms.quantity' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.quantity)"
-              type="number"
-              formControlName="quantity"
-              [attr.aria-invalid]="showControlError(form.controls.quantity)"
-            />
-            <app-form-error
-              [control]="form.controls.quantity"
-              [errors]="[
-                ['required', 'validation.required'],
-                ['min', 'validation.minValue']
-              ]"
-            />
-          </label>
-
-          <label class="field">
-            <span>{{ 'forms.deliveryDate' | translate }}</span>
-            <input
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.deliveryDate)"
-              type="date"
-              formControlName="deliveryDate"
-              [attr.aria-invalid]="showControlError(form.controls.deliveryDate)"
-            />
-            <app-form-error
-              [control]="form.controls.deliveryDate"
-              [errors]="[['required', 'validation.required']]"
-            />
-          </label>
-        </div>
-
-        <label class="field">
-          <span>{{ 'forms.reference' | translate }}</span>
-          <input
-            class="input"
-            [class.input-invalid]="showControlError(form.controls.reference)"
-            type="text"
-            formControlName="reference"
-            [attr.aria-invalid]="showControlError(form.controls.reference)"
-          />
-          <app-form-error
-            [control]="form.controls.reference"
+          <app-input-field
+            [control]="form.controls.quantity"
+            label="forms.quantity"
+            type="number"
+            [min]="1"
             [errors]="[
               ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
+              ['min', 'validation.minValue']
             ]"
           />
-        </label>
 
-        <label class="field">
-          <span>{{ 'forms.notes' | translate }}</span>
-          <textarea class="input textarea" formControlName="notes"></textarea>
-        </label>
+          <app-input-field
+            [control]="form.controls.deliveryDate"
+            label="forms.deliveryDate"
+            type="date"
+            [errors]="[['required', 'validation.required']]"
+          />
+        </div>
+
+        <app-input-field
+          [control]="form.controls.reference"
+          label="forms.reference"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
+
+        <app-input-field
+          [control]="form.controls.notes"
+          label="forms.notes"
+          [textarea]="true"
+        />
 
         <div class="actions">
           <app-button type="submit" variant="primary">

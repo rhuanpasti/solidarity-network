@@ -52,40 +52,24 @@
       </div>
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-        <label class="field">
-          <span>{{ 'forms.name' | translate }}</span>
-          <input
-            class="input"
-            [class.input-invalid]="showControlError(form.controls.name)"
-            type="text"
-            formControlName="name"
-            [attr.aria-invalid]="showControlError(form.controls.name)"
-          />
-          <app-form-error
-            [control]="form.controls.name"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.name"
+          label="forms.name"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
 
-        <label class="field">
-          <span>{{ 'forms.description' | translate }}</span>
-          <textarea
-            class="input textarea"
-            [class.input-invalid]="showControlError(form.controls.description)"
-            formControlName="description"
-            [attr.aria-invalid]="showControlError(form.controls.description)"
-          ></textarea>
-          <app-form-error
-            [control]="form.controls.description"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.description"
+          label="forms.description"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+          [textarea]="true"
+        />
 
         <div class="field-grid">
           <label class="field">

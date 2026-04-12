@@ -1,0 +1,28 @@
+:host {
+  display: contents;
+}
+
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.field-required {
+  color: var(--danger);
+}
+
+.field-control {
+  position: relative;
+}
+
+.field-control.has-action .input {
+  padding-right: 3.5rem;
+}
+
+.field-control [appFieldAction] {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  transform: translateY(-50%);
+}

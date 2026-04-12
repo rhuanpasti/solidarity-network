@@ -7,22 +7,17 @@
 
   <div class="content-grid">
     <section class="panel">
-      <div class="panel-toolbar">
+      <form class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
         <input
-          #searchInput
+          formControlName="search"
           type="search"
           class="input"
           [placeholder]="'common.searchPlaceholder' | translate"
-          (keyup.enter)="searchPrograms(searchInput.value)"
         />
-        <app-button
-          type="button"
-          variant="secondary"
-          (click)="searchPrograms(searchInput.value)"
-        >
+        <app-button type="submit" variant="secondary">
           {{ 'common.search' | translate }}
         </app-button>
-      </div>
+      </form>
 
       @if (items().length) {
         <div class="list">
@@ -80,40 +75,24 @@
       </div>
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-        <label class="field">
-          <span>{{ 'forms.name' | translate }}</span>
-          <input
-            class="input"
-            [class.input-invalid]="showControlError(form.controls.name)"
-            type="text"
-            formControlName="name"
-            [attr.aria-invalid]="showControlError(form.controls.name)"
-          />
-          <app-form-error
-            [control]="form.controls.name"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.name"
+          label="forms.name"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
 
-        <label class="field">
-          <span>{{ 'forms.description' | translate }}</span>
-          <textarea
-            class="input textarea"
-            [class.input-invalid]="showControlError(form.controls.description)"
-            formControlName="description"
-            [attr.aria-invalid]="showControlError(form.controls.description)"
-          ></textarea>
-          <app-form-error
-            [control]="form.controls.description"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['maxlength', 'validation.maxLength']
-            ]"
-          />
-        </label>
+        <app-input-field
+          [control]="form.controls.description"
+          label="forms.description"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+          [textarea]="true"
+        />
 
         <label class="field">
           <span>{{ 'forms.status' | translate }}</span>
