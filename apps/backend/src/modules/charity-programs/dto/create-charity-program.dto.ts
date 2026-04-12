@@ -1,15 +1,17 @@
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CharityProgramStatus } from '@solidarity-network/shared';
 
 export class CreateCharityProgramDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(120)
   name!: string;
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(1000)
   description!: string;
 

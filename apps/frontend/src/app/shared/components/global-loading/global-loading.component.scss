@@ -6,7 +6,7 @@
   z-index: 90;
 }
 
-.global-loading__bar {
+.global-loading-bar {
   height: 0.2rem;
   width: 100%;
   background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #86efac 100%);
@@ -15,7 +15,7 @@
   box-shadow: 0 8px 22px rgba(22, 163, 74, 0.24);
 }
 
-.global-loading__badge {
+.global-loading-badge {
   position: fixed;
   top: 1rem;
   right: 1rem;
@@ -29,7 +29,7 @@
   box-shadow: 0 18px 40px rgba(17, 24, 39, 0.22);
 }
 
-.global-loading__spinner {
+.global-loading-spinner {
   width: 1.1rem;
   height: 1.1rem;
   border: 2px solid rgba(255, 255, 255, 0.28);

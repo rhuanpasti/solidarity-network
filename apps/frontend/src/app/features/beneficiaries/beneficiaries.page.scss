@@ -19,7 +19,7 @@
   display: block;
 }
 
-.generated-passkey-card__eyebrow {
+.generated-passkey-card-eyebrow {
   margin: 0 0 0.35rem;
   color: #15803d;
   font-size: 0.75rem;
@@ -28,16 +28,16 @@
   text-transform: uppercase;
 }
 
-.generated-passkey-card__secret {
+.generated-passkey-card-secret {
   text-align: right;
 }
 
-.generated-passkey-card__secret small {
+.generated-passkey-card-secret small {
   margin-bottom: 0.3rem;
   color: #6b7280;
 }
 
-.generated-passkey-card__secret strong {
+.generated-passkey-card-secret strong {
   font-size: 1.5rem;
   letter-spacing: 0.12em;
 }
@@ -47,7 +47,7 @@
     flex-direction: column;
   }
 
-  .generated-passkey-card__secret {
+  .generated-passkey-card-secret {
     text-align: left;
   }
 }

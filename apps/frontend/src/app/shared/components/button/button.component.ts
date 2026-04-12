@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { type ButtonType, type ButtonVariant } from './button.types';
 
 @Component({
-  selector: 'sn-button',
+  selector: 'app-button',
   standalone: true,
   imports: [],
   templateUrl: './button.component.html',

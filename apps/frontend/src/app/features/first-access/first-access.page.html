@@ -18,9 +18,18 @@
         <span>{{ 'auth.currentPasswordLabel' | translate }}</span>
         <input
           class="input"
+          [class.input-invalid]="showControlError(form.controls.currentPassword)"
           type="password"
           formControlName="currentPassword"
           autocomplete="current-password"
+          [attr.aria-invalid]="showControlError(form.controls.currentPassword)"
+        />
+        <app-form-error
+          [control]="form.controls.currentPassword"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
         />
       </label>
 
@@ -29,9 +38,11 @@
         <div class="password-field">
           <input
             class="input"
+            [class.input-invalid]="showControlError(form.controls.newPassword)"
             [type]="passwordVisible() ? 'text' : 'password'"
             formControlName="newPassword"
             autocomplete="new-password"
+            [attr.aria-invalid]="showControlError(form.controls.newPassword)"
           />
           <button
             type="button"
@@ -46,6 +57,15 @@
             </span>
           </button>
         </div>
+        <app-form-error
+          [control]="form.controls.newPassword"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['minlength', 'auth.passwordPolicy'],
+            ['pattern', 'auth.passwordPolicy'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
       </label>
 
       <label class="field">
@@ -53,9 +73,15 @@
         <div class="password-field">
           <input
             class="input"
+            [class.input-invalid]="
+              showControlError(form.controls.confirmPassword) || showPasswordMismatch()
+            "
             [type]="confirmVisible() ? 'text' : 'password'"
             formControlName="confirmPassword"
             autocomplete="new-password"
+            [attr.aria-invalid]="
+              showControlError(form.controls.confirmPassword) || showPasswordMismatch()
+            "
           />
           <button
             type="button"
@@ -70,6 +96,16 @@
             </span>
           </button>
         </div>
+        <app-form-error
+          [control]="form.controls.confirmPassword"
+          [errors]="[
+            ['required', 'validation.required'],
+            ['maxlength', 'validation.maxLength']
+          ]"
+        />
+        @if (showPasswordMismatch()) {
+          <small class="field-error" aria-live="polite">{{ 'auth.passwordMismatch' | translate }}</small>
+        }
       </label>
 
       @if (errorMessage(); as errorKey) {
@@ -77,12 +113,12 @@
       }
 
       <div class="first-access-actions">
-        <sn-button type="submit" variant="primary">
+        <app-button type="submit" variant="primary">
           {{ 'auth.updatePassword' | translate }}
-        </sn-button>
-        <sn-button type="button" variant="ghost" (click)="logout()">
+        </app-button>
+        <app-button type="button" variant="ghost" (click)="logout()">
           {{ 'auth.logout' | translate }}
-        </sn-button>
+        </app-button>
       </div>
     </form>
   </section>

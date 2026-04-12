@@ -11,7 +11,7 @@ import { BenefitsService } from '../../core/services/benefits.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 
 @Component({
-  selector: 'sn-dashboard-page',
+  selector: 'app-dashboard-page',
   standalone: true,
   imports: [TranslateModule, DatePipe, PageHeaderComponent, RouterLink],
   templateUrl: './dashboard.page.html',

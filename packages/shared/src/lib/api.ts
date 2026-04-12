@@ -26,6 +26,12 @@ export interface BenefitDeliveryListQuery extends ListQuery {
   charityProgramId?: string;
 }
 
+export interface ApiValidationErrorDetail {
+  field: string;
+  code: string;
+  message: string;
+}
+
 export interface ApiErrorResponse {
   statusCode: number;
   code: string;

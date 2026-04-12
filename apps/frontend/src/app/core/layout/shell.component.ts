@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { AccountType } from '@solidarity-network/shared';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
 import { LanguageService } from '../i18n/language.service';
-import { ToastService } from '../services/toast.service';
 
 @Component({
-  selector: 'sn-shell',
+  selector: 'app-shell',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslateModule],
   templateUrl: './shell.component.html',
@@ -18,12 +16,11 @@ export class ShellComponent {
   private readonly languageService = inject(LanguageService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  readonly toastService = inject(ToastService);
   readonly currentLanguage = computed(() => this.languageService.currentLanguage());
   readonly session = this.authService.currentUser;
   readonly mobileNavigationOpen = signal(false);
   readonly isAdministrator = computed(
-    () => this.session()?.accountType === AccountType.Administrator,
+    () => this.session()?.accountType === 'administrator',
   );
 
   readonly navigationItems = computed(() =>
@@ -52,6 +49,11 @@ export class ShellComponent {
           },
         ],
   );
+
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
+    this.closeMobileNavigation();
+  }
 
   setLanguage(language: string) {
     this.languageService.setLanguage(language);

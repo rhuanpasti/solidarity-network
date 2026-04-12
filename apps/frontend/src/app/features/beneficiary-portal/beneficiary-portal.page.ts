@@ -7,7 +7,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 @Component({
-  selector: 'sn-beneficiary-portal-page',
+  selector: 'app-beneficiary-portal-page',
   standalone: true,
   imports: [TranslateModule, DatePipe, EmptyStateComponent, PageHeaderComponent],
   templateUrl: './beneficiary-portal.page.html',

@@ -1,5 +1,5 @@
 <div class="workspace">
-  <sn-page-header
+  <app-page-header
     eyebrow="features.charityPrograms.eyebrow"
     title="features.charityPrograms.title"
     description="features.charityPrograms.description"
@@ -15,13 +15,13 @@
           [placeholder]="'common.searchPlaceholder' | translate"
           (keyup.enter)="searchPrograms(searchInput.value)"
         />
-        <sn-button
+        <app-button
           type="button"
           variant="secondary"
           (click)="searchPrograms(searchInput.value)"
         >
           {{ 'common.search' | translate }}
-        </sn-button>
+        </app-button>
       </div>
 
       @if (items().length) {
@@ -33,7 +33,7 @@
                 <p>{{ item.description }}</p>
               </div>
               <div class="item-meta">
-                <sn-status-badge
+                <app-status-badge
                   [active]="item.status === 'active'"
                   [activeLabel]="'common.active' | translate"
                   [inactiveLabel]="'common.inactive' | translate"
@@ -44,7 +44,7 @@
           }
         </div>
       } @else {
-        <sn-empty-state
+        <app-empty-state
           title="features.charityPrograms.emptyTitle"
           description="features.charityPrograms.emptyDescription"
         />
@@ -69,46 +69,80 @@
           }
         </div>
         @if (selected(); as selectedProgram) {
-          <sn-button
+          <app-button
             type="button"
             variant="ghost"
             (click)="toggleStatus(selectedProgram)"
           >
             {{ 'features.charityPrograms.toggleStatus' | translate }}
-          </sn-button>
+          </app-button>
         }
       </div>
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <label class="field">
           <span>{{ 'forms.name' | translate }}</span>
-          <input class="input" type="text" formControlName="name" />
+          <input
+            class="input"
+            [class.input-invalid]="showControlError(form.controls.name)"
+            type="text"
+            formControlName="name"
+            [attr.aria-invalid]="showControlError(form.controls.name)"
+          />
+          <app-form-error
+            [control]="form.controls.name"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
         </label>
 
         <label class="field">
           <span>{{ 'forms.description' | translate }}</span>
-          <textarea class="input textarea" formControlName="description"></textarea>
+          <textarea
+            class="input textarea"
+            [class.input-invalid]="showControlError(form.controls.description)"
+            formControlName="description"
+            [attr.aria-invalid]="showControlError(form.controls.description)"
+          ></textarea>
+          <app-form-error
+            [control]="form.controls.description"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
         </label>
 
         <label class="field">
           <span>{{ 'forms.status' | translate }}</span>
-          <select class="input" formControlName="status">
+          <select
+            class="input"
+            [class.input-invalid]="showControlError(form.controls.status)"
+            formControlName="status"
+            [attr.aria-invalid]="showControlError(form.controls.status)"
+          >
             <option [value]="CharityProgramStatus.Active">{{ 'common.active' | translate }}</option>
             <option [value]="CharityProgramStatus.Inactive">{{ 'common.inactive' | translate }}</option>
           </select>
+          <app-form-error
+            [control]="form.controls.status"
+            [errors]="[['required', 'validation.required']]"
+          />
         </label>
 
         <div class="actions">
-          <sn-button
+          <app-button
             type="submit"
             variant="primary"
             [disabled]="!selected() && !canCreatePrograms()"
           >
             {{ 'common.save' | translate }}
-          </sn-button>
-          <sn-button type="button" variant="secondary" (click)="resetForm()">
+          </app-button>
+          <app-button type="button" variant="secondary" (click)="resetForm()">
             {{ 'common.clear' | translate }}
-          </sn-button>
+          </app-button>
         </div>
       </form>
     </section>

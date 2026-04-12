@@ -27,7 +27,7 @@
   </section>
 
   <section class="login-panel" aria-labelledby="login-title">
-    <div class="login-panel__topbar">
+    <div class="login-panel-topbar">
       <div class="mobile-brand">
         <div class="brand-mark">
           <span class="material-symbols-rounded">volunteer_activism</span>
@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <div class="login-panel__content">
+    <div class="login-panel-content">
       <header class="login-header">
         <p>{{ 'auth.kicker' | translate }}</p>
         <h2 id="login-title">{{ 'auth.title' | translate }}</h2>
@@ -70,7 +70,7 @@
             <span>{{ currentSession.username }} · {{ currentSession.email }}</span>
           </div>
 
-          <div class="session-card__actions">
+          <div class="session-card-actions">
             <button type="button" class="primary-button" (click)="continueToDashboard()">
               {{ 'auth.continueToDashboard' | translate }}
             </button>
@@ -86,10 +86,19 @@
           <span>{{ 'auth.loginLabel' | translate }}</span>
           <input
             class="input"
+            [class.input-invalid]="showControlError(form.controls.identifier)"
             type="text"
             formControlName="identifier"
             autocomplete="username"
+            [attr.aria-invalid]="showControlError(form.controls.identifier)"
             [placeholder]="'auth.loginPlaceholder' | translate"
+          />
+          <app-form-error
+            [control]="form.controls.identifier"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
           />
         </label>
 
@@ -98,9 +107,11 @@
           <div class="password-field">
             <input
               class="input"
+              [class.input-invalid]="showControlError(form.controls.password)"
               [type]="passwordVisible() ? 'text' : 'password'"
               formControlName="password"
               autocomplete="current-password"
+              [attr.aria-invalid]="showControlError(form.controls.password)"
               [placeholder]="'auth.passwordPlaceholder' | translate"
             />
             <button
@@ -116,6 +127,13 @@
               </span>
             </button>
           </div>
+          <app-form-error
+            [control]="form.controls.password"
+            [errors]="[
+              ['required', 'validation.required'],
+              ['maxlength', 'validation.maxLength']
+            ]"
+          />
         </label>
 
         <label class="remember-field">
@@ -127,9 +145,9 @@
           <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>
         }
 
-        <sn-button type="submit" variant="primary" class="login-submit">
+        <app-button type="submit" variant="primary" class="login-submit">
           {{ 'auth.signIn' | translate }}
-        </sn-button>
+        </app-button>
       </form>
     </div>
   </section>

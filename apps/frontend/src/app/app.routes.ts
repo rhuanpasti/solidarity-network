@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { AccountType } from '@solidarity-network/shared';
 import { authGuard, loginGuard } from './core/auth/auth.guard';
 import { ShellComponent } from './core/layout/shell.component';
 
@@ -31,7 +30,7 @@ export const appRoutes: Routes = [
       {
         path: 'dashboard',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
@@ -39,7 +38,7 @@ export const appRoutes: Routes = [
       {
         path: 'my-programs',
         data: {
-          accountTypes: [AccountType.Beneficiary],
+          accountTypes: ['beneficiary'],
         },
         loadComponent: () =>
           import('./features/beneficiary-portal/beneficiary-portal.page').then(
@@ -49,7 +48,7 @@ export const appRoutes: Routes = [
       {
         path: 'charity-programs',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/charity-programs/charity-programs.page').then(
@@ -59,7 +58,7 @@ export const appRoutes: Routes = [
       {
         path: 'administrators',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/administrators/administrators.page').then(
@@ -69,7 +68,7 @@ export const appRoutes: Routes = [
       {
         path: 'beneficiaries',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/beneficiaries/beneficiaries.page').then(
@@ -79,7 +78,7 @@ export const appRoutes: Routes = [
       {
         path: 'benefits',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/benefits/benefits.page').then((m) => m.BenefitsPage),
@@ -87,7 +86,7 @@ export const appRoutes: Routes = [
       {
         path: 'benefit-deliveries',
         data: {
-          accountTypes: [AccountType.Administrator],
+          accountTypes: ['administrator'],
         },
         loadComponent: () =>
           import('./features/benefit-deliveries/benefit-deliveries.page').then(

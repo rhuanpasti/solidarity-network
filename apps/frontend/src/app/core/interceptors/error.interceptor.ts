@@ -5,6 +5,8 @@ import { catchError, throwError } from 'rxjs';
 import type { ApiErrorResponse } from '@solidarity-network/shared';
 import { AuthService } from '../auth/auth.service';
 import { ToastService } from '../services/toast.service';
+import { getApiErrorToast } from './error-message.utils';
+import { SKIP_GLOBAL_ERROR_TOAST } from './error-toast.token';
 
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const authService = inject(AuthService);
@@ -36,10 +38,9 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
-      toastService.show({
-        type: 'error',
-        text: payload?.message ?? 'Request failed. Please try again.',
-      });
+      if (!request.context.get(SKIP_GLOBAL_ERROR_TOAST)) {
+        toastService.show(getApiErrorToast(error, payload));
+      }
 
       return throwError(() => error);
     }),

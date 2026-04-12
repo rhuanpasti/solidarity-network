@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
-  AccountType,
   AdministratorRole,
   type AdministratorSummary,
   type CharityProgramSummary,
@@ -11,7 +10,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { genericPhoneValidator } from '../../shared/utils/validation.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
@@ -24,7 +24,7 @@ interface GeneratedAdministratorCredential {
 }
 
 @Component({
-  selector: 'sn-administrators-page',
+  selector: 'app-administrators-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -32,6 +32,7 @@ interface GeneratedAdministratorCredential {
     PageHeaderComponent,
     EmptyStateComponent,
     ButtonComponent,
+    FormErrorComponent,
   ],
   templateUrl: './administrators.page.html',
   styleUrl: './administrators.page.scss',
@@ -49,11 +50,12 @@ export class AdministratorsPage implements OnInit {
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<AdministratorSummary | null>(null);
   readonly generatedCredential = signal<GeneratedAdministratorCredential | null>(null);
+  readonly showControlError = shouldShowControlError;
   readonly canCreateAdministrators = computed(() => {
     const session = this.authService.session();
 
     return (
-      session?.accountType === AccountType.Administrator &&
+      session?.accountType === 'administrator' &&
       session.role === AdministratorRole.SuperAdmin
     );
   });
@@ -114,6 +116,10 @@ export class AdministratorsPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 
@@ -142,15 +148,6 @@ export class AdministratorsPage implements OnInit {
       this.resetFormForNextCreate();
       this.load();
     });
-  }
-
-  hasError(controlName: 'email' | 'phone', errorCode?: string) {
-    const control = this.form.controls[controlName];
-    if (!control.invalid || (!control.touched && !control.dirty)) {
-      return false;
-    }
-
-    return errorCode ? control.hasError(errorCode) : true;
   }
 
   private resetFormForNextCreate() {

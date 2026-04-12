@@ -3,7 +3,6 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
-  AccountType,
   AdministratorRole,
   CharityProgramStatus,
   type CharityProgramSummary,
@@ -13,12 +12,13 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-  selector: 'sn-charity-programs-page',
+  selector: 'app-charity-programs-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -28,6 +28,7 @@ import { ToastService } from '../../core/services/toast.service';
     StatusBadgeComponent,
     EmptyStateComponent,
     ButtonComponent,
+    FormErrorComponent,
   ],
   templateUrl: './charity-programs.page.html',
   styleUrl: './charity-programs.page.scss',
@@ -43,11 +44,12 @@ export class CharityProgramsPage implements OnInit {
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<CharityProgramSummary | null>(null);
   readonly search = signal('');
+  readonly showControlError = shouldShowControlError;
   readonly canCreatePrograms = computed(() => {
     const session = this.authService.session();
 
     return (
-      session?.accountType === AccountType.Administrator &&
+      session?.accountType === 'administrator' &&
       session.role === AdministratorRole.SuperAdmin
     );
   });
@@ -99,6 +101,10 @@ export class CharityProgramsPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 

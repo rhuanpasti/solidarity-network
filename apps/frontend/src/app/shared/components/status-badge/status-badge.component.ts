@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
-  selector: 'sn-status-badge',
+  selector: 'app-status-badge',
   standalone: true,
   template: '<span class="badge" [class.success]="tone() === \'success\'" [class.warning]="tone() === \'warning\'">{{ label() }}</span>',
   styles: [

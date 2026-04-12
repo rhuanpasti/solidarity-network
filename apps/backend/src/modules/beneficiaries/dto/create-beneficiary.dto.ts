@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
@@ -15,11 +16,13 @@ import { AddressDto } from './address.dto';
 export class CreateBeneficiaryDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(160)
   fullName!: string;
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(40)
   document!: string;
 
@@ -29,11 +32,13 @@ export class CreateBeneficiaryDto {
   birthDate?: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsEmail()
   email!: string;
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(30)
   phone!: string;
 
@@ -50,6 +55,7 @@ export class CreateBeneficiaryDto {
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   charityProgramId!: string;
 
   @ApiPropertyOptional({ enum: BeneficiaryStatus })

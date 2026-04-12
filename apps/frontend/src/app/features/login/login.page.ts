@@ -9,8 +9,10 @@ import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { LoginMetricsService } from '../../core/services/login-metrics.service';
+import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 
 const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
   programs: 0,
@@ -19,9 +21,15 @@ const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
 };
 
 @Component({
-  selector: 'sn-login-page',
+  selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, DecimalPipe, ButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    DecimalPipe,
+    ButtonComponent,
+    FormErrorComponent,
+  ],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,15 +39,17 @@ export class LoginPage {
   private readonly authService = inject(AuthService);
   private readonly loginMetricsService = inject(LoginMetricsService);
   private readonly languageService = inject(LanguageService);
+  private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   readonly passwordVisible = signal(false);
   readonly authError = signal<string | null>(null);
+  readonly showControlError = shouldShowControlError;
 
   readonly form = this.formBuilder.nonNullable.group({
     identifier: ['', [Validators.required, Validators.maxLength(120)]],
-    password: ['', [Validators.required]],
+    password: ['', [Validators.required, Validators.maxLength(120)]],
     rememberMe: [true],
   });
 
@@ -85,8 +95,14 @@ export class LoginPage {
   }
 
   async submit() {
+    this.authError.set(null);
+
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 

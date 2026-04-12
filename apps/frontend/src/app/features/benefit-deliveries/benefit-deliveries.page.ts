@@ -12,8 +12,9 @@ import type {
 } from '@solidarity-network/shared';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
@@ -22,7 +23,7 @@ import { CharityProgramsService } from '../../core/services/charity-programs.ser
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-  selector: 'sn-benefit-deliveries-page',
+  selector: 'app-benefit-deliveries-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -31,6 +32,7 @@ import { ToastService } from '../../core/services/toast.service';
     PageHeaderComponent,
     EmptyStateComponent,
     ButtonComponent,
+    FormErrorComponent,
   ],
   templateUrl: './benefit-deliveries.page.html',
   styleUrl: './benefit-deliveries.page.scss',
@@ -52,6 +54,7 @@ export class BenefitDeliveriesPage implements OnInit {
   readonly beneficiaries = signal<BeneficiarySummary[]>([]);
   readonly benefits = signal<BenefitSummary[]>([]);
   readonly administrators = signal<AdministratorSummary[]>([]);
+  readonly showControlError = shouldShowControlError;
   readonly filters = signal({
     beneficiaryId: '',
     charityProgramId: '',
@@ -133,6 +136,10 @@ export class BenefitDeliveriesPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 

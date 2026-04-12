@@ -7,13 +7,13 @@ button {
   justify-content: center;
 }
 
-.button__content {
+.button-content {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.button__spinner {
+.button-spinner {
   width: 0.95rem;
   height: 0.95rem;
   border: 2px solid currentColor;

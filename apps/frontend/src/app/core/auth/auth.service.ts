@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { AccountType } from '@solidarity-network/shared';
+import type { AccountType } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import {
   clearStoredAuthSession,
@@ -148,7 +148,7 @@ export class AuthService {
   }
 
   resolveHomeUrl() {
-    return this.sessionState()?.accountType === AccountType.Beneficiary
+    return this.sessionState()?.accountType === 'beneficiary'
       ? '/my-programs'
       : '/dashboard';
   }

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
-  selector: 'sn-empty-state',
+  selector: 'app-empty-state',
   standalone: true,
   imports: [TranslateModule],
   template: `

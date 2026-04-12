@@ -4,20 +4,22 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BenefitCategory, type BenefitSummary } from '@solidarity-network/shared';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { BenefitsService } from '../../core/services/benefits.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-  selector: 'sn-benefits-page',
+  selector: 'app-benefits-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
     TranslateModule,
     ButtonComponent,
     EmptyStateComponent,
+    FormErrorComponent,
     PageHeaderComponent,
     StatusBadgeComponent,
   ],
@@ -33,6 +35,7 @@ export class BenefitsPage implements OnInit {
 
   readonly items = signal<BenefitSummary[]>([]);
   readonly selected = signal<BenefitSummary | null>(null);
+  readonly showControlError = shouldShowControlError;
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -74,6 +77,10 @@ export class BenefitsPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 

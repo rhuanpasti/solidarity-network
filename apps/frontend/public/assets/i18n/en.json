@@ -89,14 +89,25 @@
   },
   "validation": {
     "required": "Fill in this field.",
+    "maxLength": "Shorten this value and try again.",
+    "minValue": "Enter a value greater than zero.",
     "invalidEmail": "Enter a valid email.",
     "invalidPhone": "Enter a valid phone number.",
     "invalidBrazilianPhone": "Enter a valid Brazilian phone number.",
     "invalidCpf": "Enter a valid CPF.",
     "invalidPostalCode": "Enter a valid postal code.",
+    "reviewHighlightedFields": "Review the highlighted fields and try again.",
     "searchingPostalCode": "Looking up the address by postal code...",
     "addressAutoFilled": "Address filled automatically from the postal code.",
     "postalCodeLookupFailed": "Unable to find an address for this postal code."
+  },
+  "errors": {
+    "requestFailed": "Request failed. Please try again.",
+    "unexpected": "An unexpected error occurred. Please try again.",
+    "relatedRecordUnavailable": "One of the selected records is no longer available. Refresh the page and try again.",
+    "benefitInactive": "This benefit is inactive and cannot be delivered right now.",
+    "beneficiaryProgramMismatch": "The selected beneficiary does not belong to the chosen charity program.",
+    "administratorNotAssigned": "The selected administrator is not assigned to the chosen charity program."
   },
   "features": {
     "dashboard": {

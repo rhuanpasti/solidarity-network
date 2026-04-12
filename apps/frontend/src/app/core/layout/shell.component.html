@@ -8,7 +8,7 @@
   ></div>
 
   <aside class="sidebar" [class.open]="mobileNavigationOpen()">
-    <div class="sidebar__header">
+    <div class="sidebar-header" (click)="goToDashboard()">
       <div class="brand-mark">
         <span class="material-symbols-rounded">volunteer_activism</span>
       </div>
@@ -20,7 +20,7 @@
     </div>
 
     <nav class="navigation" [attr.aria-label]="'common.primaryNavigation' | translate">
-      <p class="navigation__label">{{ 'common.menu' | translate }}</p>
+      <p class="navigation-label">{{ 'common.menu' | translate }}</p>
 
       @for (item of navigationItems(); track item.path) {
         <a
@@ -35,7 +35,7 @@
       }
     </nav>
 
-    <div class="sidebar__footer">
+    <div class="sidebar-footer">
       <div class="language-switcher">
         <button
           type="button"
@@ -57,10 +57,10 @@
 
       @if (session(); as currentSession) {
         <section class="user-card">
-          <div class="user-card__avatar">
+          <div class="user-card-avatar">
             {{ currentSession.displayName.slice(0, 1) }}
           </div>
-          <div class="user-card__copy">
+          <div class="user-card-copy">
             <strong>{{ currentSession.displayName }}</strong>
             <span>{{ currentSession.email }}</span>
           </div>
@@ -71,7 +71,7 @@
 
   <div class="shell-main">
     <header class="topbar">
-      <div class="topbar__leading">
+      <div class="topbar-leading">
         <button
           type="button"
           class="icon-button mobile-menu-button"
@@ -89,7 +89,7 @@
         }
       </div>
 
-      <div class="topbar__actions">
+      <div class="topbar-actions">
         @if (isAdministrator()) {
           <button
             type="button"
@@ -109,11 +109,5 @@
     <main id="content" class="content">
       <router-outlet />
     </main>
-
-    @if (toastService.message(); as toast) {
-      <div class="toast" role="status" aria-live="polite" [class.error]="toast.type === 'error'">
-        {{ toast.text }}
-      </div>
-    }
   </div>
 </div>

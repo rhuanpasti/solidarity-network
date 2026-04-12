@@ -2,7 +2,9 @@ import { Injectable, signal } from '@angular/core';
 
 export interface ToastMessage {
   type: 'success' | 'error' | 'info';
-  text: string;
+  text?: string;
+  translationKey?: string;
+  translationParams?: Record<string, string | number>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,4 +20,3 @@ export class ToastService {
     this.message.set(null);
   }
 }
-

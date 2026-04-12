@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
   Address,
@@ -8,6 +8,7 @@ import type {
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
+import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
 
 export interface BeneficiaryPayload {
   fullName: string;
@@ -52,6 +53,7 @@ export class BeneficiariesService {
     const params = new HttpParams().set('postalCode', postalCode);
     return this.httpClient.get<BeneficiaryAddressLookupResponse>(`${this.baseUrl}/address-lookup`, {
       params,
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR_TOAST, true),
     });
   }
 }

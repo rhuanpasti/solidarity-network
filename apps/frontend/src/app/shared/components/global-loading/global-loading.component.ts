@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
-  selector: 'sn-global-loading',
+  selector: 'app-global-loading',
   standalone: true,
   imports: [],
   templateUrl: './global-loading.component.html',

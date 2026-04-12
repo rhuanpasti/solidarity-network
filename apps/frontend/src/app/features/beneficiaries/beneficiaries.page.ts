@@ -17,7 +17,8 @@ import { distinctUntilChanged, startWith } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { touchAll } from '../../shared/utils/form.utils';
+import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
+import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import {
   brazilianPhoneValidator,
   brazilianPostalCodeValidator,
@@ -34,7 +35,7 @@ interface GeneratedCredentialInfo {
 }
 
 @Component({
-  selector: 'sn-beneficiaries-page',
+  selector: 'app-beneficiaries-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -42,6 +43,7 @@ interface GeneratedCredentialInfo {
     PageHeaderComponent,
     EmptyStateComponent,
     ButtonComponent,
+    FormErrorComponent,
   ],
   templateUrl: './beneficiaries.page.html',
   styleUrl: './beneficiaries.page.scss',
@@ -65,6 +67,7 @@ export class BeneficiariesPage implements OnInit {
   readonly selectedCountry = signal<SupportedCountry>(BRAZIL_COUNTRY);
   readonly addressLookupPending = signal(false);
   readonly addressLookupMessageKey = signal<string | null>(null);
+  readonly showControlError = shouldShowControlError;
   readonly isBrazilSelected = computed(() => isBrazilCountry(this.selectedCountry()));
   readonly documentLabelKey = computed(() =>
     this.isBrazilSelected() ? 'forms.cpf' : 'forms.document',
@@ -191,6 +194,10 @@ export class BeneficiariesPage implements OnInit {
   submit() {
     if (this.form.invalid) {
       touchAll(this.form);
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'validation.reviewHighlightedFields',
+      });
       return;
     }
 

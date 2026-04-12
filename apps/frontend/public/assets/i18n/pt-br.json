@@ -89,14 +89,25 @@
   },
   "validation": {
     "required": "Preencha este campo.",
+    "maxLength": "Reduza o conteudo deste campo e tente novamente.",
+    "minValue": "Informe um valor maior que zero.",
     "invalidEmail": "Informe um email valido.",
     "invalidPhone": "Informe um telefone valido.",
     "invalidBrazilianPhone": "Informe um telefone brasileiro valido.",
     "invalidCpf": "Informe um CPF valido.",
     "invalidPostalCode": "Informe um CEP valido.",
+    "reviewHighlightedFields": "Revise os campos destacados e tente novamente.",
     "searchingPostalCode": "Buscando endereco pelo CEP...",
     "addressAutoFilled": "Endereco preenchido automaticamente pelo CEP.",
     "postalCodeLookupFailed": "Nao foi possivel localizar o endereco pelo CEP."
+  },
+  "errors": {
+    "requestFailed": "Nao foi possivel concluir a solicitacao. Tente novamente.",
+    "unexpected": "Ocorreu um erro inesperado. Tente novamente.",
+    "relatedRecordUnavailable": "Um dos registros selecionados nao esta mais disponivel. Atualize a pagina e tente novamente.",
+    "benefitInactive": "Este beneficio esta inativo e nao pode ser entregue agora.",
+    "beneficiaryProgramMismatch": "O beneficiado selecionado nao pertence ao programa social escolhido.",
+    "administratorNotAssigned": "O administrador selecionado nao esta vinculado ao programa social escolhido."
   },
   "features": {
     "dashboard": {

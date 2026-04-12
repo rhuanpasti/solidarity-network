@@ -1,4 +1,4 @@
-import { AccountType } from '@solidarity-network/shared';
+import type { AccountType } from '@solidarity-network/shared';
 
 export interface AuthSession {
   id: string;
@@ -46,7 +46,7 @@ export function readStoredAuthSession(): AuthSession | null {
         email: session.email,
         displayName: session.displayName,
         role: session.role ?? null,
-        accountType: session.accountType ?? AccountType.Administrator,
+        accountType: session.accountType ?? 'administrator',
         token: session.token,
         mustChangePassword: session.mustChangePassword ?? false,
       };

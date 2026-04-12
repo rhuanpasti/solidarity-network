@@ -1,5 +1,5 @@
 <div class="workspace">
-  <sn-page-header
+  <app-page-header
     eyebrow="features.administrators.eyebrow"
     title="features.administrators.title"
     description="features.administrators.description"
@@ -21,7 +21,7 @@
           }
         </div>
       } @else {
-        <sn-empty-state
+        <app-empty-state
           title="features.administrators.emptyTitle"
           description="features.administrators.emptyDescription"
         />
@@ -50,14 +50,14 @@
       @if (generatedCredential(); as credential) {
         <section class="generated-passkey-card" aria-live="polite">
           <div>
-            <p class="generated-passkey-card__eyebrow">
+            <p class="generated-passkey-card-eyebrow">
               {{ 'features.administrators.generatedPasskeyEyebrow' | translate }}
             </p>
             <strong>{{ credential.name }}</strong>
             <span>{{ credential.email }}</span>
           </div>
 
-          <div class="generated-passkey-card__secret">
+          <div class="generated-passkey-card-secret">
             <small>{{ 'features.administrators.generatedPasskeyLabel' | translate }}</small>
             <strong>{{ credential.passkey }}</strong>
           </div>
@@ -68,38 +68,77 @@
         <div class="field-grid">
           <label class="field">
             <span>{{ 'forms.name' | translate }}</span>
-            <input class="input" type="text" formControlName="name" />
+            <input
+              class="input"
+              [class.input-invalid]="showControlError(form.controls.name)"
+              type="text"
+              formControlName="name"
+              [attr.aria-invalid]="showControlError(form.controls.name)"
+            />
+            <app-form-error
+              [control]="form.controls.name"
+              [errors]="[
+                ['required', 'validation.required'],
+                ['maxlength', 'validation.maxLength']
+              ]"
+            />
           </label>
 
           <label class="field">
             <span>{{ 'forms.email' | translate }}</span>
-            <input class="input" type="email" formControlName="email" />
-            @if (hasError('email', 'required')) {
-              <small class="field-error">{{ 'validation.required' | translate }}</small>
-            } @else if (hasError('email', 'email')) {
-              <small class="field-error">{{ 'validation.invalidEmail' | translate }}</small>
-            }
+            <input
+              class="input"
+              [class.input-invalid]="showControlError(form.controls.email)"
+              type="email"
+              formControlName="email"
+              [attr.aria-invalid]="showControlError(form.controls.email)"
+            />
+            <app-form-error
+              [control]="form.controls.email"
+              [errors]="[
+                ['required', 'validation.required'],
+                ['email', 'validation.invalidEmail']
+              ]"
+            />
           </label>
         </div>
 
         <div class="field-grid">
           <label class="field">
             <span>{{ 'forms.phone' | translate }}</span>
-            <input class="input" type="text" formControlName="phone" />
-            @if (hasError('phone', 'required')) {
-              <small class="field-error">{{ 'validation.required' | translate }}</small>
-            } @else if (hasError('phone', 'phone')) {
-              <small class="field-error">{{ 'validation.invalidPhone' | translate }}</small>
-            }
+            <input
+              class="input"
+              [class.input-invalid]="showControlError(form.controls.phone)"
+              type="text"
+              formControlName="phone"
+              [attr.aria-invalid]="showControlError(form.controls.phone)"
+            />
+            <app-form-error
+              [control]="form.controls.phone"
+              [errors]="[
+                ['required', 'validation.required'],
+                ['phone', 'validation.invalidPhone'],
+                ['maxlength', 'validation.maxLength']
+              ]"
+            />
           </label>
 
           <label class="field">
             <span>{{ 'forms.role' | translate }}</span>
-            <select class="input" formControlName="role">
+            <select
+              class="input"
+              [class.input-invalid]="showControlError(form.controls.role)"
+              formControlName="role"
+              [attr.aria-invalid]="showControlError(form.controls.role)"
+            >
               <option [value]="AdministratorRole.SuperAdmin">{{ 'enums.roles.super_admin' | translate }}</option>
               <option [value]="AdministratorRole.ProgramManager">{{ 'enums.roles.program_manager' | translate }}</option>
               <option [value]="AdministratorRole.CaseWorker">{{ 'enums.roles.case_worker' | translate }}</option>
             </select>
+            <app-form-error
+              [control]="form.controls.role"
+              [errors]="[['required', 'validation.required']]"
+            />
           </label>
         </div>
 
@@ -118,16 +157,16 @@
         </label>
 
         <div class="actions">
-          <sn-button
+          <app-button
             type="submit"
             variant="primary"
             [disabled]="!selected() && !canCreateAdministrators()"
           >
             {{ 'common.save' | translate }}
-          </sn-button>
-          <sn-button type="button" variant="secondary" (click)="resetForm()">
+          </app-button>
+          <app-button type="button" variant="secondary" (click)="resetForm()">
             {{ 'common.clear' | translate }}
-          </sn-button>
+          </app-button>
         </div>
       </form>
     </section>

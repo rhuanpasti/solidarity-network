@@ -2,6 +2,7 @@ import {
   IsArray,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
@@ -13,15 +14,18 @@ import { AdministratorRole } from '@solidarity-network/shared';
 export class CreateAdministratorDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(120)
   name!: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsEmail()
   email!: string;
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(30)
   @Matches(/^[+()\-\s\d]+$/, {
     message: 'phone must contain only digits and common phone separators',
@@ -36,5 +40,6 @@ export class CreateAdministratorDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   charityProgramIds?: string[];
 }
