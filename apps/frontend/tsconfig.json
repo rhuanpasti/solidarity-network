@@ -6,17 +6,6 @@
     "target": "es2022",
     "useDefineForClassFields": false,
     "moduleResolution": "bundler",
-    "types": [],
-    "paths": {
-      "@solidarity-network/shared": [
-        "packages/shared/src/index.ts"
-      ],
-      "@solidarity-network/shared/*": [
-        "packages/shared/src/*"
-      ],
-      "@app/*": [
-        "apps/frontend/src/app/*"
-      ]
-    }
+    "types": []
   }
 }

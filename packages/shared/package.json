@@ -4,6 +4,12 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -11,6 +17,6 @@
     "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "typescript": "^5.8.0"
+    "typescript": "5.9.3"
   }
 }

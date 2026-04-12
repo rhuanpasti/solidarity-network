@@ -9,16 +9,6 @@
     "noUncheckedIndexedAccess": true,
     "useDefineForClassFields": false,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@solidarity-network/shared": [
-        "packages/shared/src/index.ts"
-      ],
-      "@solidarity-network/shared/*": [
-        "packages/shared/src/*"
-      ]
-    }
+    "skipLibCheck": true
   }
 }
-

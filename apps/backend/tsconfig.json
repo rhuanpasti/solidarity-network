@@ -1,8 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -12,19 +12,7 @@
     "outDir": "./dist",
     "incremental": true,
     "noPropertyAccessFromIndexSignature": false,
-    "strictPropertyInitialization": false,
-    "baseUrl": ".",
-    "paths": {
-      "@solidarity-network/shared": [
-        "../../packages/shared/src/index.ts"
-      ],
-      "@solidarity-network/shared/*": [
-        "../../packages/shared/src/*"
-      ],
-      "@app/*": [
-        "src/*"
-      ]
-    }
+    "strictPropertyInitialization": false
   },
   "include": [
     "src/**/*.ts",
