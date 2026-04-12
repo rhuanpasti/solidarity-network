@@ -68,7 +68,12 @@ export class BeneficiariesService {
   }
 
   async update(id: string, dto: UpdateBeneficiaryDto): Promise<BeneficiarySummary> {
-    await this.findOne(id);
+    const existingBeneficiary = await this.repository.findById(id);
+
+    if (!existingBeneficiary) {
+      throw new DomainNotFoundException('beneficiary', id);
+    }
+
     if (dto.charityProgramId) {
       await this.assertProgramExists(dto.charityProgramId);
     }

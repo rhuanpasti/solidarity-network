@@ -61,4 +61,3 @@ export interface BenefitDeliverySummary {
   reference: string;
   createdAt: string;
 }
-

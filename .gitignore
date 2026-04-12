@@ -6,6 +6,8 @@ coverage/
 .env
 .env.local
 .env.production
+**/.env
+**/.env.local
+**/.env.production
 apps/backend/prisma/dev.db
 apps/backend/generated/
-

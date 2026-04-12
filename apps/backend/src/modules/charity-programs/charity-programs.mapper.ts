@@ -13,4 +13,3 @@ export function toCharityProgramSummary(
     updatedAt: charityProgram.updatedAt.toISOString(),
   };
 }
-

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type {
+import {
   CharityProgramSummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';

@@ -163,7 +163,27 @@ Create a root `.env` from `.env.example` before using Docker Compose.
 docker compose up -d postgres
 ```
 
-### 2. Backend
+### 2. Run From The Repository Root
+
+Quick commands to start each application without changing directories:
+
+```bash
+npm install --workspaces
+npm run start:backend
+npm run start:frontend
+```
+
+- backend: `http://localhost:3000`
+- frontend: `http://localhost:4200`
+
+You can also use the helper scripts from the repository root:
+
+```bash
+./scripts/dev-backend.sh --prepare-db
+./scripts/dev-frontend.sh
+```
+
+### 3. Backend
 
 ```bash
 cd apps/backend
@@ -177,24 +197,12 @@ npm run prisma:seed
 npm run start:dev
 ```
 
-Or from the repository root:
-
-```bash
-./scripts/dev-backend.sh --prepare-db
-```
-
-### 3. Frontend
+### 4. Frontend
 
 ```bash
 cd apps/frontend
 npm install
 npm run start
-```
-
-Or from the repository root:
-
-```bash
-./scripts/dev-frontend.sh
 ```
 
 Update `src/environments/environment.ts` when you need a different API URL locally.
