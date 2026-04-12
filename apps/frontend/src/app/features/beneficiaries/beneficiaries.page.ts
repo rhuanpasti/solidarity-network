@@ -27,6 +27,12 @@ import { BeneficiariesService } from '../../core/services/beneficiaries.service'
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
 
+interface GeneratedCredentialInfo {
+  fullName: string;
+  email: string;
+  passkey: string;
+}
+
 @Component({
   selector: 'sn-beneficiaries-page',
   standalone: true,
@@ -55,6 +61,7 @@ export class BeneficiariesPage implements OnInit {
   readonly items = signal<BeneficiarySummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<BeneficiarySummary | null>(null);
+  readonly generatedCredential = signal<GeneratedCredentialInfo | null>(null);
   readonly selectedCountry = signal<SupportedCountry>(BRAZIL_COUNTRY);
   readonly addressLookupPending = signal(false);
   readonly addressLookupMessageKey = signal<string | null>(null);
@@ -72,6 +79,7 @@ export class BeneficiariesPage implements OnInit {
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
     document: ['', [Validators.required, Validators.maxLength(40)]],
     birthDate: [''],
+    email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
     notes: [''],
     charityProgramId: ['', Validators.required],
@@ -134,6 +142,7 @@ export class BeneficiariesPage implements OnInit {
       fullName: item.fullName,
       document: item.document,
       birthDate: item.birthDate ? item.birthDate.slice(0, 10) : '',
+      email: item.email ?? '',
       phone: item.phone,
       notes: item.notes ?? '',
       charityProgramId: item.charityProgram.id,
@@ -149,6 +158,7 @@ export class BeneficiariesPage implements OnInit {
         complement: item.address.complement ?? '',
       },
     });
+    this.generatedCredential.set(null);
     this.addressLookupMessageKey.set(null);
   }
 
@@ -158,6 +168,7 @@ export class BeneficiariesPage implements OnInit {
       fullName: '',
       document: '',
       birthDate: '',
+      email: '',
       phone: '',
       notes: '',
       charityProgramId: '',
@@ -173,6 +184,7 @@ export class BeneficiariesPage implements OnInit {
         complement: '',
       },
     });
+    this.generatedCredential.set(null);
     this.addressLookupMessageKey.set(null);
   }
 
@@ -188,13 +200,24 @@ export class BeneficiariesPage implements OnInit {
       birthDate: raw.birthDate || null,
       notes: raw.notes || null,
     };
-    const request = this.selected()
-      ? this.beneficiariesService.update(this.selected()!.id, payload)
-      : this.beneficiariesService.create(payload);
 
-    request.subscribe(() => {
+    if (this.selected()) {
+      this.beneficiariesService.update(this.selected()!.id, payload).subscribe(() => {
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.resetForm();
+        this.load();
+      });
+      return;
+    }
+
+    this.beneficiariesService.create(payload).subscribe((response) => {
       this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.resetForm();
+      this.generatedCredential.set({
+        fullName: response.beneficiary.fullName,
+        email: response.beneficiary.email ?? payload.email,
+        passkey: response.generatedPasskey,
+      });
+      this.resetFormForNextCreate();
       this.load();
     });
   }
@@ -265,6 +288,13 @@ export class BeneficiariesPage implements OnInit {
     ]);
   }
 
+  emailErrorKey() {
+    return this.getErrorKey(this.form.controls.email, [
+      ['required', 'validation.required'],
+      ['email', 'validation.invalidEmail'],
+    ]);
+  }
+
   postalCodeErrorKey() {
     return this.getErrorKey(this.form.controls.address.controls.postalCode, [
       ['required', 'validation.required'],
@@ -292,6 +322,31 @@ export class BeneficiariesPage implements OnInit {
           this.addressLookupMessageKey.set(null);
         }
       });
+  }
+
+  private resetFormForNextCreate() {
+    this.selected.set(null);
+    this.form.reset({
+      fullName: '',
+      document: '',
+      birthDate: '',
+      email: '',
+      phone: '',
+      notes: '',
+      charityProgramId: '',
+      status: BeneficiaryStatus.Active,
+      address: {
+        postalCode: '',
+        country: BRAZIL_COUNTRY,
+        street: '',
+        number: '',
+        district: '',
+        city: '',
+        state: '',
+        complement: '',
+      },
+    });
+    this.addressLookupMessageKey.set(null);
   }
 
   private applyCountryValidators(country: SupportedCountry) {

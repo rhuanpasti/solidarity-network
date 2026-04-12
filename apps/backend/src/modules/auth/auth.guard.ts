@@ -9,6 +9,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import {
+  ACCOUNT_TYPES_KEY,
   ALLOW_PASSWORD_CHANGE_WHEN_REQUIRED_KEY,
   IS_PUBLIC_KEY,
 } from './auth.decorators';
@@ -63,11 +64,23 @@ export class AuthGuard implements CanActivate {
         ALLOW_PASSWORD_CHANGE_WHEN_REQUIRED_KEY,
         [context.getHandler(), context.getClass()],
       ) ?? false;
+    const allowedAccountTypes =
+      this.reflector.getAllAndOverride<AuthenticatedUser['accountType'][]>(
+        ACCOUNT_TYPES_KEY,
+        [context.getHandler(), context.getClass()],
+      ) ?? [];
 
     if (user.mustChangePassword && !allowPasswordChangeWhenRequired) {
       throw new ForbiddenException({
         code: 'PASSWORD_CHANGE_REQUIRED',
         message: 'Password change required before accessing this resource.',
+      });
+    }
+
+    if (allowedAccountTypes.length && !allowedAccountTypes.includes(user.accountType)) {
+      throw new ForbiddenException({
+        code: 'ACCOUNT_TYPE_NOT_ALLOWED',
+        message: 'Authenticated account cannot access this resource.',
       });
     }
 

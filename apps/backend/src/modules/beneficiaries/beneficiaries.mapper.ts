@@ -15,6 +15,7 @@ export function toBeneficiarySummary(
     fullName: beneficiary.fullName,
     document: beneficiary.document,
     birthDate: beneficiary.birthDate?.toISOString() ?? null,
+    email: beneficiary.email,
     phone: beneficiary.phone,
     address: beneficiary.address as unknown as Address,
     notes: beneficiary.notes,

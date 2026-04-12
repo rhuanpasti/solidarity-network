@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AccountTypes } from '../auth/auth.decorators';
 import { BenefitDeliveriesService } from './benefit-deliveries.service';
 import { CreateBenefitDeliveryDto } from './dto/create-benefit-delivery.dto';
 import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
 
 @ApiTags('Benefit Deliveries')
+@AccountTypes('administrator')
 @Controller('benefit-deliveries')
 export class BenefitDeliveriesController {
   constructor(

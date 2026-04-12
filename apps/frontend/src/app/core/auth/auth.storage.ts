@@ -1,9 +1,12 @@
+import { AccountType } from '@solidarity-network/shared';
+
 export interface AuthSession {
   id: string;
   username: string;
   email: string;
   displayName: string;
-  role: string;
+  role: string | null;
+  accountType: AccountType;
   token: string;
   mustChangePassword: boolean;
 }
@@ -24,7 +27,29 @@ export function readStoredAuthSession(): AuthSession | null {
     }
 
     try {
-      return JSON.parse(raw) as AuthSession;
+      const session = JSON.parse(raw) as Partial<AuthSession>;
+
+      if (
+        !session.id ||
+        !session.username ||
+        !session.email ||
+        !session.displayName ||
+        !session.token
+      ) {
+        storage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        continue;
+      }
+
+      return {
+        id: session.id,
+        username: session.username,
+        email: session.email,
+        displayName: session.displayName,
+        role: session.role ?? null,
+        accountType: session.accountType ?? AccountType.Administrator,
+        token: session.token,
+        mustChangePassword: session.mustChangePassword ?? false,
+      };
     } catch {
       storage.removeItem(AUTH_SESSION_STORAGE_KEY);
     }

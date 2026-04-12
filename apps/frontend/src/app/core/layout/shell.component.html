@@ -22,7 +22,7 @@
     <nav class="navigation" [attr.aria-label]="'common.primaryNavigation' | translate">
       <p class="navigation__label">{{ 'common.menu' | translate }}</p>
 
-      @for (item of navigationItems; track item.path) {
+      @for (item of navigationItems(); track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
@@ -81,16 +81,24 @@
           <span class="material-symbols-rounded">menu</span>
         </button>
 
-        <label class="search-field">
-          <span class="material-symbols-rounded">search</span>
-          <input type="search" [placeholder]="'common.searchWorkspace' | translate" />
-        </label>
+        @if (isAdministrator()) {
+          <label class="search-field">
+            <span class="material-symbols-rounded">search</span>
+            <input type="search" [placeholder]="'common.searchWorkspace' | translate" />
+          </label>
+        }
       </div>
 
       <div class="topbar__actions">
-        <button type="button" class="icon-button" [attr.aria-label]="'common.notifications' | translate">
-          <span class="material-symbols-rounded">notifications</span>
-        </button>
+        @if (isAdministrator()) {
+          <button
+            type="button"
+            class="icon-button"
+            [attr.aria-label]="'common.notifications' | translate"
+          >
+            <span class="material-symbols-rounded">notifications</span>
+          </button>
+        }
 
         <button type="button" class="ghost-button" (click)="logout()">
           {{ 'auth.logout' | translate }}

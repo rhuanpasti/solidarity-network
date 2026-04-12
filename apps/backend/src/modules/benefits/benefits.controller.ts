@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { AccountTypes } from '../auth/auth.decorators';
 import { BenefitsService } from './benefits.service';
 import { CreateBenefitDto } from './dto/create-benefit.dto';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
 import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
 
 @ApiTags('Benefits')
+@AccountTypes('administrator')
 @Controller('benefits')
 export class BenefitsController {
   constructor(

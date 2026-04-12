@@ -4,6 +4,7 @@ import type {
   Address,
   BeneficiaryListQuery,
   BeneficiarySummary,
+  CreateBeneficiaryResult,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
@@ -12,6 +13,7 @@ export interface BeneficiaryPayload {
   fullName: string;
   document: string;
   birthDate?: string | null;
+  email: string;
   phone: string;
   address: Address;
   notes?: string | null;
@@ -39,7 +41,7 @@ export class BeneficiariesService {
   }
 
   create(payload: BeneficiaryPayload) {
-    return this.httpClient.post<BeneficiarySummary>(this.baseUrl, payload);
+    return this.httpClient.post<CreateBeneficiaryResult>(this.baseUrl, payload);
   }
 
   update(id: string, payload: Partial<BeneficiaryPayload>) {

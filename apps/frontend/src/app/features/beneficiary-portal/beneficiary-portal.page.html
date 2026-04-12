@@ -1,0 +1,81 @@
+<div class="workspace">
+  <sn-page-header
+    eyebrow="features.beneficiaryPortal.eyebrow"
+    title="features.beneficiaryPortal.title"
+    description="features.beneficiaryPortal.description"
+  />
+
+  @if (overview(); as portal) {
+    <section class="stats-grid">
+      <article class="stat-card">
+        <p>{{ 'forms.charityProgram' | translate }}</p>
+        <strong>{{ portal.beneficiary.charityProgram.name }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <p>{{ 'features.beneficiaryPortal.nextDelivery' | translate }}</p>
+        <strong>
+          @if (nextDelivery(); as nextDeliveryItem) {
+            {{ nextDeliveryItem.deliveryDate | date: 'mediumDate' }}
+          } @else {
+            --
+          }
+        </strong>
+      </article>
+    </section>
+
+    <div class="content-grid portal-grid">
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h3>{{ 'features.beneficiaryPortal.programsTitle' | translate }}</h3>
+            <p>{{ 'features.beneficiaryPortal.programsDescription' | translate }}</p>
+          </div>
+        </div>
+
+        <article class="program-card">
+          <strong>{{ portal.beneficiary.charityProgram.name }}</strong>
+          <p>{{ portal.beneficiary.charityProgram.description }}</p>
+          <small>
+            {{
+              portal.beneficiary.charityProgram.status === 'active'
+                ? ('common.active' | translate)
+                : ('common.inactive' | translate)
+            }}
+          </small>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h3>{{ 'features.beneficiaryPortal.deliveriesTitle' | translate }}</h3>
+            <p>{{ 'features.beneficiaryPortal.deliveriesDescription' | translate }}</p>
+          </div>
+        </div>
+
+        @if (portal.upcomingDeliveries.length) {
+          <div class="list compact-list">
+            @for (delivery of portal.upcomingDeliveries; track delivery.id) {
+              <article class="list-item static-item">
+                <div>
+                  <strong>{{ delivery.benefit.name }}</strong>
+                  <p>{{ delivery.charityProgram.name }}</p>
+                </div>
+                <div class="item-meta">
+                  <span>#{{ delivery.reference }}</span>
+                  <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <sn-empty-state
+            title="features.beneficiaryPortal.emptyTitle"
+            description="features.beneficiaryPortal.emptyDescription"
+          />
+        }
+      </section>
+    </div>
+  }
+</div>

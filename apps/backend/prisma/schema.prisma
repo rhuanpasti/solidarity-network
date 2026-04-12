@@ -88,7 +88,11 @@ model Beneficiary {
   fullName         String
   document         String              @unique
   birthDate        DateTime?
+  email            String?             @unique
   phone            String
+  passwordHash     String?
+  mustChangePassword Boolean           @default(true)
+  lastPasswordChangedAt DateTime?
   address          Json
   notes            String?
   charityProgramId String

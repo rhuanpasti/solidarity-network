@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AccountType } from '@solidarity-network/shared';
 import { authGuard, loginGuard } from './core/auth/auth.guard';
 import { ShellComponent } from './core/layout/shell.component';
 
@@ -25,14 +26,31 @@ export const appRoutes: Routes = [
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'dashboard',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
+        path: 'my-programs',
+        data: {
+          accountTypes: [AccountType.Beneficiary],
+        },
+        loadComponent: () =>
+          import('./features/beneficiary-portal/beneficiary-portal.page').then(
+            (m) => m.BeneficiaryPortalPage,
+          ),
+      },
+      {
         path: 'charity-programs',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/charity-programs/charity-programs.page').then(
             (m) => m.CharityProgramsPage,
@@ -40,6 +58,9 @@ export const appRoutes: Routes = [
       },
       {
         path: 'administrators',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/administrators/administrators.page').then(
             (m) => m.AdministratorsPage,
@@ -47,6 +68,9 @@ export const appRoutes: Routes = [
       },
       {
         path: 'beneficiaries',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/beneficiaries/beneficiaries.page').then(
             (m) => m.BeneficiariesPage,
@@ -54,11 +78,17 @@ export const appRoutes: Routes = [
       },
       {
         path: 'benefits',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/benefits/benefits.page').then((m) => m.BenefitsPage),
       },
       {
         path: 'benefit-deliveries',
+        data: {
+          accountTypes: [AccountType.Administrator],
+        },
         loadComponent: () =>
           import('./features/benefit-deliveries/benefit-deliveries.page').then(
             (m) => m.BenefitDeliveriesPage,

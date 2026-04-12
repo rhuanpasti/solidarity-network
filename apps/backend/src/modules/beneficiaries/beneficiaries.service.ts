@@ -3,11 +3,16 @@ import { Prisma } from '@prisma/client';
 import type {
   Address,
   BeneficiarySummary,
+  CreateBeneficiaryResult,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
+import {
+  generateNumericPasskey,
+  hashPassword,
+} from '../auth/password.util';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
 import {
@@ -28,7 +33,7 @@ export class BeneficiariesService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
   ) {}
 
-  async create(dto: CreateBeneficiaryDto): Promise<BeneficiarySummary> {
+  async create(dto: CreateBeneficiaryDto): Promise<CreateBeneficiaryResult> {
     await this.assertProgramExists(dto.charityProgramId);
     const normalizedInput = normalizeBeneficiaryInput({
       document: dto.document,
@@ -36,19 +41,26 @@ export class BeneficiariesService {
       address: dto.address,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+    const generatedPasskey = generateNumericPasskey(16);
 
     const beneficiary = await this.repository.create({
       fullName: dto.fullName,
       document: normalizedInput.document,
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+      email: dto.email.trim().toLowerCase(),
       phone: normalizedInput.phone,
+      passwordHash: await hashPassword(generatedPasskey),
+      mustChangePassword: true,
       address: normalizedInput.address as unknown as Prisma.InputJsonValue,
       notes: dto.notes,
       charityProgramId: dto.charityProgramId,
       status: dto.status ?? 'active',
     });
 
-    return toBeneficiarySummary(beneficiary);
+    return {
+      beneficiary: toBeneficiarySummary(beneficiary),
+      generatedPasskey,
+    };
   }
 
   async findAll(
@@ -105,6 +117,7 @@ export class BeneficiariesService {
       fullName: dto.fullName,
       document: dto.document ? normalizedInput.document : undefined,
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+      email: dto.email?.trim().toLowerCase(),
       phone: dto.phone ? normalizedInput.phone : undefined,
       address: dto.address
         ? (normalizedInput.address as unknown as Prisma.InputJsonValue)

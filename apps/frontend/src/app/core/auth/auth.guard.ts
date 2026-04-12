@@ -1,3 +1,4 @@
+import type { AccountType } from '@solidarity-network/shared';
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
@@ -29,6 +30,18 @@ export const authGuard: CanActivateFn = (_route, state) => {
       state.url.startsWith('/first-access')
     ) {
       return router.createUrlTree(['/dashboard']);
+    }
+
+    const allowedAccountTypes = _route.data?.['accountTypes'] as
+      | AccountType[]
+      | undefined;
+
+    if (
+      allowedAccountTypes?.length &&
+      authService.session() &&
+      !allowedAccountTypes.includes(authService.session()!.accountType)
+    ) {
+      return router.createUrlTree([authService.resolveHomeUrl()]);
     }
 
     return true;

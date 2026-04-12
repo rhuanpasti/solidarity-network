@@ -1,5 +1,6 @@
 import type { Address } from './address';
 import {
+  AccountType,
   AdministratorRole,
   BeneficiaryStatus,
   BenefitCategory,
@@ -31,12 +32,18 @@ export interface BeneficiarySummary {
   fullName: string;
   document: string;
   birthDate: string | null;
+  email: string | null;
   phone: string;
   address: Address;
   notes: string | null;
   charityProgram: CharityProgramSummary;
   createdAt: string;
   status: BeneficiaryStatus;
+}
+
+export interface CreateBeneficiaryResult {
+  beneficiary: BeneficiarySummary;
+  generatedPasskey: string;
 }
 
 export interface BenefitSummary {
@@ -60,4 +67,30 @@ export interface BenefitDeliverySummary {
   administrator: Pick<AdministratorSummary, 'id' | 'name' | 'email' | 'role'>;
   reference: string;
   createdAt: string;
+}
+
+export interface BeneficiaryPortalSummary {
+  beneficiary: Pick<
+    BeneficiarySummary,
+    'id' | 'fullName' | 'document' | 'birthDate' | 'email' | 'phone' | 'status'
+  > & {
+    charityProgram: CharityProgramSummary;
+  };
+  upcomingDeliveries: Array<{
+    id: string;
+    reference: string;
+    deliveryDate: string;
+    benefit: Pick<BenefitSummary, 'id' | 'name' | 'category'>;
+    charityProgram: Pick<CharityProgramSummary, 'id' | 'name' | 'status'>;
+  }>;
+}
+
+export interface AuthUserSummary {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  role: AdministratorRole | null;
+  accountType: AccountType;
+  mustChangePassword: boolean;
 }

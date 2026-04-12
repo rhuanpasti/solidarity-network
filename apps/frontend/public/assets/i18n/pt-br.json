@@ -10,7 +10,8 @@
     "administrators": "Administradores",
     "beneficiaries": "Beneficiados",
     "benefits": "Beneficios",
-    "benefitDeliveries": "Entregas"
+    "benefitDeliveries": "Entregas",
+    "myPrograms": "Meus programas"
   },
   "common": {
     "skipToContent": "Ir para o conteudo",
@@ -145,7 +146,21 @@
       "emptyDescription": "Cadastre um beneficiado para iniciar o registro das entregas de beneficios.",
       "createTitle": "Criar beneficiado",
       "editTitle": "Detalhes do beneficiado",
-      "formDescription": "Registre identidade, endereco, observacoes e o programa associado."
+      "formDescription": "Registre identidade, endereco, observacoes e o programa associado.",
+      "generatedPasskeyEyebrow": "Senha inicial de acesso",
+      "generatedPasskeyLabel": "Passkey gerada"
+    },
+    "beneficiaryPortal": {
+      "eyebrow": "Minha area",
+      "title": "Programas e proximas entregas",
+      "description": "Consulte o programa em que voce esta cadastrado e as proximas datas de apoio previstas.",
+      "nextDelivery": "Proxima entrega",
+      "programsTitle": "Programa vinculado",
+      "programsDescription": "Este e o programa ativo associado ao seu cadastro.",
+      "deliveriesTitle": "Proximas entregas",
+      "deliveriesDescription": "Datas futuras de apoio ja registradas para o seu cadastro.",
+      "emptyTitle": "Nenhuma entrega futura",
+      "emptyDescription": "Quando uma nova entrega for agendada, ela aparecera aqui."
     },
     "benefits": {
       "eyebrow": "Beneficios",
@@ -173,10 +188,10 @@
   "auth": {
     "kicker": "Autenticacao",
     "title": "Bem-vindo de volta",
-    "subtitle": "Faca login antes de acessar o painel operacional.",
+    "subtitle": "Faca login antes de acessar o painel operacional ou a area do beneficiado.",
     "heroBadge": "Acesso protegido",
     "heroTitle": "Gerencie a rede solidaria em um workspace centralizado e mais claro.",
-    "heroDescription": "O dashboard agora fica atras de uma tela de login para que toda a operacao comece por um ponto de entrada consistente.",
+    "heroDescription": "Administradores e beneficiados agora entram pelo mesmo acesso protegido, cada um com a experiencia correta apos o login.",
     "metricPrograms": "Programas em operacao",
     "metricBeneficiaries": "Beneficiados acompanhados",
     "metricDeliveries": "Entregas recentes",

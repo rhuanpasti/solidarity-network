@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { AccountType } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import {
   clearStoredAuthSession,
@@ -34,7 +35,8 @@ interface AuthApiResponse {
     username: string;
     name: string;
     email: string;
-    role: string;
+    role: string | null;
+    accountType: AccountType;
     mustChangePassword: boolean;
   };
 }
@@ -67,6 +69,7 @@ export class AuthService {
         email: response.user.email,
         displayName: response.user.name,
         role: response.user.role,
+        accountType: response.user.accountType,
         token: response.token,
         mustChangePassword: response.user.mustChangePassword,
       };
@@ -98,6 +101,7 @@ export class AuthService {
         email: response.user.email,
         displayName: response.user.name,
         role: response.user.role,
+        accountType: response.user.accountType,
         token: response.token,
         mustChangePassword: response.user.mustChangePassword,
       };
@@ -140,7 +144,13 @@ export class AuthService {
       return '/first-access';
     }
 
-    return returnUrl || '/dashboard';
+    return returnUrl || this.resolveHomeUrl();
+  }
+
+  resolveHomeUrl() {
+    return this.sessionState()?.accountType === AccountType.Beneficiary
+      ? '/my-programs'
+      : '/dashboard';
   }
 
   private resolveAuthErrorKey(error: unknown, fallback: string) {

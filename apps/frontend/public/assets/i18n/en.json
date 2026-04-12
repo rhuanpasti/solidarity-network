@@ -10,7 +10,8 @@
     "administrators": "Administrators",
     "beneficiaries": "Beneficiaries",
     "benefits": "Benefits",
-    "benefitDeliveries": "Benefit Deliveries"
+    "benefitDeliveries": "Benefit Deliveries",
+    "myPrograms": "My Programs"
   },
   "common": {
     "skipToContent": "Skip to content",
@@ -145,7 +146,21 @@
       "emptyDescription": "Register a beneficiary to start recording benefit deliveries.",
       "createTitle": "Create beneficiary",
       "editTitle": "Beneficiary details",
-      "formDescription": "Capture identity, address, notes, and charity program assignment."
+      "formDescription": "Capture identity, address, notes, and charity program assignment.",
+      "generatedPasskeyEyebrow": "Initial access password",
+      "generatedPasskeyLabel": "Generated passkey"
+    },
+    "beneficiaryPortal": {
+      "eyebrow": "My area",
+      "title": "Programs and upcoming deliveries",
+      "description": "Review the program you are registered in and the next scheduled support dates.",
+      "nextDelivery": "Next delivery",
+      "programsTitle": "Registered program",
+      "programsDescription": "This is the active program linked to your beneficiary record.",
+      "deliveriesTitle": "Upcoming deliveries",
+      "deliveriesDescription": "Future support dates already scheduled for your record.",
+      "emptyTitle": "No upcoming deliveries",
+      "emptyDescription": "When a new delivery is scheduled, it will appear here."
     },
     "benefits": {
       "eyebrow": "Benefits",
@@ -173,10 +188,10 @@
   "auth": {
     "kicker": "Authentication",
     "title": "Welcome back",
-    "subtitle": "Sign in before accessing the operational dashboard.",
+    "subtitle": "Sign in before accessing the operational dashboard or beneficiary area.",
     "heroBadge": "Protected access",
     "heroTitle": "Run the solidarity network from a cleaner, centralized workspace.",
-    "heroDescription": "The dashboard now sits behind a login gate so administrators enter the operation through a consistent entry point.",
+    "heroDescription": "Administrators and beneficiaries now enter through the same protected access point, each with the right experience after login.",
     "metricPrograms": "Programs in operation",
     "metricBeneficiaries": "Tracked beneficiaries",
     "metricDeliveries": "Recent deliveries",

@@ -1,3 +1,4 @@
+import type { AccountType } from '@solidarity-network/shared';
 import type { AdministratorRole } from '@prisma/client';
 
 export interface AuthenticatedUser {
@@ -5,7 +6,8 @@ export interface AuthenticatedUser {
   username: string;
   name: string;
   email: string;
-  role: AdministratorRole;
+  role: AdministratorRole | null;
+  accountType: AccountType;
   mustChangePassword: boolean;
   iat: number;
   exp: number;
@@ -18,7 +20,8 @@ export interface AuthResponse {
     username: string;
     name: string;
     email: string;
-    role: AdministratorRole;
+    role: AdministratorRole | null;
+    accountType: AccountType;
     mustChangePassword: boolean;
   };
 }

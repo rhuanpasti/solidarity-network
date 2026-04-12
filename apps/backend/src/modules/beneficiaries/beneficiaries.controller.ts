@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AccountTypes } from '../auth/auth.decorators';
 import { BeneficiariesService } from './beneficiaries.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { LookupAddressDto } from './dto/lookup-address.dto';
@@ -8,6 +9,7 @@ import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
 import { PostalCodeLookupService } from './postal-code-lookup.service';
 
 @ApiTags('Beneficiaries')
+@AccountTypes('administrator')
 @Controller('beneficiaries')
 export class BeneficiariesController {
   constructor(

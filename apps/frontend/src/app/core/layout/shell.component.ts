@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { AccountType } from '@solidarity-network/shared';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
@@ -21,15 +22,36 @@ export class ShellComponent {
   readonly currentLanguage = computed(() => this.languageService.currentLanguage());
   readonly session = this.authService.currentUser;
   readonly mobileNavigationOpen = signal(false);
+  readonly isAdministrator = computed(
+    () => this.session()?.accountType === AccountType.Administrator,
+  );
 
-  readonly navigationItems = [
-    { path: '/dashboard', labelKey: 'navigation.dashboard', icon: 'space_dashboard' },
-    { path: '/charity-programs', labelKey: 'navigation.charityPrograms', icon: 'layers' },
-    { path: '/administrators', labelKey: 'navigation.administrators', icon: 'manage_accounts' },
-    { path: '/beneficiaries', labelKey: 'navigation.beneficiaries', icon: 'groups' },
-    { path: '/benefits', labelKey: 'navigation.benefits', icon: 'inventory_2' },
-    { path: '/benefit-deliveries', labelKey: 'navigation.benefitDeliveries', icon: 'local_shipping' },
-  ] as const;
+  readonly navigationItems = computed(() =>
+    this.isAdministrator()
+      ? [
+          { path: '/dashboard', labelKey: 'navigation.dashboard', icon: 'space_dashboard' },
+          { path: '/charity-programs', labelKey: 'navigation.charityPrograms', icon: 'layers' },
+          {
+            path: '/administrators',
+            labelKey: 'navigation.administrators',
+            icon: 'manage_accounts',
+          },
+          { path: '/beneficiaries', labelKey: 'navigation.beneficiaries', icon: 'groups' },
+          { path: '/benefits', labelKey: 'navigation.benefits', icon: 'inventory_2' },
+          {
+            path: '/benefit-deliveries',
+            labelKey: 'navigation.benefitDeliveries',
+            icon: 'local_shipping',
+          },
+        ]
+      : [
+          {
+            path: '/my-programs',
+            labelKey: 'navigation.myPrograms',
+            icon: 'event_available',
+          },
+        ],
+  );
 
   setLanguage(language: string) {
     this.languageService.setLanguage(language);

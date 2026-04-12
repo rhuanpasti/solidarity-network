@@ -95,12 +95,19 @@ async function main() {
 
   const beneficiary = await prisma.beneficiary.upsert({
     where: { document: '123.456.789-00' },
-    update: {},
+    update: {
+      email: 'maria.silva@solidarity-network.local',
+      passwordHash: await hashPassword('1234567890123456'),
+      mustChangePassword: true,
+    },
     create: {
       fullName: 'Maria Silva',
       document: '123.456.789-00',
       birthDate: new Date('1990-05-10'),
+      email: 'maria.silva@solidarity-network.local',
       phone: '+55 11 97777-0000',
+      passwordHash: await hashPassword('1234567890123456'),
+      mustChangePassword: true,
       address: {
         street: 'Rua das Flores',
         number: '100',

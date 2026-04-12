@@ -31,6 +31,7 @@ export class BeneficiariesRepository {
               OR: [
                 { fullName: { contains: query.search, mode: 'insensitive' } },
                 { document: { contains: query.search, mode: 'insensitive' } },
+                { email: { contains: query.search, mode: 'insensitive' } },
               ],
             }
           : {}),
@@ -52,6 +53,7 @@ export class BeneficiariesRepository {
               OR: [
                 { fullName: { contains: query.search, mode: 'insensitive' } },
                 { document: { contains: query.search, mode: 'insensitive' } },
+                { email: { contains: query.search, mode: 'insensitive' } },
               ],
             }
           : {}),

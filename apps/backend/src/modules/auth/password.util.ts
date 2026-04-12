@@ -1,4 +1,9 @@
-import { randomBytes, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto';
+import {
+  randomBytes,
+  randomInt,
+  scrypt as nodeScrypt,
+  timingSafeEqual,
+} from 'node:crypto';
 import { promisify } from 'node:util';
 
 const scrypt = promisify(nodeScrypt);
@@ -25,4 +30,8 @@ export async function verifyPassword(password: string, hashedPassword: string) {
   }
 
   return timingSafeEqual(derivedKey, storedKey);
+}
+
+export function generateNumericPasskey(length = 16) {
+  return Array.from({ length }, () => String(randomInt(10))).join('');
 }

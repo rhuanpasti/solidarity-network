@@ -1,0 +1,56 @@
+:host {
+  display: block;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fee7 100%);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  color: #111827;
+}
+
+.stat-card p {
+  margin: 0 0 0.45rem;
+  color: #6b7280;
+}
+
+.portal-grid {
+  align-items: start;
+}
+
+.program-card {
+  padding: 1.25rem;
+  border: 1px solid #dcfce7;
+  border-radius: 1.25rem;
+  background: #f0fdf4;
+}
+
+.program-card strong,
+.program-card p,
+.program-card small {
+  display: block;
+}
+
+.program-card p {
+  margin: 0.6rem 0;
+  color: #4b5563;
+}
+
+.program-card small {
+  color: #15803d;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

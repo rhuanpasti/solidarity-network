@@ -5,8 +5,10 @@ import { CreateCharityProgramDto } from './dto/create-charity-program.dto';
 import { UpdateCharityProgramDto } from './dto/update-charity-program.dto';
 import { UpdateCharityProgramStatusDto } from './dto/update-charity-program-status.dto';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { AccountTypes } from '../auth/auth.decorators';
 
 @ApiTags('Charity Programs')
+@AccountTypes('administrator')
 @Controller('charity-programs')
 export class CharityProgramsController {
   constructor(

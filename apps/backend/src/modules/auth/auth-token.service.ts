@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { AccountType } from '@solidarity-network/shared';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { AuthenticatedUser } from './auth.types';
 
@@ -8,7 +9,8 @@ interface TokenPayloadBase {
   username: string;
   name: string;
   email: string;
-  role: string;
+  role: string | null;
+  accountType: AccountType;
   mustChangePassword: boolean;
 }
 

@@ -85,6 +85,6 @@ export class FirstAccessPage {
     }
 
     this.errorMessage.set(null);
-    void this.router.navigate(['/dashboard']);
+    void this.router.navigateByUrl(this.authService.resolvePostLoginUrl());
   }
 }

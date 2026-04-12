@@ -45,11 +45,12 @@ export class AuthService {
     }
 
     return this.toAuthResponse({
-      sub: credential.administrator.id,
+      sub: credential.id,
       username: credential.username,
-      name: credential.administrator.name,
-      email: credential.administrator.email,
-      role: credential.administrator.role,
+      name: credential.name,
+      email: credential.email,
+      role: credential.role,
+      accountType: credential.accountType,
       mustChangePassword: credential.mustChangePassword,
       iat: 0,
       exp: 0,
@@ -57,11 +58,13 @@ export class AuthService {
   }
 
   async changePassword(
-    administratorId: string,
+    user: AuthenticatedUser,
     dto: ChangePasswordDto,
   ): Promise<AuthResponse> {
-    const credential =
-      await this.repository.findCredentialByAdministratorId(administratorId);
+    const credential = await this.repository.findCredentialByAccount(
+      user.accountType,
+      user.sub,
+    );
 
     if (!credential) {
       throw new UnauthorizedException({
@@ -90,16 +93,18 @@ export class AuthService {
     }
 
     const updatedCredential = await this.repository.updatePassword(
-      administratorId,
+      user.accountType,
+      user.sub,
       await hashPassword(dto.newPassword),
     );
 
     return this.toAuthResponse({
-      sub: updatedCredential.administrator.id,
+      sub: updatedCredential.id,
       username: updatedCredential.username,
-      name: updatedCredential.administrator.name,
-      email: updatedCredential.administrator.email,
-      role: updatedCredential.administrator.role,
+      name: updatedCredential.name,
+      email: updatedCredential.email,
+      role: updatedCredential.role,
+      accountType: updatedCredential.accountType,
       mustChangePassword: updatedCredential.mustChangePassword,
       iat: 0,
       exp: 0,
@@ -115,6 +120,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        accountType: user.accountType,
         mustChangePassword: user.mustChangePassword,
       },
     };

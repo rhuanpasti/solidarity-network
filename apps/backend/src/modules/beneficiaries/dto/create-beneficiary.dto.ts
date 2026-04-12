@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsEmail,
   IsEnum,
   IsOptional,
   IsString,
@@ -26,6 +27,10 @@ export class CreateBeneficiaryDto {
   @IsOptional()
   @IsDateString()
   birthDate?: string;
+
+  @ApiProperty()
+  @IsEmail()
+  email!: string;
 
   @ApiProperty()
   @IsString()

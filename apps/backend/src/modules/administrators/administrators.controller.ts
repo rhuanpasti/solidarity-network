@@ -1,11 +1,13 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { AccountTypes } from '../auth/auth.decorators';
 import { AdministratorsService } from './administrators.service';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 
 @ApiTags('Administrators')
+@AccountTypes('administrator')
 @Controller('administrators')
 export class AdministratorsController {
   constructor(

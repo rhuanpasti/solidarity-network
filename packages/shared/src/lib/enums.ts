@@ -15,6 +15,14 @@ export const AdministratorRole = {
 export type AdministratorRole =
   (typeof AdministratorRole)[keyof typeof AdministratorRole];
 
+export const AccountType = {
+  Administrator: 'administrator',
+  Beneficiary: 'beneficiary',
+} as const;
+
+export type AccountType =
+  (typeof AccountType)[keyof typeof AccountType];
+
 export const BeneficiaryStatus = {
   Active: 'active',
   Inactive: 'inactive',

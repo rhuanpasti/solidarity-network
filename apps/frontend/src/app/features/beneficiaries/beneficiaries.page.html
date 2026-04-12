@@ -55,6 +55,9 @@
               <div>
                 <strong>{{ item.fullName }}</strong>
                 <p>{{ item.document }}</p>
+                @if (item.email) {
+                  <small>{{ item.email }}</small>
+                }
                 <small>{{ item.charityProgram.name }}</small>
               </div>
               <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
@@ -83,11 +86,35 @@
         </div>
       </div>
 
+      @if (generatedCredential(); as credential) {
+        <section class="generated-passkey-card" aria-live="polite">
+          <div>
+            <p class="generated-passkey-card__eyebrow">
+              {{ 'features.beneficiaries.generatedPasskeyEyebrow' | translate }}
+            </p>
+            <strong>{{ credential.fullName }}</strong>
+            <span>{{ credential.email }}</span>
+          </div>
+
+          <div class="generated-passkey-card__secret">
+            <small>{{ 'features.beneficiaries.generatedPasskeyLabel' | translate }}</small>
+            <strong>{{ credential.passkey }}</strong>
+          </div>
+        </section>
+      }
+
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="field-grid">
           <label class="field">
             <span>{{ 'forms.fullName' | translate }}</span>
             <input class="input" type="text" formControlName="fullName" />
+          </label>
+          <label class="field">
+            <span>{{ 'forms.email' | translate }}</span>
+            <input class="input" type="email" formControlName="email" />
+            @if (emailErrorKey(); as errorKey) {
+              <small class="field-error">{{ errorKey | translate }}</small>
+            }
           </label>
           <label class="field">
             <span>{{ 'forms.country' | translate }}</span>

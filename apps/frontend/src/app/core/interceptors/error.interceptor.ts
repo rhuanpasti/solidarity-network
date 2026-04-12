@@ -21,6 +21,11 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
+      if (payload?.code === 'ACCOUNT_TYPE_NOT_ALLOWED') {
+        void router.navigateByUrl(authService.resolveHomeUrl());
+        return throwError(() => error);
+      }
+
       if (payload?.code === 'AUTH_REQUIRED' || payload?.code === 'INVALID_TOKEN') {
         authService.logout();
         void router.navigate(['/login']);

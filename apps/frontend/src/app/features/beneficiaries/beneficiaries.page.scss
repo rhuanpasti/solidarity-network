@@ -1,3 +1,53 @@
 :host {
   display: block;
 }
+
+.generated-passkey-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.generated-passkey-card strong,
+.generated-passkey-card span,
+.generated-passkey-card small {
+  display: block;
+}
+
+.generated-passkey-card__eyebrow {
+  margin: 0 0 0.35rem;
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.generated-passkey-card__secret {
+  text-align: right;
+}
+
+.generated-passkey-card__secret small {
+  margin-bottom: 0.3rem;
+  color: #6b7280;
+}
+
+.generated-passkey-card__secret strong {
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 720px) {
+  .generated-passkey-card {
+    flex-direction: column;
+  }
+
+  .generated-passkey-card__secret {
+    text-align: left;
+  }
+}
