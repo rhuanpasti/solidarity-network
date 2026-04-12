@@ -90,23 +90,37 @@
             <input class="input" type="text" formControlName="fullName" />
           </label>
           <label class="field">
-            <span>{{ 'forms.document' | translate }}</span>
-            <input class="input" type="text" formControlName="document" />
+            <span>{{ 'forms.country' | translate }}</span>
+            <select class="input" [formControl]="form.controls.address.controls.country">
+              @for (country of countryOptions; track country) {
+                <option [value]="country">{{ countryLabelKey(country) | translate }}</option>
+              }
+            </select>
           </label>
         </div>
 
         <div class="field-grid">
+          <label class="field">
+            <span>{{ documentLabelKey() | translate }}</span>
+            <input class="input" type="text" formControlName="document" />
+            @if (documentErrorKey(); as errorKey) {
+              <small class="field-error">{{ errorKey | translate }}</small>
+            }
+          </label>
           <label class="field">
             <span>{{ 'forms.birthDate' | translate }}</span>
             <input class="input" type="date" formControlName="birthDate" />
           </label>
-          <label class="field">
-            <span>{{ 'forms.phone' | translate }}</span>
-            <input class="input" type="text" formControlName="phone" />
-          </label>
         </div>
 
         <div class="field-grid">
+          <label class="field">
+            <span>{{ 'forms.phone' | translate }}</span>
+            <input class="input" type="text" formControlName="phone" />
+            @if (phoneErrorKey(); as errorKey) {
+              <small class="field-error">{{ errorKey | translate }}</small>
+            }
+          </label>
           <label class="field">
             <span>{{ 'forms.charityProgram' | translate }}</span>
             <select class="input" formControlName="charityProgramId">
@@ -128,6 +142,20 @@
 
         <div class="field-grid" formGroupName="address">
           <label class="field">
+            <span>{{ 'forms.postalCode' | translate }}</span>
+            <input
+              class="input"
+              type="text"
+              formControlName="postalCode"
+              (blur)="lookupAddressByPostalCode()"
+            />
+            @if (postalCodeErrorKey(); as errorKey) {
+              <small class="field-error">{{ errorKey | translate }}</small>
+            } @else if (addressLookupMessageKey(); as messageKey) {
+              <small class="field-hint">{{ messageKey | translate }}</small>
+            }
+          </label>
+          <label class="field">
             <span>{{ 'forms.street' | translate }}</span>
             <input class="input" type="text" formControlName="street" />
           </label>
@@ -148,8 +176,8 @@
             <input class="input" type="text" formControlName="state" />
           </label>
           <label class="field">
-            <span>{{ 'forms.postalCode' | translate }}</span>
-            <input class="input" type="text" formControlName="postalCode" />
+            <span>{{ 'forms.complement' | translate }}</span>
+            <input class="input" type="text" formControlName="complement" />
           </label>
         </div>
 

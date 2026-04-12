@@ -1,3 +1,10 @@
+export const BRAZIL_COUNTRY = 'Brazil';
+export const WORLD_COUNTRY = 'World';
+
+export const SUPPORTED_COUNTRIES = [BRAZIL_COUNTRY, WORLD_COUNTRY] as const;
+
+export type SupportedCountry = (typeof SUPPORTED_COUNTRIES)[number];
+
 export interface Address {
   street: string;
   number: string;
@@ -5,7 +12,6 @@ export interface Address {
   city: string;
   state: string;
   postalCode: string;
-  country: string;
+  country: SupportedCountry;
   complement?: string;
 }
-

@@ -201,6 +201,20 @@ textarea {
   font-size: 0.92rem;
 }
 
+.field-error,
+.field-hint {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.field-error {
+  color: var(--danger);
+}
+
+.field-hint {
+  color: var(--text-muted);
+}
+
 .input {
   width: 100%;
   min-height: 3.15rem;

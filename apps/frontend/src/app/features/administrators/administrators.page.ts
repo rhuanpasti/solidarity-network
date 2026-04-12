@@ -6,6 +6,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { genericPhoneValidator } from '../../shared/utils/validation.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -38,7 +39,7 @@ export class AdministratorsPage implements OnInit {
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.maxLength(30)]],
+    phone: ['', [Validators.required, Validators.maxLength(30), genericPhoneValidator()]],
     role: this.formBuilder.nonNullable.control<AdministratorRole>(
       AdministratorRole.ProgramManager,
       {
@@ -102,5 +103,14 @@ export class AdministratorsPage implements OnInit {
       this.resetForm();
       this.load();
     });
+  }
+
+  hasError(controlName: 'email' | 'phone', errorCode?: string) {
+    const control = this.form.controls[controlName];
+    if (!control.invalid || (!control.touched && !control.dirty)) {
+      return false;
+    }
+
+    return errorCode ? control.hasError(errorCode) : true;
   }
 }

@@ -52,6 +52,11 @@
           <label class="field">
             <span>{{ 'forms.email' | translate }}</span>
             <input class="input" type="email" formControlName="email" />
+            @if (hasError('email', 'required')) {
+              <small class="field-error">{{ 'validation.required' | translate }}</small>
+            } @else if (hasError('email', 'email')) {
+              <small class="field-error">{{ 'validation.invalidEmail' | translate }}</small>
+            }
           </label>
         </div>
 
@@ -59,6 +64,11 @@
           <label class="field">
             <span>{{ 'forms.phone' | translate }}</span>
             <input class="input" type="text" formControlName="phone" />
+            @if (hasError('phone', 'required')) {
+              <small class="field-error">{{ 'validation.required' | translate }}</small>
+            } @else if (hasError('phone', 'phone')) {
+              <small class="field-error">{{ 'validation.invalidPhone' | translate }}</small>
+            }
           </label>
 
           <label class="field">

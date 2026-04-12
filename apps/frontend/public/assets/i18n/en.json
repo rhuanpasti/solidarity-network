@@ -36,11 +36,13 @@
     "status": "Status",
     "email": "Email",
     "phone": "Phone",
+    "country": "Country",
     "role": "Role",
     "charityPrograms": "Linked programs",
     "charityProgram": "Charity program",
     "fullName": "Full name",
     "document": "Document",
+    "cpf": "CPF",
     "birthDate": "Birth date",
     "street": "Street",
     "number": "Number",
@@ -48,6 +50,7 @@
     "city": "City",
     "state": "State",
     "postalCode": "Postal code",
+    "complement": "Complement",
     "notes": "Notes",
     "category": "Category",
     "active": "Active",
@@ -78,6 +81,21 @@
       "medicine": "Medicine",
       "other": "Other"
     }
+  },
+  "countries": {
+    "brazil": "Brazil",
+    "world": "World"
+  },
+  "validation": {
+    "required": "Fill in this field.",
+    "invalidEmail": "Enter a valid email.",
+    "invalidPhone": "Enter a valid phone number.",
+    "invalidBrazilianPhone": "Enter a valid Brazilian phone number.",
+    "invalidCpf": "Enter a valid CPF.",
+    "invalidPostalCode": "Enter a valid postal code.",
+    "searchingPostalCode": "Looking up the address by postal code...",
+    "addressAutoFilled": "Address filled automatically from the postal code.",
+    "postalCodeLookupFailed": "Unable to find an address for this postal code."
   },
   "features": {
     "dashboard": {

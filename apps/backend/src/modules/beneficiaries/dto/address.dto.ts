@@ -1,6 +1,10 @@
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { Address } from '@solidarity-network/shared';
+import {
+  SUPPORTED_COUNTRIES,
+  type SupportedCountry,
+  type Address,
+} from '@solidarity-network/shared';
 
 export class AddressDto implements Address {
   @ApiProperty()
@@ -33,10 +37,10 @@ export class AddressDto implements Address {
   @MaxLength(20)
   postalCode!: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: SUPPORTED_COUNTRIES })
   @IsString()
   @MaxLength(80)
-  country!: string;
+  country!: SupportedCountry;
 
   @ApiPropertyOptional()
   @IsOptional()

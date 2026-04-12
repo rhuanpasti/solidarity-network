@@ -36,11 +36,13 @@
     "status": "Status",
     "email": "Email",
     "phone": "Telefone",
+    "country": "Pais",
     "role": "Perfil",
     "charityPrograms": "Programas vinculados",
     "charityProgram": "Programa social",
     "fullName": "Nome completo",
     "document": "Documento",
+    "cpf": "CPF",
     "birthDate": "Data de nascimento",
     "street": "Rua",
     "number": "Numero",
@@ -48,6 +50,7 @@
     "city": "Cidade",
     "state": "Estado",
     "postalCode": "CEP",
+    "complement": "Complemento",
     "notes": "Observacoes",
     "category": "Categoria",
     "active": "Ativo",
@@ -78,6 +81,21 @@
       "medicine": "Medicamento",
       "other": "Outro"
     }
+  },
+  "countries": {
+    "brazil": "Brasil",
+    "world": "World"
+  },
+  "validation": {
+    "required": "Preencha este campo.",
+    "invalidEmail": "Informe um email valido.",
+    "invalidPhone": "Informe um telefone valido.",
+    "invalidBrazilianPhone": "Informe um telefone brasileiro valido.",
+    "invalidCpf": "Informe um CPF valido.",
+    "invalidPostalCode": "Informe um CEP valido.",
+    "searchingPostalCode": "Buscando endereco pelo CEP...",
+    "addressAutoFilled": "Endereco preenchido automaticamente pelo CEP.",
+    "postalCodeLookupFailed": "Nao foi possivel localizar o endereco pelo CEP."
   },
   "features": {
     "dashboard": {

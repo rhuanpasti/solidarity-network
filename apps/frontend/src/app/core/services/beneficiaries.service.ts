@@ -19,6 +19,8 @@ export interface BeneficiaryPayload {
   status: 'active' | 'inactive' | 'archived';
 }
 
+export interface BeneficiaryAddressLookupResponse extends Partial<Address> {}
+
 @Injectable({ providedIn: 'root' })
 export class BeneficiariesService {
   private readonly httpClient = inject(HttpClient);
@@ -42,5 +44,12 @@ export class BeneficiariesService {
 
   update(id: string, payload: Partial<BeneficiaryPayload>) {
     return this.httpClient.patch<BeneficiarySummary>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  lookupAddress(postalCode: string) {
+    const params = new HttpParams().set('postalCode', postalCode);
+    return this.httpClient.get<BeneficiaryAddressLookupResponse>(`${this.baseUrl}/address-lookup`, {
+      params,
+    });
   }
 }

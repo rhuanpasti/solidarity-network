@@ -1,6 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
+  Address,
   BeneficiarySummary,
   PaginatedResponse,
 } from '@solidarity-network/shared';
@@ -9,6 +10,10 @@ import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto'
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
+import {
+  getBeneficiaryValidationErrors,
+  normalizeBeneficiaryInput,
+} from './beneficiary-validation';
 import { toBeneficiarySummary } from './beneficiaries.mapper';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
@@ -25,12 +30,19 @@ export class BeneficiariesService {
 
   async create(dto: CreateBeneficiaryDto): Promise<BeneficiarySummary> {
     await this.assertProgramExists(dto.charityProgramId);
+    const normalizedInput = normalizeBeneficiaryInput({
+      document: dto.document,
+      phone: dto.phone,
+      address: dto.address,
+    });
+    this.assertValidBeneficiaryInput(normalizedInput);
+
     const beneficiary = await this.repository.create({
       fullName: dto.fullName,
-      document: dto.document,
+      document: normalizedInput.document,
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-      phone: dto.phone,
-      address: dto.address as unknown as Prisma.InputJsonValue,
+      phone: normalizedInput.phone,
+      address: normalizedInput.address as unknown as Prisma.InputJsonValue,
       notes: dto.notes,
       charityProgramId: dto.charityProgramId,
       status: dto.status ?? 'active',
@@ -78,12 +90,25 @@ export class BeneficiariesService {
       await this.assertProgramExists(dto.charityProgramId);
     }
 
+    const mergedAddress = {
+      ...(existingBeneficiary.address as unknown as Address),
+      ...(dto.address ?? {}),
+    };
+    const normalizedInput = normalizeBeneficiaryInput({
+      document: dto.document ?? existingBeneficiary.document,
+      phone: dto.phone ?? existingBeneficiary.phone,
+      address: mergedAddress,
+    });
+    this.assertValidBeneficiaryInput(normalizedInput);
+
     const beneficiary = await this.repository.update(id, {
       fullName: dto.fullName,
-      document: dto.document,
+      document: dto.document ? normalizedInput.document : undefined,
       birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-      phone: dto.phone,
-      address: dto.address as unknown as Prisma.InputJsonValue,
+      phone: dto.phone ? normalizedInput.phone : undefined,
+      address: dto.address
+        ? (normalizedInput.address as unknown as Prisma.InputJsonValue)
+        : undefined,
       notes: dto.notes,
       charityProgramId: dto.charityProgramId,
       status: dto.status,
@@ -98,5 +123,23 @@ export class BeneficiariesService {
     if (!program) {
       throw new DomainNotFoundException('charity_program', charityProgramId);
     }
+  }
+
+  private assertValidBeneficiaryInput(input: {
+    document: string;
+    phone: string;
+    address: Address;
+  }) {
+    const errors = getBeneficiaryValidationErrors(input);
+
+    if (!errors.length) {
+      return;
+    }
+
+    throw new BadRequestException({
+      code: 'INVALID_BENEFICIARY_DATA',
+      message: errors[0],
+      details: errors,
+    });
   }
 }
