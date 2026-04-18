@@ -65,6 +65,7 @@ export class BenefitDeliveriesPage implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly deliveries = signal<BenefitDeliverySummary[]>([]);
+  readonly selectedDelivery = signal<BenefitDeliverySummary | null>(null);
   readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly filterBeneficiaries = signal<BeneficiarySummary[]>([]);
@@ -191,6 +192,23 @@ export class BenefitDeliveriesPage implements OnInit {
     });
   }
 
+  selectDelivery(delivery: BenefitDeliverySummary) {
+    this.selectedDelivery.set(delivery);
+  }
+
+  startCreate() {
+    this.selectedDelivery.set(null);
+    this.form.reset({
+      beneficiaryId: '',
+      benefitId: '',
+      charityProgramId: '',
+      quantity: 1,
+      deliveryDate: new Date().toISOString().slice(0, 10),
+      notes: '',
+      reference: '',
+    });
+  }
+
   submit() {
     if (this.submitPending()) {
       return;
@@ -220,15 +238,7 @@ export class BenefitDeliveriesPage implements OnInit {
             type: 'success',
             text: 'Delivery registered successfully.',
           });
-          this.form.patchValue({
-            beneficiaryId: '',
-            benefitId: '',
-            charityProgramId: '',
-            quantity: 1,
-            deliveryDate: new Date().toISOString().slice(0, 10),
-            notes: '',
-            reference: '',
-          });
+          this.startCreate();
           this.load();
         },
         error: (error) => {

@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   AdministratorRole,
+  type PaginationMeta,
   type AdministratorSummary,
   type CharityProgramSummary,
 } from '@solidarity-network/shared';
@@ -28,6 +29,16 @@ interface GeneratedAdministratorCredential {
   email: string;
   passkey: string;
 }
+
+type AdministratorFormMode = 'create' | 'view' | 'edit';
+
+const DEFAULT_PAGE_SIZE = 10;
+const EMPTY_PAGINATION_META: PaginationMeta = {
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  totalItems: 0,
+  totalPages: 1,
+};
 
 @Component({
   selector: 'app-administrators-page',
@@ -55,10 +66,15 @@ export class AdministratorsPage implements OnInit {
 
   readonly items = signal<AdministratorSummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
+  readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
   readonly selected = signal<AdministratorSummary | null>(null);
+  readonly mode = signal<AdministratorFormMode>('create');
   readonly generatedCredential = signal<GeneratedAdministratorCredential | null>(null);
   readonly showControlError = shouldShowControlError;
   readonly isSubmitting = signal(false);
+  readonly isReadOnly = signal(false);
+  readonly pageSizes = [10, 25, 50];
+  readonly listLoading = signal(false);
   readonly canCreateAdministrators = computed(() => {
     const session = this.authService.session();
 
@@ -66,6 +82,10 @@ export class AdministratorsPage implements OnInit {
       session?.accountType === 'administrator' &&
       session.role === AdministratorRole.SuperAdmin
     );
+  });
+
+  readonly filterForm = this.formBuilder.nonNullable.group({
+    pageSize: [DEFAULT_PAGE_SIZE],
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -89,13 +109,47 @@ export class AdministratorsPage implements OnInit {
   }
 
   load() {
+    this.listLoading.set(true);
     this.administratorsService
-      .list({ pageSize: 100 })
-      .subscribe((response) => this.items.set(response.items));
+      .list({
+        page: this.pagination().page,
+        pageSize: this.filterForm.controls.pageSize.value,
+      })
+      .subscribe({
+        next: (response) => {
+          this.listLoading.set(false);
+          this.items.set(response.items);
+          this.pagination.set(response.meta);
+        },
+        error: () => {
+          this.listLoading.set(false);
+        },
+      });
+  }
+
+  changePage(page: number) {
+    const pagination = this.pagination();
+
+    if (page < 1 || page > pagination.totalPages || page === pagination.page) {
+      return;
+    }
+
+    this.pagination.update((current) => ({ ...current, page }));
+    this.load();
+  }
+
+  changePageSize(pageSize: string) {
+    this.pagination.update((current) => ({
+      ...current,
+      page: 1,
+      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
+    }));
+    this.load();
   }
 
   select(item: AdministratorSummary) {
     this.selected.set(item);
+    this.mode.set('view');
     this.generatedCredential.set(null);
     this.form.reset({
       name: item.name,
@@ -104,10 +158,12 @@ export class AdministratorsPage implements OnInit {
       role: item.role,
       charityProgramIds: item.charityPrograms.map((program) => program.id),
     });
+    this.setFormReadOnly(true);
   }
 
-  resetForm() {
+  startCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.generatedCredential.set(null);
     this.form.reset({
       name: '',
@@ -116,6 +172,27 @@ export class AdministratorsPage implements OnInit {
       role: AdministratorRole.ProgramManager,
       charityProgramIds: [],
     });
+    this.setFormReadOnly(false);
+  }
+
+  startEditing() {
+    if (!this.selected()) {
+      return;
+    }
+
+    this.mode.set('edit');
+    this.setFormReadOnly(false);
+  }
+
+  cancel() {
+    const selected = this.selected();
+
+    if (selected) {
+      this.select(selected);
+      return;
+    }
+
+    this.startCreate();
   }
 
   updatePrograms(event: Event) {
@@ -126,7 +203,7 @@ export class AdministratorsPage implements OnInit {
   }
 
   submit() {
-    if (this.isSubmitting()) {
+    if (this.isSubmitting() || this.isReadOnly()) {
       return;
     }
 
@@ -148,7 +225,7 @@ export class AdministratorsPage implements OnInit {
         next: () => {
           this.isSubmitting.set(false);
           this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-          this.resetForm();
+          this.startCreate();
           this.load();
         },
         error: (error) => {
@@ -185,6 +262,7 @@ export class AdministratorsPage implements OnInit {
 
   private resetFormForNextCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.form.reset({
       name: '',
       email: '',
@@ -192,5 +270,17 @@ export class AdministratorsPage implements OnInit {
       role: AdministratorRole.ProgramManager,
       charityProgramIds: [],
     });
+    this.setFormReadOnly(false);
+  }
+
+  private setFormReadOnly(readOnly: boolean) {
+    this.isReadOnly.set(readOnly);
+
+    if (readOnly) {
+      this.form.disable({ emitEvent: false });
+      return;
+    }
+
+    this.form.enable({ emitEvent: false });
   }
 }

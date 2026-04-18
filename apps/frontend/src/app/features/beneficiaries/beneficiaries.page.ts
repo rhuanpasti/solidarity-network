@@ -40,6 +40,8 @@ interface GeneratedCredentialInfo {
   passkey: string;
 }
 
+type BeneficiaryFormMode = 'create' | 'view' | 'edit';
+
 const DEFAULT_PAGE_SIZE = 10;
 const PROGRAM_OPTIONS_PAGE_SIZE = 100;
 const EMPTY_PAGINATION_META: PaginationMeta = {
@@ -79,12 +81,14 @@ export class BeneficiariesPage implements OnInit {
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
   readonly selected = signal<BeneficiarySummary | null>(null);
+  readonly mode = signal<BeneficiaryFormMode>('create');
   readonly generatedCredential = signal<GeneratedCredentialInfo | null>(null);
   readonly selectedCountry = signal<SupportedCountry>(BRAZIL_COUNTRY);
   readonly addressLookupPending = signal(false);
   readonly addressLookupMessageKey = signal<string | null>(null);
   readonly listLoading = signal(false);
   readonly submitPending = signal(false);
+  readonly isReadOnly = signal(false);
   readonly showControlError = shouldShowControlError;
   readonly isBrazilSelected = computed(() => isBrazilCountry(this.selectedCountry()));
   readonly documentLabelKey = computed(() =>
@@ -213,6 +217,7 @@ export class BeneficiariesPage implements OnInit {
 
   select(item: BeneficiarySummary) {
     this.selected.set(item);
+    this.mode.set('view');
     this.form.reset({
       fullName: item.fullName,
       document: item.document,
@@ -235,10 +240,12 @@ export class BeneficiariesPage implements OnInit {
     });
     this.generatedCredential.set(null);
     this.addressLookupMessageKey.set(null);
+    this.setFormReadOnly(true);
   }
 
-  resetForm() {
+  startCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.form.reset({
       fullName: '',
       document: '',
@@ -261,10 +268,31 @@ export class BeneficiariesPage implements OnInit {
     });
     this.generatedCredential.set(null);
     this.addressLookupMessageKey.set(null);
+    this.setFormReadOnly(false);
+  }
+
+  startEditing() {
+    if (!this.selected()) {
+      return;
+    }
+
+    this.mode.set('edit');
+    this.setFormReadOnly(false);
+  }
+
+  cancel() {
+    const selected = this.selected();
+
+    if (selected) {
+      this.select(selected);
+      return;
+    }
+
+    this.startCreate();
   }
 
   submit() {
-    if (this.submitPending()) {
+    if (this.submitPending() || this.isReadOnly()) {
       return;
     }
 
@@ -291,7 +319,7 @@ export class BeneficiariesPage implements OnInit {
         next: () => {
           this.submitPending.set(false);
           this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-          this.resetForm();
+          this.startCreate();
           this.load();
         },
         error: (error) => {
@@ -390,6 +418,7 @@ export class BeneficiariesPage implements OnInit {
 
   private resetFormForNextCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.form.reset({
       fullName: '',
       document: '',
@@ -411,6 +440,7 @@ export class BeneficiariesPage implements OnInit {
       },
     });
     this.addressLookupMessageKey.set(null);
+    this.setFormReadOnly(false);
   }
 
   private applyCountryValidators(country: SupportedCountry) {
@@ -433,6 +463,17 @@ export class BeneficiariesPage implements OnInit {
     this.form.controls.address.controls.postalCode.updateValueAndValidity({
       emitEvent: false,
     });
+  }
+
+  private setFormReadOnly(readOnly: boolean) {
+    this.isReadOnly.set(readOnly);
+
+    if (readOnly) {
+      this.form.disable({ emitEvent: false });
+      return;
+    }
+
+    this.form.enable({ emitEvent: false });
   }
 
 }

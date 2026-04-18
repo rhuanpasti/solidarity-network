@@ -7,6 +7,21 @@
 
   <div class="content-grid">
     <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>{{ 'features.charityPrograms.title' | translate }}</h3>
+          <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
+        </div>
+        <app-button
+          type="button"
+          variant="secondary"
+          [disabled]="isSubmitting() || !canCreatePrograms()"
+          (click)="startCreate()"
+        >
+          {{ 'common.add' | translate }}
+        </app-button>
+      </div>
+
       <form class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
         <input
           formControlName="search"
@@ -14,10 +29,19 @@
           class="input"
           [placeholder]="'common.searchPlaceholder' | translate"
         />
+        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+          @for (size of pageSizes; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
         <app-button type="submit" variant="secondary">
           {{ 'common.search' | translate }}
         </app-button>
       </form>
+
+      @if (listLoading()) {
+        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
+      }
 
       @if (items().length) {
         <div class="list">
@@ -37,6 +61,27 @@
               </div>
             </button>
           }
+        </div>
+        <div class="pagination">
+          <p>
+            {{
+              'common.paginationSummary'
+                | translate
+                  : {
+                      page: pagination().page,
+                      totalPages: pagination().totalPages,
+                      totalItems: pagination().totalItems
+                    }
+            }}
+          </p>
+          <div class="pagination-actions">
+            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
+              {{ 'common.previous' | translate }}
+            </app-button>
+            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
+              {{ 'common.next' | translate }}
+            </app-button>
+          </div>
         </div>
       } @else {
         <app-empty-state
@@ -64,16 +109,27 @@
           }
         </div>
         @if (selected(); as selectedProgram) {
-          <app-button
-            type="button"
-            variant="ghost"
-            [disabled]="isSubmitting()"
-            (click)="toggleStatus(selectedProgram)"
-          >
-            {{ 'features.charityPrograms.toggleStatus' | translate }}
-          </app-button>
+          @if (isReadOnly()) {
+            <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="startEditing()">
+              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+              {{ 'common.edit' | translate }}
+            </app-button>
+          } @else {
+            <app-button
+              type="button"
+              variant="ghost"
+              [disabled]="isSubmitting()"
+              (click)="toggleStatus(selectedProgram)"
+            >
+              {{ 'features.charityPrograms.toggleStatus' | translate }}
+            </app-button>
+          }
         }
       </div>
+
+      @if (isReadOnly()) {
+        <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
+      }
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <app-input-field
@@ -83,6 +139,7 @@
             ['required', 'validation.required'],
             ['maxlength', 'validation.maxLength']
           ]"
+          [readonly]="isReadOnly()"
         />
 
         <app-input-field
@@ -93,6 +150,7 @@
             ['maxlength', 'validation.maxLength']
           ]"
           [textarea]="true"
+          [readonly]="isReadOnly()"
         />
 
         <label class="field">
@@ -102,6 +160,7 @@
             [class.input-invalid]="showControlError(form.controls.status)"
             formControlName="status"
             [attr.aria-invalid]="showControlError(form.controls.status)"
+            [disabled]="isReadOnly()"
           >
             <option [value]="CharityProgramStatus.Active">{{ 'common.active' | translate }}</option>
             <option [value]="CharityProgramStatus.Inactive">{{ 'common.inactive' | translate }}</option>
@@ -113,16 +172,18 @@
         </label>
 
         <div class="actions">
-          <app-button
-            type="submit"
-            variant="primary"
-            [disabled]="!selected() && !canCreatePrograms()"
-            [loading]="isSubmitting()"
-          >
-            {{ 'common.save' | translate }}
-          </app-button>
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
-            {{ 'common.clear' | translate }}
+          @if (!isReadOnly()) {
+            <app-button
+              type="submit"
+              variant="primary"
+              [disabled]="!selected() && !canCreatePrograms()"
+              [loading]="isSubmitting()"
+            >
+              {{ 'common.save' | translate }}
+            </app-button>
+          }
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancel()">
+            {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>

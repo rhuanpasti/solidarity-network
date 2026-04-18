@@ -22,6 +22,9 @@
     "search": "Search",
     "searchPlaceholder": "Search by name, description, or document",
     "searchWorkspace": "Search programs, beneficiaries, or deliveries",
+    "add": "Add",
+    "edit": "Edit",
+    "cancel": "Cancel",
     "save": "Save",
     "clear": "Clear",
     "active": "Active",
@@ -36,6 +39,7 @@
     "pageSize": "Rows per page",
     "loading": "Loading",
     "loadingDescription": "Please wait while the data is being updated.",
+    "readOnlyDetails": "Fields are locked. Click edit to enable changes.",
     "paginationSummary": "Page {{page}} of {{totalPages}} · {{totalItems}} total"
   },
   "forms": {
@@ -207,6 +211,8 @@
       "emptyTitle": "No deliveries found",
       "emptyDescription": "Register a new delivery to build your audit trail.",
       "registerTitle": "Register delivery",
+      "detailTitle": "Delivery details",
+      "detailDescription": "Review the recorded information for this delivery.",
       "formDescription": "Use program-linked selections to avoid inconsistent records."
     }
   },

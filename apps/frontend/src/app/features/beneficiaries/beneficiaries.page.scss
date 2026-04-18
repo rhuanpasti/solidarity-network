@@ -73,6 +73,11 @@
   letter-spacing: 0.12em;
 }
 
+.form-readonly-note {
+  margin: 0 0 1rem;
+  color: #475569;
+}
+
 @media (max-width: 720px) {
   .pagination {
     flex-direction: column;

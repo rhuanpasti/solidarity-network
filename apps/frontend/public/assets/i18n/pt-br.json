@@ -22,6 +22,9 @@
     "search": "Buscar",
     "searchPlaceholder": "Busque por nome, descricao ou documento",
     "searchWorkspace": "Busque programas, beneficiados ou entregas",
+    "add": "Adicionar",
+    "edit": "Editar",
+    "cancel": "Cancelar",
     "save": "Salvar",
     "clear": "Limpar",
     "active": "Ativo",
@@ -36,6 +39,7 @@
     "pageSize": "Linhas por pagina",
     "loading": "Carregando",
     "loadingDescription": "Aguarde enquanto os dados sao atualizados.",
+    "readOnlyDetails": "Os campos estao bloqueados. Clique em editar para habilitar a alteracao.",
     "paginationSummary": "Pagina {{page}} de {{totalPages}} · {{totalItems}} no total"
   },
   "forms": {
@@ -207,6 +211,8 @@
       "emptyTitle": "Nenhuma entrega encontrada",
       "emptyDescription": "Registre uma nova entrega para construir sua trilha de auditoria.",
       "registerTitle": "Registrar entrega",
+      "detailTitle": "Detalhes da entrega",
+      "detailDescription": "Consulte os dados registrados para essa entrega.",
       "formDescription": "Use selecoes vinculadas ao programa para evitar registros inconsistentes."
     }
   },

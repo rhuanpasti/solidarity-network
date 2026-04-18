@@ -13,6 +13,8 @@ import { BenefitsService } from '../../core/services/benefits.service';
 import { ToastService } from '../../core/services/toast.service';
 import { applyServerValidationErrors, clearServerValidationErrors } from '../../shared/utils/form.utils';
 
+type BenefitFormMode = 'create' | 'view' | 'edit';
+
 @Component({
   selector: 'app-benefits-page',
   standalone: true,
@@ -38,8 +40,10 @@ export class BenefitsPage implements OnInit {
 
   readonly items = signal<BenefitSummary[]>([]);
   readonly selected = signal<BenefitSummary | null>(null);
+  readonly mode = signal<BenefitFormMode>('create');
   readonly showControlError = shouldShowControlError;
   readonly isSubmitting = signal(false);
+  readonly isReadOnly = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -60,26 +64,50 @@ export class BenefitsPage implements OnInit {
 
   select(item: BenefitSummary) {
     this.selected.set(item);
+    this.mode.set('view');
     this.form.reset({
       name: item.name,
       description: item.description,
       category: item.category,
       active: item.active,
     });
+    this.setFormReadOnly(true);
   }
 
-  resetForm() {
+  startCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.form.reset({
       name: '',
       description: '',
       category: BenefitCategory.Food,
       active: true,
     });
+    this.setFormReadOnly(false);
+  }
+
+  startEditing() {
+    if (!this.selected()) {
+      return;
+    }
+
+    this.mode.set('edit');
+    this.setFormReadOnly(false);
+  }
+
+  cancel() {
+    const selected = this.selected();
+
+    if (selected) {
+      this.select(selected);
+      return;
+    }
+
+    this.startCreate();
   }
 
   submit() {
-    if (this.isSubmitting()) {
+    if (this.isSubmitting() || this.isReadOnly()) {
       return;
     }
 
@@ -103,7 +131,7 @@ export class BenefitsPage implements OnInit {
       next: () => {
         this.isSubmitting.set(false);
         this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-        this.resetForm();
+        this.startCreate();
         this.load();
       },
       error: (error) => {
@@ -115,5 +143,16 @@ export class BenefitsPage implements OnInit {
 
   toggleStatus(item: BenefitSummary) {
     this.benefitsService.updateStatus(item.id, !item.active).subscribe(() => this.load());
+  }
+
+  private setFormReadOnly(readOnly: boolean) {
+    this.isReadOnly.set(readOnly);
+
+    if (readOnly) {
+      this.form.disable({ emitEvent: false });
+      return;
+    }
+
+    this.form.enable({ emitEvent: false });
   }
 }

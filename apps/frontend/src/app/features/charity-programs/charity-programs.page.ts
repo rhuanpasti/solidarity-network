@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   AdministratorRole,
   CharityProgramStatus,
+  type PaginationMeta,
   type CharityProgramSummary,
 } from '@solidarity-network/shared';
 import { AuthService } from '../../core/auth/auth.service';
@@ -22,6 +23,16 @@ import {
 } from '../../shared/utils/form.utils';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
+
+type CharityProgramFormMode = 'create' | 'view' | 'edit';
+
+const DEFAULT_PAGE_SIZE = 10;
+const EMPTY_PAGINATION_META: PaginationMeta = {
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  totalItems: 0,
+  totalPages: 1,
+};
 
 @Component({
   selector: 'app-charity-programs-page',
@@ -49,9 +60,14 @@ export class CharityProgramsPage implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly items = signal<CharityProgramSummary[]>([]);
+  readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
   readonly selected = signal<CharityProgramSummary | null>(null);
+  readonly mode = signal<CharityProgramFormMode>('create');
   readonly showControlError = shouldShowControlError;
   readonly isSubmitting = signal(false);
+  readonly isReadOnly = signal(false);
+  readonly pageSizes = [10, 25, 50];
+  readonly listLoading = signal(false);
   readonly canCreatePrograms = computed(() => {
     const session = this.authService.session();
 
@@ -63,6 +79,7 @@ export class CharityProgramsPage implements OnInit {
 
   readonly filterForm = this.formBuilder.nonNullable.group({
     search: [''],
+    pageSize: [DEFAULT_PAGE_SIZE],
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -81,35 +98,94 @@ export class CharityProgramsPage implements OnInit {
   }
 
   load() {
+    this.listLoading.set(true);
     this.charityProgramsService
-      .list({ search: this.filterForm.controls.search.value, pageSize: 100 })
-      .subscribe((response) => this.items.set(response.items));
+      .list({
+        search: this.filterForm.controls.search.value,
+        page: this.pagination().page,
+        pageSize: this.filterForm.controls.pageSize.value,
+      })
+      .subscribe({
+        next: (response) => {
+          this.listLoading.set(false);
+          this.items.set(response.items);
+          this.pagination.set(response.meta);
+        },
+        error: () => {
+          this.listLoading.set(false);
+        },
+      });
   }
 
   searchPrograms() {
+    this.pagination.update((current) => ({ ...current, page: 1 }));
+    this.load();
+  }
+
+  changePage(page: number) {
+    const pagination = this.pagination();
+
+    if (page < 1 || page > pagination.totalPages || page === pagination.page) {
+      return;
+    }
+
+    this.pagination.update((current) => ({ ...current, page }));
+    this.load();
+  }
+
+  changePageSize(pageSize: string) {
+    this.pagination.update((current) => ({
+      ...current,
+      page: 1,
+      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
+    }));
     this.load();
   }
 
   select(program: CharityProgramSummary) {
     this.selected.set(program);
+    this.mode.set('view');
     this.form.reset({
       name: program.name,
       description: program.description,
       status: program.status,
     });
+    this.setFormReadOnly(true);
   }
 
-  resetForm() {
+  startCreate() {
     this.selected.set(null);
+    this.mode.set('create');
     this.form.reset({
       name: '',
       description: '',
       status: CharityProgramStatus.Active,
     });
+    this.setFormReadOnly(false);
+  }
+
+  startEditing() {
+    if (!this.selected()) {
+      return;
+    }
+
+    this.mode.set('edit');
+    this.setFormReadOnly(false);
+  }
+
+  cancel() {
+    const selected = this.selected();
+
+    if (selected) {
+      this.select(selected);
+      return;
+    }
+
+    this.startCreate();
   }
 
   submit() {
-    if (this.isSubmitting()) {
+    if (this.isSubmitting() || this.isReadOnly()) {
       return;
     }
 
@@ -137,7 +213,7 @@ export class CharityProgramsPage implements OnInit {
       next: () => {
         this.isSubmitting.set(false);
         this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-        this.resetForm();
+        this.startCreate();
         this.load();
       },
       error: (error) => {
@@ -154,5 +230,16 @@ export class CharityProgramsPage implements OnInit {
         : CharityProgramStatus.Active;
 
     this.charityProgramsService.updateStatus(program.id, nextStatus).subscribe(() => this.load());
+  }
+
+  private setFormReadOnly(readOnly: boolean) {
+    this.isReadOnly.set(readOnly);
+
+    if (readOnly) {
+      this.form.disable({ emitEvent: false });
+      return;
+    }
+
+    this.form.enable({ emitEvent: false });
   }
 }

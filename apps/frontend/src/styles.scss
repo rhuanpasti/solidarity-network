@@ -225,6 +225,19 @@ textarea {
   color: var(--text);
 }
 
+.input:disabled,
+textarea:disabled,
+select:disabled,
+button:disabled {
+  cursor: not-allowed;
+}
+
+.input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.72;
+}
+
 .input.input-invalid {
   border-color: rgba(185, 28, 28, 0.45);
   background: #fef2f2;

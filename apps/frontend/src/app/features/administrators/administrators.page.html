@@ -7,6 +7,36 @@
 
   <div class="content-grid">
     <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>{{ 'features.administrators.title' | translate }}</h3>
+          <p>{{ 'features.administrators.formDescription' | translate }}</p>
+        </div>
+        <app-button
+          type="button"
+          variant="secondary"
+          [disabled]="isSubmitting() || !canCreateAdministrators()"
+          (click)="startCreate()"
+        >
+          {{ 'common.add' | translate }}
+        </app-button>
+      </div>
+
+      <form class="panel-toolbar" [formGroup]="filterForm">
+        <label class="field">
+          <span>{{ 'common.pageSize' | translate }}</span>
+          <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+            @for (size of pageSizes; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+      </form>
+
+      @if (listLoading()) {
+        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
+      }
+
       @if (items().length) {
         <div class="list">
           @for (item of items(); track item.id) {
@@ -19,6 +49,27 @@
               <span>{{ item.charityPrograms.length }}</span>
             </button>
           }
+        </div>
+        <div class="pagination">
+          <p>
+            {{
+              'common.paginationSummary'
+                | translate
+                  : {
+                      page: pagination().page,
+                      totalPages: pagination().totalPages,
+                      totalItems: pagination().totalItems
+                    }
+            }}
+          </p>
+          <div class="pagination-actions">
+            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
+              {{ 'common.previous' | translate }}
+            </app-button>
+            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
+              {{ 'common.next' | translate }}
+            </app-button>
+          </div>
         </div>
       } @else {
         <app-empty-state
@@ -45,7 +96,17 @@
             </small>
           }
         </div>
+        @if (selected() && isReadOnly()) {
+          <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="startEditing()">
+            <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+            {{ 'common.edit' | translate }}
+          </app-button>
+        }
       </div>
+
+      @if (isReadOnly()) {
+        <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
+      }
 
       @if (generatedCredential(); as credential) {
         <section class="generated-passkey-card" aria-live="polite">
@@ -73,6 +134,7 @@
               ['required', 'validation.required'],
               ['maxlength', 'validation.maxLength']
             ]"
+            [readonly]="isReadOnly()"
           />
 
           <app-input-field
@@ -83,6 +145,7 @@
               ['required', 'validation.required'],
               ['email', 'validation.invalidEmail']
             ]"
+            [readonly]="isReadOnly()"
           />
         </div>
 
@@ -95,6 +158,7 @@
               ['phone', 'validation.invalidPhone'],
               ['maxlength', 'validation.maxLength']
             ]"
+            [readonly]="isReadOnly()"
           />
 
           <label class="field">
@@ -104,6 +168,7 @@
               [class.input-invalid]="showControlError(form.controls.role)"
               formControlName="role"
               [attr.aria-invalid]="showControlError(form.controls.role)"
+              [disabled]="isReadOnly()"
             >
               <option [value]="AdministratorRole.SuperAdmin">{{ 'enums.roles.super_admin' | translate }}</option>
               <option [value]="AdministratorRole.ProgramManager">{{ 'enums.roles.program_manager' | translate }}</option>
@@ -118,7 +183,7 @@
 
         <label class="field">
           <span>{{ 'forms.charityPrograms' | translate }}</span>
-          <select class="input textarea" multiple (change)="updatePrograms($event)">
+          <select class="input textarea" multiple (change)="updatePrograms($event)" [disabled]="isReadOnly()">
             @for (program of programs(); track program.id) {
               <option
                 [value]="program.id"
@@ -131,16 +196,18 @@
         </label>
 
         <div class="actions">
-          <app-button
-            type="submit"
-            variant="primary"
-            [disabled]="!selected() && !canCreateAdministrators()"
-            [loading]="isSubmitting()"
-          >
-            {{ 'common.save' | translate }}
-          </app-button>
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
-            {{ 'common.clear' | translate }}
+          @if (!isReadOnly()) {
+            <app-button
+              type="submit"
+              variant="primary"
+              [disabled]="!selected() && !canCreateAdministrators()"
+              [loading]="isSubmitting()"
+            >
+              {{ 'common.save' | translate }}
+            </app-button>
+          }
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancel()">
+            {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>

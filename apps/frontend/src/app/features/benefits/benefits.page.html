@@ -7,6 +7,16 @@
 
   <div class="content-grid">
     <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h3>{{ 'features.benefits.title' | translate }}</h3>
+          <p>{{ 'features.benefits.formDescription' | translate }}</p>
+        </div>
+        <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="startCreate()">
+          {{ 'common.add' | translate }}
+        </app-button>
+      </div>
+
       @if (items().length) {
         <div class="list">
           @for (item of items(); track item.id) {
@@ -45,11 +55,22 @@
           <p>{{ 'features.benefits.formDescription' | translate }}</p>
         </div>
         @if (selected(); as benefit) {
-          <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(benefit)">
-            {{ 'features.benefits.toggleStatus' | translate }}
-          </app-button>
+          @if (isReadOnly()) {
+            <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="startEditing()">
+              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+              {{ 'common.edit' | translate }}
+            </app-button>
+          } @else {
+            <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(benefit)">
+              {{ 'features.benefits.toggleStatus' | translate }}
+            </app-button>
+          }
         }
       </div>
+
+      @if (isReadOnly()) {
+        <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
+      }
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <app-input-field
@@ -59,6 +80,7 @@
             ['required', 'validation.required'],
             ['maxlength', 'validation.maxLength']
           ]"
+          [readonly]="isReadOnly()"
         />
 
         <app-input-field
@@ -69,6 +91,7 @@
             ['maxlength', 'validation.maxLength']
           ]"
           [textarea]="true"
+          [readonly]="isReadOnly()"
         />
 
         <div class="field-grid">
@@ -79,6 +102,7 @@
               [class.input-invalid]="showControlError(form.controls.category)"
               formControlName="category"
               [attr.aria-invalid]="showControlError(form.controls.category)"
+              [disabled]="isReadOnly()"
             >
               @for (category of [BenefitCategory.Food, BenefitCategory.Hygiene, BenefitCategory.Financial, BenefitCategory.Education, BenefitCategory.Clothing, BenefitCategory.Medicine, BenefitCategory.Other]; track category) {
                 <option [value]="category">{{ ('enums.categories.' + category) | translate }}</option>
@@ -92,16 +116,18 @@
 
           <label class="field checkbox-field">
             <span>{{ 'forms.active' | translate }}</span>
-            <input type="checkbox" formControlName="active" />
+            <input type="checkbox" formControlName="active" [disabled]="isReadOnly()" />
           </label>
         </div>
 
         <div class="actions">
-          <app-button type="submit" variant="primary" [loading]="isSubmitting()">
-            {{ 'common.save' | translate }}
-          </app-button>
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
-            {{ 'common.clear' | translate }}
+          @if (!isReadOnly()) {
+            <app-button type="submit" variant="primary" [loading]="isSubmitting()">
+              {{ 'common.save' | translate }}
+            </app-button>
+          }
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancel()">
+            {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>
