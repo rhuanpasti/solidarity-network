@@ -11,7 +11,7 @@
         <span>{{ 'forms.beneficiary' | translate }}</span>
         <select class="input" formControlName="beneficiaryId">
           <option value="">{{ 'common.all' | translate }}</option>
-          @for (beneficiary of beneficiaries(); track beneficiary.id) {
+          @for (beneficiary of filterBeneficiaries(); track beneficiary.id) {
             <option [value]="beneficiary.id">
               {{ beneficiary.fullName }}
             </option>
@@ -27,6 +27,15 @@
             <option [value]="program.id">
               {{ program.name }}
             </option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>{{ 'common.pageSize' | translate }}</span>
+        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+          @for (size of pageSizes; track size) {
+            <option [value]="size">{{ size }}</option>
           }
         </select>
       </label>
@@ -48,6 +57,10 @@
         </div>
       </div>
 
+      @if (listLoading()) {
+        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
+      }
+
       @if (deliveries().length) {
         <div class="list">
           @for (delivery of deliveries(); track delivery.id) {
@@ -64,6 +77,27 @@
               </div>
             </article>
           }
+        </div>
+        <div class="pagination">
+          <p>
+            {{
+              'common.paginationSummary'
+                | translate
+                  : {
+                      page: pagination().page,
+                      totalPages: pagination().totalPages,
+                      totalItems: pagination().totalItems
+                    }
+            }}
+          </p>
+          <div class="pagination-actions">
+            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
+              {{ 'common.previous' | translate }}
+            </app-button>
+            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
+              {{ 'common.next' | translate }}
+            </app-button>
+          </div>
         </div>
       } @else {
         <app-empty-state
@@ -111,7 +145,7 @@
               [attr.aria-invalid]="showControlError(form.controls.beneficiaryId)"
             >
               <option value="">{{ 'common.selectOption' | translate }}</option>
-              @for (beneficiary of filteredBeneficiaries(); track beneficiary.id) {
+              @for (beneficiary of formBeneficiaries(); track beneficiary.id) {
                 <option [value]="beneficiary.id">{{ beneficiary.fullName }}</option>
               }
             </select>
@@ -179,7 +213,7 @@
         />
 
         <div class="actions">
-          <app-button type="submit" variant="primary">
+          <app-button type="submit" variant="primary" [loading]="submitPending()">
             {{ 'common.registerDelivery' | translate }}
           </app-button>
         </div>

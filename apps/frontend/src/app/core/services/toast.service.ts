@@ -10,13 +10,26 @@ export interface ToastMessage {
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   readonly message = signal<ToastMessage | null>(null);
+  private timeoutId: number | null = null;
 
   show(message: ToastMessage) {
+    if (this.timeoutId !== null) {
+      window.clearTimeout(this.timeoutId);
+    }
+
     this.message.set(message);
-    window.setTimeout(() => this.message.set(null), 4000);
+    this.timeoutId = window.setTimeout(() => {
+      this.timeoutId = null;
+      this.message.set(null);
+    }, 4000);
   }
 
   clear() {
+    if (this.timeoutId !== null) {
+      window.clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+
     this.message.set(null);
   }
 }

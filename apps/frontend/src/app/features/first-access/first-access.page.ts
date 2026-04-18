@@ -52,6 +52,7 @@ export class FirstAccessPage {
   readonly passwordVisible = signal(false);
   readonly confirmVisible = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly isSubmitting = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     currentPassword: ['', [Validators.required, Validators.maxLength(120)]],
@@ -86,6 +87,10 @@ export class FirstAccessPage {
   }
 
   async submit() {
+    if (this.isSubmitting()) {
+      return;
+    }
+
     this.errorMessage.set(null);
 
     if (this.form.invalid) {
@@ -99,13 +104,17 @@ export class FirstAccessPage {
 
     const raw = this.form.getRawValue();
 
+    this.isSubmitting.set(true);
     const result = await this.authService.changePassword({
       currentPassword: raw.currentPassword,
       newPassword: raw.newPassword,
     });
+    this.isSubmitting.set(false);
 
     if (!result.success) {
-      this.errorMessage.set(result.message ?? 'auth.invalidCurrentPassword');
+      const errorKey = result.message ?? 'auth.invalidCurrentPassword';
+      this.errorMessage.set(errorKey);
+      this.toastService.show({ type: 'error', translationKey: errorKey });
       return;
     }
 

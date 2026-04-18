@@ -128,7 +128,12 @@
           <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>
         }
 
-        <app-button type="submit" variant="primary" class="login-submit">
+        <app-button
+          type="submit"
+          variant="primary"
+          class="login-submit"
+          [loading]="isSubmitting()"
+        >
           {{ 'auth.signIn' | translate }}
         </app-button>
       </form>

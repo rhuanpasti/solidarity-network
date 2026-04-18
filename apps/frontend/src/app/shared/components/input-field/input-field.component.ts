@@ -70,7 +70,11 @@ let nextInputFieldId = 0;
         </div>
       }
 
-      @if (errorKey(); as key) {
+      @if (serverErrorMessage(); as message) {
+        <small class="field-error" [id]="errorId()" aria-live="polite">
+          {{ message }}
+        </small>
+      } @else if (errorKey(); as key) {
         <small class="field-error" [id]="errorId()" aria-live="polite">
           {{ key | translate }}
         </small>
@@ -112,6 +116,11 @@ export class InputFieldComponent {
   readonly errorId = computed(() => `${this.inputId()}-error`);
   readonly hintId = computed(() => `${this.inputId()}-hint`);
   readonly hasAction = computed(() => !!this.projectedAction());
+  readonly serverErrorMessage = computed(() => {
+    const control = this.control();
+    const serverMessage = control?.getError('serverMessage');
+    return typeof serverMessage === 'string' ? serverMessage : null;
+  });
   readonly isRequired = computed(() => {
     const control = this.control();
 
@@ -139,7 +148,7 @@ export class InputFieldComponent {
       !!(this.externalErrorVisible() && this.externalErrorKey()),
   );
   readonly describedBy = computed(() => {
-    if (this.errorKey()) {
+    if (this.serverErrorMessage() || this.errorKey()) {
       return this.errorId();
     }
 

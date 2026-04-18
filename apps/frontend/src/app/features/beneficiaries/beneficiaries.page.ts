@@ -9,6 +9,7 @@ import {
   WORLD_COUNTRY,
   formatBrazilianPostalCode,
   isBrazilCountry,
+  type PaginationMeta,
   type BeneficiarySummary,
   type CharityProgramSummary,
   type SupportedCountry,
@@ -18,7 +19,12 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
+import {
+  applyServerValidationErrors,
+  clearServerValidationErrors,
+  shouldShowControlError,
+  touchAll,
+} from '../../shared/utils/form.utils';
 import {
   brazilianPhoneValidator,
   brazilianPostalCodeValidator,
@@ -33,6 +39,15 @@ interface GeneratedCredentialInfo {
   email: string;
   passkey: string;
 }
+
+const DEFAULT_PAGE_SIZE = 10;
+const PROGRAM_OPTIONS_PAGE_SIZE = 100;
+const EMPTY_PAGINATION_META: PaginationMeta = {
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  totalItems: 0,
+  totalPages: 1,
+};
 
 @Component({
   selector: 'app-beneficiaries-page',
@@ -62,11 +77,14 @@ export class BeneficiariesPage implements OnInit {
 
   readonly items = signal<BeneficiarySummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
+  readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
   readonly selected = signal<BeneficiarySummary | null>(null);
   readonly generatedCredential = signal<GeneratedCredentialInfo | null>(null);
   readonly selectedCountry = signal<SupportedCountry>(BRAZIL_COUNTRY);
   readonly addressLookupPending = signal(false);
   readonly addressLookupMessageKey = signal<string | null>(null);
+  readonly listLoading = signal(false);
+  readonly submitPending = signal(false);
   readonly showControlError = shouldShowControlError;
   readonly isBrazilSelected = computed(() => isBrazilCountry(this.selectedCountry()));
   readonly documentLabelKey = computed(() =>
@@ -76,11 +94,15 @@ export class BeneficiariesPage implements OnInit {
     search: '',
     charityProgramId: '',
     status: '',
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
   });
+  readonly pageSizes = [10, 25, 50];
   readonly filterForm = this.formBuilder.nonNullable.group({
     search: [''],
     charityProgramId: [''],
     status: [''],
+    pageSize: [DEFAULT_PAGE_SIZE],
   });
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -116,12 +138,17 @@ export class BeneficiariesPage implements OnInit {
 
   ngOnInit() {
     this.watchCountrySelection();
-    this.charityProgramsService.list().subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService
+      .list({ pageSize: PROGRAM_OPTIONS_PAGE_SIZE })
+      .subscribe((response) => this.programs.set(response.items));
     this.route.queryParamMap.subscribe((params) => {
       const nextFilters = {
         search: params.get('search') ?? '',
         charityProgramId: params.get('charityProgramId') ?? '',
         status: params.get('status') ?? '',
+        page: Number(params.get('page') ?? EMPTY_PAGINATION_META.page) || EMPTY_PAGINATION_META.page,
+        pageSize:
+          Number(params.get('pageSize') ?? EMPTY_PAGINATION_META.pageSize) || EMPTY_PAGINATION_META.pageSize,
       };
       this.filters.set(nextFilters);
       this.filterForm.patchValue(nextFilters, { emitEvent: false });
@@ -130,7 +157,17 @@ export class BeneficiariesPage implements OnInit {
   }
 
   load() {
-    this.beneficiariesService.list(this.filters()).subscribe((response) => this.items.set(response.items));
+    this.listLoading.set(true);
+    this.beneficiariesService.list(this.filters()).subscribe({
+      next: (response) => {
+        this.listLoading.set(false);
+        this.items.set(response.items);
+        this.pagination.set(response.meta);
+      },
+      error: () => {
+        this.listLoading.set(false);
+      },
+    });
   }
 
   applyFilters() {
@@ -142,6 +179,33 @@ export class BeneficiariesPage implements OnInit {
         search: search || null,
         charityProgramId: charityProgramId || null,
         status: status || null,
+        page: 1,
+        pageSize: this.filterForm.controls.pageSize.value,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  changePage(page: number) {
+    const pagination = this.pagination();
+
+    if (page < 1 || page > pagination.totalPages || page === pagination.page) {
+      return;
+    }
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  changePageSize(pageSize: string) {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        page: 1,
+        pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
       },
       queryParamsHandling: 'merge',
     });
@@ -200,6 +264,10 @@ export class BeneficiariesPage implements OnInit {
   }
 
   submit() {
+    if (this.submitPending()) {
+      return;
+    }
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -210,6 +278,7 @@ export class BeneficiariesPage implements OnInit {
     }
 
     const raw = this.form.getRawValue();
+    clearServerValidationErrors(this.form);
     const payload = {
       ...raw,
       notes: raw.notes || null,
@@ -217,23 +286,39 @@ export class BeneficiariesPage implements OnInit {
     };
 
     if (this.selected()) {
-      this.beneficiariesService.update(this.selected()!.id, payload).subscribe(() => {
-        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-        this.resetForm();
-        this.load();
+      this.submitPending.set(true);
+      this.beneficiariesService.update(this.selected()!.id, payload).subscribe({
+        next: () => {
+          this.submitPending.set(false);
+          this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+          this.resetForm();
+          this.load();
+        },
+        error: (error) => {
+          this.submitPending.set(false);
+          applyServerValidationErrors(this.form, error);
+        },
       });
       return;
     }
 
-    this.beneficiariesService.create(payload).subscribe((response) => {
-      this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.generatedCredential.set({
-        fullName: response.beneficiary.fullName,
-        email: response.beneficiary.email ?? payload.email,
-        passkey: response.generatedPasskey,
-      });
-      this.resetFormForNextCreate();
-      this.load();
+    this.submitPending.set(true);
+    this.beneficiariesService.create(payload).subscribe({
+      next: (response) => {
+        this.submitPending.set(false);
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.generatedCredential.set({
+          fullName: response.beneficiary.fullName,
+          email: response.beneficiary.email ?? payload.email,
+          passkey: response.generatedPasskey,
+        });
+        this.resetFormForNextCreate();
+        this.load();
+      },
+      error: (error) => {
+        this.submitPending.set(false);
+        applyServerValidationErrors(this.form, error);
+      },
     });
   }
 

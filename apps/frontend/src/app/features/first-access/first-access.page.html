@@ -84,7 +84,7 @@
       }
 
       <div class="first-access-actions">
-        <app-button type="submit" variant="primary">
+        <app-button type="submit" variant="primary" [loading]="isSubmitting()">
           {{ 'auth.updatePassword' | translate }}
         </app-button>
         <app-button type="button" variant="ghost" (click)="logout()">

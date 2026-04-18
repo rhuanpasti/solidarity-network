@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-global-loading',
   standalone: true,
-  imports: [],
+  imports: [TranslateModule],
   templateUrl: './global-loading.component.html',
   styleUrl: './global-loading.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,5 +13,5 @@ import { LoadingService } from '../../../core/services/loading.service';
 export class GlobalLoadingComponent {
   private readonly loadingService = inject(LoadingService);
 
-  readonly isLoading = this.loadingService.isLoading;
+  readonly isLoading = this.loadingService.isVisible;
 }

@@ -30,7 +30,13 @@
     "all": "All",
     "applyFilters": "Apply filters",
     "selectOption": "Select an option",
-    "registerDelivery": "Register delivery"
+    "registerDelivery": "Register delivery",
+    "previous": "Previous",
+    "next": "Next",
+    "pageSize": "Rows per page",
+    "loading": "Loading",
+    "loadingDescription": "Please wait while the data is being updated.",
+    "paginationSummary": "Page {{page}} of {{totalPages}} · {{totalItems}} total"
   },
   "forms": {
     "name": "Name",

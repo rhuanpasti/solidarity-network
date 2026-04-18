@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type {
   AdministratorSummary,
   CreateAdministratorResult,
+  ListQuery,
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
@@ -20,11 +21,17 @@ export class AdministratorsService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/administrators`;
 
-  list(search = '') {
-    let params = new HttpParams().set('pageSize', '100');
-    if (search) {
-      params = params.set('search', search);
-    }
+  list(searchOrQuery: string | ListQuery = '') {
+    const query =
+      typeof searchOrQuery === 'string' ? ({ search: searchOrQuery } satisfies ListQuery) : searchOrQuery;
+    let params = new HttpParams();
+
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
     return this.httpClient.get<PaginatedResponse<AdministratorSummary>>(this.baseUrl, { params });
   }
 

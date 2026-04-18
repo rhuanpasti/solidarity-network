@@ -11,6 +11,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
 import { BenefitsService } from '../../core/services/benefits.service';
 import { ToastService } from '../../core/services/toast.service';
+import { applyServerValidationErrors, clearServerValidationErrors } from '../../shared/utils/form.utils';
 
 @Component({
   selector: 'app-benefits-page',
@@ -38,6 +39,7 @@ export class BenefitsPage implements OnInit {
   readonly items = signal<BenefitSummary[]>([]);
   readonly selected = signal<BenefitSummary | null>(null);
   readonly showControlError = shouldShowControlError;
+  readonly isSubmitting = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -53,7 +55,7 @@ export class BenefitsPage implements OnInit {
   }
 
   load() {
-    this.benefitsService.list().subscribe((response) => this.items.set(response.items));
+    this.benefitsService.list({ pageSize: 100 }).subscribe((response) => this.items.set(response.items));
   }
 
   select(item: BenefitSummary) {
@@ -77,6 +79,10 @@ export class BenefitsPage implements OnInit {
   }
 
   submit() {
+    if (this.isSubmitting()) {
+      return;
+    }
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -87,14 +93,23 @@ export class BenefitsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
+    clearServerValidationErrors(this.form);
     const request = this.selected()
       ? this.benefitsService.update(this.selected()!.id, payload)
       : this.benefitsService.create(payload);
 
-    request.subscribe(() => {
-      this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.resetForm();
-      this.load();
+    this.isSubmitting.set(true);
+    request.subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.resetForm();
+        this.load();
+      },
+      error: (error) => {
+        this.isSubmitting.set(false);
+        applyServerValidationErrors(this.form, error);
+      },
     });
   }
 

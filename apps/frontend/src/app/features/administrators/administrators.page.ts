@@ -12,7 +12,12 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
+import {
+  applyServerValidationErrors,
+  clearServerValidationErrors,
+  shouldShowControlError,
+  touchAll,
+} from '../../shared/utils/form.utils';
 import { genericPhoneValidator } from '../../shared/utils/validation.utils';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
@@ -53,6 +58,7 @@ export class AdministratorsPage implements OnInit {
   readonly selected = signal<AdministratorSummary | null>(null);
   readonly generatedCredential = signal<GeneratedAdministratorCredential | null>(null);
   readonly showControlError = shouldShowControlError;
+  readonly isSubmitting = signal(false);
   readonly canCreateAdministrators = computed(() => {
     const session = this.authService.session();
 
@@ -77,11 +83,15 @@ export class AdministratorsPage implements OnInit {
 
   ngOnInit() {
     this.load();
-    this.charityProgramsService.list().subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService
+      .list({ pageSize: 100 })
+      .subscribe((response) => this.programs.set(response.items));
   }
 
   load() {
-    this.administratorsService.list().subscribe((response) => this.items.set(response.items));
+    this.administratorsService
+      .list({ pageSize: 100 })
+      .subscribe((response) => this.items.set(response.items));
   }
 
   select(item: AdministratorSummary) {
@@ -116,6 +126,10 @@ export class AdministratorsPage implements OnInit {
   }
 
   submit() {
+    if (this.isSubmitting()) {
+      return;
+    }
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -126,12 +140,21 @@ export class AdministratorsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
+    clearServerValidationErrors(this.form);
 
     if (this.selected()) {
-      this.administratorsService.update(this.selected()!.id, payload).subscribe(() => {
-        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-        this.resetForm();
-        this.load();
+      this.isSubmitting.set(true);
+      this.administratorsService.update(this.selected()!.id, payload).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+          this.resetForm();
+          this.load();
+        },
+        error: (error) => {
+          this.isSubmitting.set(false);
+          applyServerValidationErrors(this.form, error);
+        },
       });
       return;
     }
@@ -140,15 +163,23 @@ export class AdministratorsPage implements OnInit {
       return;
     }
 
-    this.administratorsService.create(payload).subscribe((response) => {
-      this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.generatedCredential.set({
-        name: response.administrator.name,
-        email: response.administrator.email,
-        passkey: response.generatedPasskey,
-      });
-      this.resetFormForNextCreate();
-      this.load();
+    this.isSubmitting.set(true);
+    this.administratorsService.create(payload).subscribe({
+      next: (response) => {
+        this.isSubmitting.set(false);
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.generatedCredential.set({
+          name: response.administrator.name,
+          email: response.administrator.email,
+          passkey: response.generatedPasskey,
+        });
+        this.resetFormForNextCreate();
+        this.load();
+      },
+      error: (error) => {
+        this.isSubmitting.set(false);
+        applyServerValidationErrors(this.form, error);
+      },
     });
   }
 

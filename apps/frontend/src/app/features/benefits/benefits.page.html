@@ -45,7 +45,7 @@
           <p>{{ 'features.benefits.formDescription' | translate }}</p>
         </div>
         @if (selected(); as benefit) {
-          <app-button type="button" variant="ghost" (click)="toggleStatus(benefit)">
+          <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(benefit)">
             {{ 'features.benefits.toggleStatus' | translate }}
           </app-button>
         }
@@ -97,10 +97,10 @@
         </div>
 
         <div class="actions">
-          <app-button type="submit" variant="primary">
+          <app-button type="submit" variant="primary" [loading]="isSubmitting()">
             {{ 'common.save' | translate }}
           </app-button>
-          <app-button type="button" variant="secondary" (click)="resetForm()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
             {{ 'common.clear' | translate }}
           </app-button>
         </div>

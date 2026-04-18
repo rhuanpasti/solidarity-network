@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { merge } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import type { LoginMetricsResponse } from '@solidarity-network/shared';
@@ -47,6 +48,7 @@ export class LoginPage {
 
   readonly passwordVisible = signal(false);
   readonly authError = signal<string | null>(null);
+  readonly isSubmitting = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     identifier: ['', [Validators.required, Validators.maxLength(120)]],
@@ -75,6 +77,13 @@ export class LoginPage {
     ];
   });
 
+  constructor() {
+    merge(
+      this.form.controls.identifier.valueChanges,
+      this.form.controls.password.valueChanges,
+    ).subscribe(() => this.authError.set(null));
+  }
+
   togglePasswordVisibility() {
     this.passwordVisible.update((current) => !current);
   }
@@ -96,6 +105,10 @@ export class LoginPage {
   }
 
   async submit() {
+    if (this.isSubmitting()) {
+      return;
+    }
+
     this.authError.set(null);
 
     if (this.form.invalid) {
@@ -107,10 +120,14 @@ export class LoginPage {
       return;
     }
 
+    this.isSubmitting.set(true);
     const result = await this.authService.login(this.form.getRawValue());
+    this.isSubmitting.set(false);
 
     if (!result.success) {
-      this.authError.set(result.message ?? 'auth.invalidCredentials');
+      const errorKey = result.message ?? 'auth.invalidCredentials';
+      this.authError.set(errorKey);
+      this.toastService.show({ type: 'error', translationKey: errorKey });
       return;
     }
 

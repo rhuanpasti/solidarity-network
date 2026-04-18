@@ -14,20 +14,21 @@ export interface RequestContextState {
   role?: string | null;
 }
 
+export const requestContextStorage =
+  new AsyncLocalStorage<RequestContextState>();
+
 @Injectable()
 export class RequestContextService {
-  private readonly storage = new AsyncLocalStorage<RequestContextState>();
-
   run<T>(state: RequestContextState, callback: () => T) {
-    return this.storage.run(state, callback);
+    return requestContextStorage.run(state, callback);
   }
 
   get() {
-    return this.storage.getStore();
+    return requestContextStorage.getStore();
   }
 
   setAuthenticatedUser(user: AuthenticatedUser) {
-    const store = this.storage.getStore();
+    const store = requestContextStorage.getStore();
 
     if (!store) {
       return;
@@ -38,4 +39,3 @@ export class RequestContextService {
     store.role = user.role;
   }
 }
-

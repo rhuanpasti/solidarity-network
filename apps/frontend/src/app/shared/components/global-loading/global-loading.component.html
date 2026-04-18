@@ -1,8 +1,13 @@
 @if (isLoading()) {
-  <div class="global-loading" role="status" aria-live="polite" aria-label="Loading">
+  <div class="global-loading" role="status" aria-live="polite" [attr.aria-label]="'common.loading' | translate">
+    <div class="global-loading-scrim"></div>
     <div class="global-loading-bar"></div>
-    <div class="global-loading-badge">
+    <div class="global-loading-card">
       <span class="global-loading-spinner" aria-hidden="true"></span>
+      <div class="global-loading-copy">
+        <strong>{{ 'common.loading' | translate }}</strong>
+        <span>{{ 'common.loadingDescription' | translate }}</span>
+      </div>
     </div>
   </div>
 }

@@ -67,6 +67,7 @@
           <app-button
             type="button"
             variant="ghost"
+            [disabled]="isSubmitting()"
             (click)="toggleStatus(selectedProgram)"
           >
             {{ 'features.charityPrograms.toggleStatus' | translate }}
@@ -116,10 +117,11 @@
             type="submit"
             variant="primary"
             [disabled]="!selected() && !canCreatePrograms()"
+            [loading]="isSubmitting()"
           >
             {{ 'common.save' | translate }}
           </app-button>
-          <app-button type="button" variant="secondary" (click)="resetForm()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
             {{ 'common.clear' | translate }}
           </app-button>
         </div>

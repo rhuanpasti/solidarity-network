@@ -14,7 +14,12 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { shouldShowControlError, touchAll } from '../../shared/utils/form.utils';
+import {
+  applyServerValidationErrors,
+  clearServerValidationErrors,
+  shouldShowControlError,
+  touchAll,
+} from '../../shared/utils/form.utils';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -46,6 +51,7 @@ export class CharityProgramsPage implements OnInit {
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly selected = signal<CharityProgramSummary | null>(null);
   readonly showControlError = shouldShowControlError;
+  readonly isSubmitting = signal(false);
   readonly canCreatePrograms = computed(() => {
     const session = this.authService.session();
 
@@ -76,7 +82,7 @@ export class CharityProgramsPage implements OnInit {
 
   load() {
     this.charityProgramsService
-      .list(this.filterForm.controls.search.value)
+      .list({ search: this.filterForm.controls.search.value, pageSize: 100 })
       .subscribe((response) => this.items.set(response.items));
   }
 
@@ -103,6 +109,10 @@ export class CharityProgramsPage implements OnInit {
   }
 
   submit() {
+    if (this.isSubmitting()) {
+      return;
+    }
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -117,14 +127,23 @@ export class CharityProgramsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
+    clearServerValidationErrors(this.form);
     const request = this.selected()
       ? this.charityProgramsService.update(this.selected()!.id, payload)
       : this.charityProgramsService.create(payload);
 
-    request.subscribe(() => {
-      this.toastService.show({ type: 'success', text: 'Saved successfully.' });
-      this.resetForm();
-      this.load();
+    this.isSubmitting.set(true);
+    request.subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.resetForm();
+        this.load();
+      },
+      error: (error) => {
+        this.isSubmitting.set(false);
+        applyServerValidationErrors(this.form, error);
+      },
     });
   }
 

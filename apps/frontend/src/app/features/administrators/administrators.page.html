@@ -135,10 +135,11 @@
             type="submit"
             variant="primary"
             [disabled]="!selected() && !canCreateAdministrators()"
+            [loading]="isSubmitting()"
           >
             {{ 'common.save' | translate }}
           </app-button>
-          <app-button type="button" variant="secondary" (click)="resetForm()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="resetForm()">
             {{ 'common.clear' | translate }}
           </app-button>
         </div>
