@@ -66,7 +66,11 @@ let nextInputFieldId = 0;
             [attr.step]="step()"
             (blur)="handleBlur($event)"
           />
-          <ng-content select="[appFieldAction]" />
+          @if (hasAction()) {
+            <span class="field-action-slot">
+              <ng-content select="[appFieldAction]" />
+            </span>
+          }
         </div>
       }
 

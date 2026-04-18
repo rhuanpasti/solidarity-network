@@ -14,15 +14,39 @@
 
 .field-control {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .field-control.has-action .input {
-  padding-right: 3.5rem;
+  padding-right: calc(1.7rem + 2.6rem + 0.4rem);
 }
 
-.field-control [appFieldAction] {
+.field-action-slot {
   position: absolute;
   top: 50%;
-  right: 0.6rem;
+  right: 1.2rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transform: translateY(-50%);
+}
+
+.field-action-slot :is(button, [appFieldAction]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.field-action-slot .material-symbols-rounded {
+  font-size: 1.25rem;
 }
