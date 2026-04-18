@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
   AdministratorSummary,
@@ -7,6 +7,7 @@ import type {
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
+import { buildHttpParams } from '../../shared/utils/http.utils';
 
 export interface AdministratorPayload {
   name: string;
@@ -24,13 +25,7 @@ export class AdministratorsService {
   list(searchOrQuery: string | ListQuery = '') {
     const query =
       typeof searchOrQuery === 'string' ? ({ search: searchOrQuery } satisfies ListQuery) : searchOrQuery;
-    let params = new HttpParams();
-
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
+    const params = buildHttpParams(query);
 
     return this.httpClient.get<PaginatedResponse<AdministratorSummary>>(this.baseUrl, { params });
   }

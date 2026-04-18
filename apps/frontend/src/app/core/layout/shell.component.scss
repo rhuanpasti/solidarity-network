@@ -111,28 +111,6 @@
   gap: 1rem;
 }
 
-.language-switcher {
-  display: flex;
-  gap: 0.6rem;
-}
-
-.language-button {
-  flex: 1;
-  min-height: 2.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.95rem;
-  background: #fff;
-  color: #4b5563;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.language-button.active {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #15803d;
-}
-
 .user-card {
   display: flex;
   align-items: center;

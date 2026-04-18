@@ -9,6 +9,7 @@ import type {
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
+import { buildHttpParams } from '../../shared/utils/http.utils';
 
 export interface BeneficiaryPayload {
   fullName: string;
@@ -30,13 +31,7 @@ export class BeneficiariesService {
   private readonly baseUrl = `${environment.apiBaseUrl}/beneficiaries`;
 
   list(query: BeneficiaryListQuery = {}) {
-    let params = new HttpParams();
-
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
+    const params = buildHttpParams(query);
 
     return this.httpClient.get<PaginatedResponse<BeneficiarySummary>>(this.baseUrl, { params });
   }

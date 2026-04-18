@@ -12,7 +12,9 @@ import { LanguageService } from '../../core/i18n/language.service';
 import { LoginMetricsService } from '../../core/services/login-metrics.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FieldActionDirective } from '../../shared/components/input-field/field-action.directive';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
+import { PasswordFieldComponent } from '../../shared/components/password-field/password-field.component';
+import { CheckboxFieldComponent } from '../../shared/components/checkbox-field/checkbox-field.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { touchAll } from '../../shared/utils/form.utils';
 
@@ -31,7 +33,9 @@ const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
     DecimalPipe,
     ButtonComponent,
     InputFieldComponent,
-    FieldActionDirective,
+    LanguageSwitcherComponent,
+    PasswordFieldComponent,
+    CheckboxFieldComponent,
   ],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
@@ -82,10 +86,6 @@ export class LoginPage {
       this.form.controls.identifier.valueChanges,
       this.form.controls.password.valueChanges,
     ).subscribe(() => this.authError.set(null));
-  }
-
-  togglePasswordVisibility() {
-    this.passwordVisible.update((current) => !current);
   }
 
   continueToDashboard() {

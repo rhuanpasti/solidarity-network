@@ -6,23 +6,27 @@
   />
 
   <div class="content-grid">
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>{{ 'features.charityPrograms.title' | translate }}</h3>
-          <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
-        </div>
-        <app-button
-          type="button"
-          variant="secondary"
-          [disabled]="isSubmitting() || !canCreatePrograms()"
-          (click)="startCreate()"
-        >
-          {{ 'common.add' | translate }}
-        </app-button>
-      </div>
+    <app-list-panel
+      title="features.charityPrograms.title"
+      description="features.charityPrograms.formDescription"
+      emptyTitle="features.charityPrograms.emptyTitle"
+      emptyDescription="features.charityPrograms.emptyDescription"
+      [hasItems]="items().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="changePage($event)"
+    >
+      <app-button
+        panelAction
+        type="button"
+        variant="secondary"
+        [disabled]="isSubmitting() || !canCreatePrograms()"
+        (click)="editor.startCreate()"
+      >
+        {{ 'common.add' | translate }}
+      </app-button>
 
-      <form class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
+      <form panelToolbar class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
         <input
           formControlName="search"
           type="search"
@@ -39,96 +43,49 @@
         </app-button>
       </form>
 
-      @if (listLoading()) {
-        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
-      }
-
-      @if (items().length) {
-        <div class="list">
-          @for (item of items(); track item.id) {
-            <button type="button" class="list-item" (click)="select(item)">
-              <div>
-                <strong>{{ item.name }}</strong>
-                <p>{{ item.description }}</p>
-              </div>
-              <div class="item-meta">
-                <app-status-badge
-                  [active]="item.status === 'active'"
-                  [activeLabel]="'common.active' | translate"
-                  [inactiveLabel]="'common.inactive' | translate"
-                />
-                <small>{{ item.updatedAt | date: 'mediumDate' }}</small>
-              </div>
-            </button>
-          }
-        </div>
-        <div class="pagination">
-          <p>
-            {{
-              'common.paginationSummary'
-                | translate
-                  : {
-                      page: pagination().page,
-                      totalPages: pagination().totalPages,
-                      totalItems: pagination().totalItems
-                    }
-            }}
-          </p>
-          <div class="pagination-actions">
-            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
-              {{ 'common.previous' | translate }}
-            </app-button>
-            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
-              {{ 'common.next' | translate }}
-            </app-button>
-          </div>
-        </div>
-      } @else {
-        <app-empty-state
-          title="features.charityPrograms.emptyTitle"
-          description="features.charityPrograms.emptyDescription"
-        />
-      }
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>
-            {{
-              selected()
-                ? ('features.charityPrograms.editTitle' | translate)
-                : ('features.charityPrograms.createTitle' | translate)
-            }}
-          </h3>
-          <p>{{ 'features.charityPrograms.formDescription' | translate }}</p>
-          @if (!selected() && !canCreatePrograms()) {
-            <small class="permission-note">
-              {{ 'features.charityPrograms.createRestrictedNote' | translate }}
-            </small>
-          }
-        </div>
-        @if (selected(); as selectedProgram) {
-          @if (isReadOnly()) {
-            <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="startEditing()">
-              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
-              {{ 'common.edit' | translate }}
-            </app-button>
-          } @else {
-            <app-button
-              type="button"
-              variant="ghost"
-              [disabled]="isSubmitting()"
-              (click)="toggleStatus(selectedProgram)"
-            >
-              {{ 'features.charityPrograms.toggleStatus' | translate }}
-            </app-button>
-          }
+      <div panelList class="list">
+        @for (item of items(); track item.id) {
+          <button type="button" class="list-item" (click)="editor.select(item)">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <p>{{ item.description }}</p>
+            </div>
+            <div class="item-meta">
+              <app-status-badge
+                [active]="item.status === 'active'"
+                [activeLabel]="'common.active' | translate"
+                [inactiveLabel]="'common.inactive' | translate"
+              />
+              <small>{{ item.updatedAt | date: 'mediumDate' }}</small>
+            </div>
+          </button>
         }
       </div>
+    </app-list-panel>
 
-      @if (isReadOnly()) {
-        <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
+    <app-editor-panel
+      [title]="selected() ? 'features.charityPrograms.editTitle' : 'features.charityPrograms.createTitle'"
+      description="features.charityPrograms.formDescription"
+      [note]="!selected() && !canCreatePrograms() ? 'features.charityPrograms.createRestrictedNote' : null"
+      [showReadonlyNote]="isReadOnly()"
+    >
+      @if (selected(); as selectedProgram) {
+        @if (isReadOnly()) {
+          <app-button panelAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+            <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+            {{ 'common.edit' | translate }}
+          </app-button>
+        } @else {
+          <app-button
+            panelAction
+            type="button"
+            variant="ghost"
+            [disabled]="isSubmitting()"
+            (click)="toggleStatus(selectedProgram)"
+          >
+            {{ 'features.charityPrograms.toggleStatus' | translate }}
+          </app-button>
+        }
       }
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
@@ -153,23 +110,13 @@
           [readonly]="isReadOnly()"
         />
 
-        <label class="field">
-          <span>{{ 'forms.status' | translate }}</span>
-          <select
-            class="input"
-            [class.input-invalid]="showControlError(form.controls.status)"
-            formControlName="status"
-            [attr.aria-invalid]="showControlError(form.controls.status)"
-            [disabled]="isReadOnly()"
-          >
-            <option [value]="CharityProgramStatus.Active">{{ 'common.active' | translate }}</option>
-            <option [value]="CharityProgramStatus.Inactive">{{ 'common.inactive' | translate }}</option>
-          </select>
-          <app-form-error
-            [control]="form.controls.status"
-            [errors]="[['required', 'validation.required']]"
-          />
-        </label>
+        <app-form-select
+          [control]="form.controls.status"
+          label="forms.status"
+          [options]="statusOptions"
+          [errors]="[['required', 'validation.required']]"
+          [readonly]="isReadOnly()"
+        />
 
         <div class="actions">
           @if (!isReadOnly()) {
@@ -182,11 +129,11 @@
               {{ 'common.save' | translate }}
             </app-button>
           }
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancel()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="editor.cancel()">
             {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>
-    </section>
+    </app-editor-panel>
   </div>
 </div>

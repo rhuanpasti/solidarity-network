@@ -14,10 +14,9 @@
     }
 
     <form class="first-access-form" [formGroup]="form" (ngSubmit)="submit()">
-      <app-input-field
+      <app-password-field
         [control]="form.controls.currentPassword"
         label="auth.currentPasswordLabel"
-        type="password"
         autocomplete="current-password"
         [errors]="[
           ['required', 'validation.required'],
@@ -25,10 +24,9 @@
         ]"
       />
 
-      <app-input-field
+      <app-password-field
         [control]="form.controls.newPassword"
         label="auth.newPasswordLabel"
-        [type]="passwordVisible() ? 'text' : 'password'"
         autocomplete="new-password"
         [errors]="[
           ['required', 'validation.required'],
@@ -36,26 +34,12 @@
           ['pattern', 'auth.passwordPolicy'],
           ['maxlength', 'validation.maxLength']
         ]"
-      >
-        <button
-          appFieldAction
-          type="button"
-          class="field-action-button"
-          [attr.aria-label]="
-            (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
-          "
-          (click)="togglePasswordVisibility('new')"
-        >
-          <span class="material-symbols-rounded">
-            {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
-          </span>
-        </button>
-      </app-input-field>
+        [(visible)]="passwordVisible"
+      />
 
-      <app-input-field
+      <app-password-field
         [control]="form.controls.confirmPassword"
         label="auth.confirmPasswordLabel"
-        [type]="confirmVisible() ? 'text' : 'password'"
         autocomplete="new-password"
         [errors]="[
           ['required', 'validation.required'],
@@ -63,21 +47,8 @@
         ]"
         externalErrorKey="auth.passwordMismatch"
         [externalErrorVisible]="showPasswordMismatch()"
-      >
-        <button
-          appFieldAction
-          type="button"
-          class="field-action-button"
-          [attr.aria-label]="
-            (confirmVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
-          "
-          (click)="togglePasswordVisibility('confirm')"
-        >
-          <span class="material-symbols-rounded">
-            {{ confirmVisible() ? 'visibility_off' : 'visibility' }}
-          </span>
-        </button>
-      </app-input-field>
+        [(visible)]="confirmVisible"
+      />
 
       @if (errorMessage(); as errorKey) {
         <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>

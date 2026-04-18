@@ -5,308 +5,39 @@
     description="features.beneficiaries.description"
   />
 
-  <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-    <div class="field-grid">
-      <label class="field">
-        <span>{{ 'common.search' | translate }}</span>
-        <input class="input" type="search" formControlName="search" />
-      </label>
-
-      <label class="field">
-        <span>{{ 'forms.charityProgram' | translate }}</span>
-        <select class="input" formControlName="charityProgramId">
-          <option value="">{{ 'common.all' | translate }}</option>
-          @for (program of programs(); track program.id) {
-            <option [value]="program.id">
-              {{ program.name }}
-            </option>
-          }
-        </select>
-      </label>
-
-      <label class="field">
-        <span>{{ 'forms.status' | translate }}</span>
-        <select class="input" formControlName="status">
-          <option value="">{{ 'common.all' | translate }}</option>
-          <option [value]="BeneficiaryStatus.Active">{{ 'enums.beneficiaryStatuses.active' | translate }}</option>
-          <option [value]="BeneficiaryStatus.Inactive">{{ 'enums.beneficiaryStatuses.inactive' | translate }}</option>
-          <option [value]="BeneficiaryStatus.Archived">{{ 'enums.beneficiaryStatuses.archived' | translate }}</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>{{ 'common.pageSize' | translate }}</span>
-        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-          @for (size of pageSizes; track size) {
-            <option [value]="size">{{ size }}</option>
-          }
-        </select>
-      </label>
-    </div>
-
-    <div class="actions">
-      <app-button type="submit" variant="secondary">
-        {{ 'common.applyFilters' | translate }}
-      </app-button>
-    </div>
-  </form>
+  <app-beneficiary-filters
+    [form]="vm.filterForm"
+    [programOptions]="programOptions()"
+    [pageSizes]="vm.pageSizes"
+    (submitFilters)="vm.applyFilters()"
+    (pageSizeChange)="vm.changePageSize($event)"
+  />
 
   <div class="content-grid">
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>{{ 'features.beneficiaries.title' | translate }}</h3>
-          <p>{{ 'features.beneficiaries.formDescription' | translate }}</p>
-        </div>
-        <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="startCreate()">
-          {{ 'common.add' | translate }}
-        </app-button>
-      </div>
+    <app-beneficiary-list
+      [items]="vm.items()"
+      [pagination]="vm.pagination()"
+      [listLoading]="vm.listLoading()"
+      [submitPending]="vm.submitPending()"
+      (create)="vm.editor.startCreate()"
+      (select)="vm.editor.select($event)"
+      (pageChange)="vm.changePage($event)"
+    />
 
-      @if (listLoading()) {
-        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
-      }
-
-      @if (items().length) {
-        <div class="list">
-          @for (item of items(); track item.id) {
-            <button type="button" class="list-item" (click)="select(item)">
-              <div>
-                <strong>{{ item.fullName }}</strong>
-                <p>{{ item.document }}</p>
-                @if (item.email) {
-                  <small>{{ item.email }}</small>
-                }
-                <small>{{ item.charityProgram?.name ?? ('common.unassigned' | translate) }}</small>
-              </div>
-              <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
-            </button>
-          }
-        </div>
-        <div class="pagination">
-          <p>
-            {{
-              'common.paginationSummary'
-                | translate
-                  : {
-                      page: pagination().page,
-                      totalPages: pagination().totalPages,
-                      totalItems: pagination().totalItems
-                    }
-            }}
-          </p>
-          <div class="pagination-actions">
-            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
-              {{ 'common.previous' | translate }}
-            </app-button>
-            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
-              {{ 'common.next' | translate }}
-            </app-button>
-          </div>
-        </div>
-      } @else {
-        <app-empty-state
-          title="features.beneficiaries.emptyTitle"
-          description="features.beneficiaries.emptyDescription"
-        />
-      }
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>
-            {{
-              selected()
-                ? ('features.beneficiaries.editTitle' | translate)
-                : ('features.beneficiaries.createTitle' | translate)
-            }}
-          </h3>
-          <p>{{ 'features.beneficiaries.formDescription' | translate }}</p>
-        </div>
-        @if (selected() && isReadOnly()) {
-          <app-button type="button" variant="ghost" [disabled]="submitPending()" (click)="startEditing()">
-            <span class="material-symbols-rounded" aria-hidden="true">edit</span>
-            {{ 'common.edit' | translate }}
-          </app-button>
-        }
-      </div>
-
-      @if (isReadOnly()) {
-        <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
-      }
-
-      @if (generatedCredential(); as credential) {
-        <section class="generated-passkey-card" aria-live="polite">
-          <div>
-            <p class="generated-passkey-card-eyebrow">
-              {{ 'features.beneficiaries.generatedPasskeyEyebrow' | translate }}
-            </p>
-            <strong>{{ credential.fullName }}</strong>
-            <span>{{ credential.email }}</span>
-          </div>
-
-          <div class="generated-passkey-card-secret">
-            <small>{{ 'features.beneficiaries.generatedPasskeyLabel' | translate }}</small>
-            <strong>{{ credential.passkey }}</strong>
-          </div>
-        </section>
-      }
-
-      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-        <div class="field-grid">
-          <app-input-field
-            [control]="form.controls.fullName"
-            label="forms.fullName"
-            [errors]="[
-            ['required', 'validation.required'],
-            ['maxlength', 'validation.maxLength']
-          ]"
-          [readonly]="isReadOnly()"
-        />
-        <app-input-field
-            [control]="form.controls.email"
-            label="forms.email"
-            type="email"
-            [errors]="[
-            ['required', 'validation.required'],
-            ['email', 'validation.invalidEmail']
-          ]"
-          [readonly]="isReadOnly()"
-        />
-          <label class="field">
-            <span>{{ 'forms.country' | translate }}</span>
-            <select class="input" [formControl]="form.controls.address.controls.country" [disabled]="isReadOnly()">
-              @for (country of countryOptions; track country) {
-                <option [value]="country">{{ countryLabelKey(country) | translate }}</option>
-              }
-            </select>
-          </label>
-        </div>
-
-        <div class="field-grid">
-          <app-input-field
-            [control]="form.controls.document"
-            [label]="documentLabelKey()"
-            [errors]="[
-              ['required', 'validation.required'],
-            ['cpf', 'validation.invalidCpf'],
-            ['maxlength', 'validation.maxLength']
-          ]"
-          [readonly]="isReadOnly()"
-        />
-          <app-input-field
-            [control]="form.controls.birthDate"
-            label="forms.birthDate"
-            type="date"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-        </div>
-
-        <div class="field-grid">
-          <app-input-field
-            [control]="form.controls.phone"
-            label="forms.phone"
-            [errors]="[
-              ['required', 'validation.required'],
-            ['brazilianPhone', 'validation.invalidBrazilianPhone'],
-            ['maxlength', 'validation.maxLength']
-          ]"
-          [readonly]="isReadOnly()"
-        />
-          <label class="field">
-            <span>{{ 'forms.charityProgram' | translate }}</span>
-            <select
-              class="input"
-              [class.input-invalid]="showControlError(form.controls.charityProgramId)"
-              formControlName="charityProgramId"
-              [attr.aria-invalid]="showControlError(form.controls.charityProgramId)"
-              [disabled]="isReadOnly()"
-            >
-              <option value="">{{ 'common.unassigned' | translate }}</option>
-              @for (program of programs(); track program.id) {
-                <option [value]="program.id">{{ program.name }}</option>
-              }
-            </select>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.status' | translate }}</span>
-            <select class="input" formControlName="status" [disabled]="isReadOnly()">
-              <option [value]="BeneficiaryStatus.Active">{{ 'enums.beneficiaryStatuses.active' | translate }}</option>
-              <option [value]="BeneficiaryStatus.Inactive">{{ 'enums.beneficiaryStatuses.inactive' | translate }}</option>
-              <option [value]="BeneficiaryStatus.Archived">{{ 'enums.beneficiaryStatuses.archived' | translate }}</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="field-grid" formGroupName="address">
-          <app-input-field
-            [control]="form.controls.address.controls.postalCode"
-            label="forms.postalCode"
-            [errors]="[
-              ['required', 'validation.required'],
-              ['postalCode', 'validation.invalidPostalCode']
-            ]"
-            [hint]="addressLookupMessageKey()"
-            (blurred)="lookupAddressByPostalCode()"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.street"
-            label="forms.street"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.number"
-            label="forms.number"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.district"
-            label="forms.district"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.city"
-            label="forms.city"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.state"
-            label="forms.state"
-            [errors]="[['required', 'validation.required']]"
-            [readonly]="isReadOnly()"
-          />
-          <app-input-field
-            [control]="form.controls.address.controls.complement"
-            label="forms.complement"
-            [readonly]="isReadOnly()"
-          />
-        </div>
-
-        <app-input-field
-          [control]="form.controls.notes"
-          label="forms.notes"
-          [textarea]="true"
-          [readonly]="isReadOnly()"
-        />
-
-        <div class="actions">
-          @if (!isReadOnly()) {
-            <app-button type="submit" variant="primary" [loading]="submitPending()">
-              {{ 'common.save' | translate }}
-            </app-button>
-          }
-          <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="cancel()">
-            {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
-          </app-button>
-        </div>
-      </form>
-    </section>
+    <app-beneficiary-form
+      [form]="vm.form"
+      [selected]="vm.selected()"
+      [generatedCredential]="vm.generatedCredential()"
+      [isReadOnly]="vm.isReadOnly()"
+      [submitPending]="vm.submitPending()"
+      [programOptions]="programOptions()"
+      [countryOptions]="countryOptions()"
+      [documentLabelKey]="vm.documentLabelKey()"
+      [addressLookupMessageKey]="vm.addressLookupMessageKey()"
+      (save)="vm.submit()"
+      (cancel)="vm.editor.cancel()"
+      (edit)="vm.editor.startEditing()"
+      (postalCodeBlur)="vm.lookupAddressByPostalCode()"
+    />
   </div>
 </div>

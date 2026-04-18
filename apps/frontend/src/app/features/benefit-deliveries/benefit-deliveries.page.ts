@@ -1,6 +1,6 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import type {
@@ -11,31 +11,34 @@ import type {
   PaginationMeta,
 } from '@solidarity-network/shared';
 import { distinctUntilChanged, startWith } from 'rxjs';
-import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FormErrorComponent } from '../../shared/components/form-error/form-error.component';
-import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import {
-  applyServerValidationErrors,
-  clearServerValidationErrors,
-  shouldShowControlError,
-  touchAll,
-} from '../../shared/utils/form.utils';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
 import { BenefitsService } from '../../core/services/benefits.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { DetailGridComponent, type DetailGridItem } from '../../shared/components/detail-grid/detail-grid.component';
+import { EditorPanelComponent } from '../../shared/components/editor-panel/editor-panel.component';
+import { FormSelectComponent, type SelectOption } from '../../shared/components/form-select/form-select.component';
+import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
+import { ListPanelComponent } from '../../shared/components/list-panel/list-panel.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import {
+  navigateWithMergedQuery,
+  normalizeEmptyQueryValue,
+  readNumberQueryParam,
+} from '../../shared/utils/list-query.utils';
+import {
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGINATION_META,
+} from '../../shared/utils/pagination.utils';
+import {
+  applyServerValidationErrors,
+  clearServerValidationErrors,
+  touchAll,
+} from '../../shared/utils/form.utils';
 
-const DEFAULT_PAGE_SIZE = 10;
 const OPTION_PAGE_SIZE = 100;
-const EMPTY_PAGINATION_META: PaginationMeta = {
-  page: 1,
-  pageSize: DEFAULT_PAGE_SIZE,
-  totalItems: 0,
-  totalPages: 1,
-};
 
 @Component({
   selector: 'app-benefit-deliveries-page',
@@ -45,9 +48,11 @@ const EMPTY_PAGINATION_META: PaginationMeta = {
     TranslateModule,
     DatePipe,
     PageHeaderComponent,
-    EmptyStateComponent,
+    ListPanelComponent,
     ButtonComponent,
-    FormErrorComponent,
+    EditorPanelComponent,
+    DetailGridComponent,
+    FormSelectComponent,
     InputFieldComponent,
   ],
   templateUrl: './benefit-deliveries.page.html',
@@ -66,16 +71,13 @@ export class BenefitDeliveriesPage implements OnInit {
 
   readonly deliveries = signal<BenefitDeliverySummary[]>([]);
   readonly selectedDelivery = signal<BenefitDeliverySummary | null>(null);
-  readonly pagination = signal<PaginationMeta>(EMPTY_PAGINATION_META);
+  readonly pagination = signal<PaginationMeta>(DEFAULT_PAGINATION_META);
   readonly programs = signal<CharityProgramSummary[]>([]);
   readonly filterBeneficiaries = signal<BeneficiarySummary[]>([]);
   readonly formBeneficiaries = signal<BeneficiarySummary[]>([]);
   readonly benefits = signal<BenefitSummary[]>([]);
   readonly listLoading = signal(false);
-  readonly filterBeneficiariesLoading = signal(false);
-  readonly formBeneficiariesLoading = signal(false);
   readonly submitPending = signal(false);
-  readonly showControlError = shouldShowControlError;
   readonly filters = signal({
     beneficiaryId: '',
     charityProgramId: '',
@@ -88,7 +90,6 @@ export class BenefitDeliveriesPage implements OnInit {
     charityProgramId: [''],
     pageSize: [DEFAULT_PAGE_SIZE],
   });
-
   readonly form = this.formBuilder.nonNullable.group({
     beneficiaryId: ['', Validators.required],
     benefitId: ['', Validators.required],
@@ -98,14 +99,27 @@ export class BenefitDeliveriesPage implements OnInit {
     notes: [''],
     reference: ['', [Validators.required, Validators.maxLength(80)]],
   });
+  readonly programOptions = signal<SelectOption[]>([]);
+  readonly filterBeneficiaryOptions = signal<SelectOption[]>([]);
+  readonly formBeneficiaryOptions = signal<SelectOption[]>([]);
+  readonly benefitOptions = signal<SelectOption[]>([]);
+  readonly selectedDeliveryDetails = signal<DetailGridItem[]>([]);
 
   ngOnInit() {
     this.charityProgramsService
       .list({ pageSize: OPTION_PAGE_SIZE })
-      .subscribe((response) => this.programs.set(response.items));
-    this.benefitsService
-      .list({ pageSize: OPTION_PAGE_SIZE })
-      .subscribe((response) => this.benefits.set(response.items));
+      .subscribe((response) => {
+        this.programs.set(response.items);
+        this.programOptions.set(
+          response.items.map((program) => ({ value: program.id, label: program.name })),
+        );
+      });
+    this.benefitsService.list({ pageSize: OPTION_PAGE_SIZE }).subscribe((response) => {
+      this.benefits.set(response.items);
+      this.benefitOptions.set(
+        response.items.map((benefit) => ({ value: benefit.id, label: benefit.name })),
+      );
+    });
 
     this.filterForm.controls.charityProgramId.valueChanges
       .pipe(startWith(this.filterForm.controls.charityProgramId.value), distinctUntilChanged())
@@ -113,27 +127,26 @@ export class BenefitDeliveriesPage implements OnInit {
         if (!programId) {
           this.filterForm.controls.beneficiaryId.setValue('', { emitEvent: false });
         }
-        this.loadFilterBeneficiaries(programId);
+        this.loadBeneficiaryOptions(programId, 'filter');
       });
 
     this.form.controls.charityProgramId.valueChanges
       .pipe(startWith(this.form.controls.charityProgramId.value), distinctUntilChanged())
       .subscribe((programId) => {
         this.form.controls.beneficiaryId.setValue('', { emitEvent: false });
-        this.loadFormBeneficiaries(programId);
+        this.loadBeneficiaryOptions(programId, 'form');
       });
 
     this.route.queryParamMap.subscribe((params) => {
       const nextFilters = {
         beneficiaryId: params.get('beneficiaryId') ?? '',
         charityProgramId: params.get('charityProgramId') ?? '',
-        page: Number(params.get('page') ?? EMPTY_PAGINATION_META.page) || EMPTY_PAGINATION_META.page,
-        pageSize:
-          Number(params.get('pageSize') ?? EMPTY_PAGINATION_META.pageSize) || EMPTY_PAGINATION_META.pageSize,
+        page: readNumberQueryParam(params, 'page', DEFAULT_PAGINATION_META.page),
+        pageSize: readNumberQueryParam(params, 'pageSize', DEFAULT_PAGINATION_META.pageSize),
       };
       this.filters.set(nextFilters);
       this.filterForm.patchValue(nextFilters, { emitEvent: false });
-      this.loadFilterBeneficiaries(nextFilters.charityProgramId);
+      this.loadBeneficiaryOptions(nextFilters.charityProgramId, 'filter');
       this.load();
     });
   }
@@ -155,15 +168,11 @@ export class BenefitDeliveriesPage implements OnInit {
   applyFilters() {
     const { beneficiaryId, charityProgramId } = this.filterForm.getRawValue();
 
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        beneficiaryId: beneficiaryId || null,
-        charityProgramId: charityProgramId || null,
-        page: 1,
-        pageSize: this.filterForm.controls.pageSize.value,
-      },
-      queryParamsHandling: 'merge',
+    void navigateWithMergedQuery(this.router, this.route, {
+      beneficiaryId: normalizeEmptyQueryValue(beneficiaryId),
+      charityProgramId: normalizeEmptyQueryValue(charityProgramId),
+      page: 1,
+      pageSize: this.filterForm.controls.pageSize.value,
     });
   }
 
@@ -174,30 +183,34 @@ export class BenefitDeliveriesPage implements OnInit {
       return;
     }
 
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { page },
-      queryParamsHandling: 'merge',
-    });
+    void navigateWithMergedQuery(this.router, this.route, { page });
   }
 
   changePageSize(pageSize: string) {
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        page: 1,
-        pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
-      },
-      queryParamsHandling: 'merge',
+    void navigateWithMergedQuery(this.router, this.route, {
+      page: 1,
+      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
     });
   }
 
   selectDelivery(delivery: BenefitDeliverySummary) {
     this.selectedDelivery.set(delivery);
+    this.selectedDeliveryDetails.set([
+      { label: 'forms.beneficiary', value: delivery.beneficiary.fullName },
+      { label: 'forms.document', value: delivery.beneficiary.document },
+      { label: 'forms.charityProgram', value: delivery.charityProgram.name },
+      { label: 'forms.benefit', value: delivery.benefit.name },
+      { label: 'forms.quantity', value: delivery.quantity },
+      { label: 'forms.deliveryDate', value: delivery.deliveryDate, format: 'date' },
+      { label: 'forms.administrator', value: delivery.administrator.name },
+      { label: 'forms.reference', value: `#${delivery.reference}` },
+      { label: 'forms.notes', value: delivery.notes, fullWidth: true },
+    ]);
   }
 
   startCreate() {
     this.selectedDelivery.set(null);
+    this.selectedDeliveryDetails.set([]);
     this.form.reset({
       beneficiaryId: '',
       benefitId: '',
@@ -248,33 +261,26 @@ export class BenefitDeliveriesPage implements OnInit {
       });
   }
 
-  private loadFilterBeneficiaries(charityProgramId: string) {
-    this.filterBeneficiariesLoading.set(true);
+  private loadBeneficiaryOptions(
+    charityProgramId: string,
+    target: 'filter' | 'form',
+  ) {
     this.beneficiariesService
       .list({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
-      .subscribe({
-        next: (response) => {
-          this.filterBeneficiariesLoading.set(false);
-          this.filterBeneficiaries.set(response.items);
-        },
-        error: () => {
-          this.filterBeneficiariesLoading.set(false);
-        },
-      });
-  }
+      .subscribe((response) => {
+        const options = response.items.map((beneficiary) => ({
+          value: beneficiary.id,
+          label: beneficiary.fullName,
+        }));
 
-  private loadFormBeneficiaries(charityProgramId: string) {
-    this.formBeneficiariesLoading.set(true);
-    this.beneficiariesService
-      .list({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
-      .subscribe({
-        next: (response) => {
-          this.formBeneficiariesLoading.set(false);
-          this.formBeneficiaries.set(response.items);
-        },
-        error: () => {
-          this.formBeneficiariesLoading.set(false);
-        },
+        if (target === 'filter') {
+          this.filterBeneficiaries.set(response.items);
+          this.filterBeneficiaryOptions.set(options);
+          return;
+        }
+
+        this.formBeneficiaries.set(response.items);
+        this.formBeneficiaryOptions.set(options);
       });
   }
 }

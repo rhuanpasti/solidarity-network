@@ -35,24 +35,10 @@
         <strong>{{ 'app.brandTitle' | translate }}</strong>
       </div>
 
-      <div class="language-switcher">
-        <button
-          type="button"
-          class="language-button"
-          [class.active]="currentLanguage() === 'en'"
-          (click)="setLanguage('en')"
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          class="language-button"
-          [class.active]="currentLanguage() === 'pt-br'"
-          (click)="setLanguage('pt-br')"
-        >
-          PT-BR
-        </button>
-      </div>
+      <app-language-switcher
+        [currentLanguage]="currentLanguage()"
+        (languageChange)="setLanguage($event)"
+      />
     </div>
 
     <div class="login-panel-content">
@@ -93,36 +79,19 @@
           ]"
         />
 
-        <app-input-field
+        <app-password-field
           [control]="form.controls.password"
           label="auth.passwordLabel"
-          [type]="passwordVisible() ? 'text' : 'password'"
           autocomplete="current-password"
           placeholder="auth.passwordPlaceholder"
           [errors]="[
             ['required', 'validation.required'],
             ['maxlength', 'validation.maxLength']
           ]"
-        >
-          <button
-            appFieldAction
-            type="button"
-            class="field-action-button"
-            [attr.aria-label]="
-              (passwordVisible() ? 'auth.hidePassword' : 'auth.showPassword') | translate
-            "
-            (click)="togglePasswordVisibility()"
-          >
-            <span class="material-symbols-rounded">
-              {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
-            </span>
-          </button>
-        </app-input-field>
+          [(visible)]="passwordVisible"
+        />
 
-        <label class="remember-field">
-          <input type="checkbox" formControlName="rememberMe" />
-          <span>{{ 'auth.rememberMe' | translate }}</span>
-        </label>
+        <app-checkbox-field [control]="form.controls.rememberMe" label="auth.rememberMe" />
 
         @if (authError(); as errorKey) {
           <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>

@@ -7,29 +7,19 @@
 
   <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
     <div class="field-grid">
-      <label class="field">
-        <span>{{ 'forms.beneficiary' | translate }}</span>
-        <select class="input" formControlName="beneficiaryId">
-          <option value="">{{ 'common.all' | translate }}</option>
-          @for (beneficiary of filterBeneficiaries(); track beneficiary.id) {
-            <option [value]="beneficiary.id">
-              {{ beneficiary.fullName }}
-            </option>
-          }
-        </select>
-      </label>
+      <app-form-select
+        [control]="filterForm.controls.beneficiaryId"
+        label="forms.beneficiary"
+        [options]="filterBeneficiaryOptions()"
+        placeholder="common.all"
+      />
 
-      <label class="field">
-        <span>{{ 'forms.charityProgram' | translate }}</span>
-        <select class="input" formControlName="charityProgramId">
-          <option value="">{{ 'common.all' | translate }}</option>
-          @for (program of programs(); track program.id) {
-            <option [value]="program.id">
-              {{ program.name }}
-            </option>
-          }
-        </select>
-      </label>
+      <app-form-select
+        [control]="filterForm.controls.charityProgramId"
+        label="forms.charityProgram"
+        [options]="programOptions()"
+        placeholder="common.all"
+      />
 
       <label class="field">
         <span>{{ 'common.pageSize' | translate }}</span>
@@ -49,187 +39,72 @@
   </form>
 
   <div class="content-grid">
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>{{ 'features.benefitDeliveries.historyTitle' | translate }}</h3>
-          <p>{{ 'features.benefitDeliveries.historyDescription' | translate }}</p>
-        </div>
-        <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="startCreate()">
-          {{ 'common.add' | translate }}
-        </app-button>
+    <app-list-panel
+      title="features.benefitDeliveries.historyTitle"
+      description="features.benefitDeliveries.historyDescription"
+      emptyTitle="features.benefitDeliveries.emptyTitle"
+      emptyDescription="features.benefitDeliveries.emptyDescription"
+      [hasItems]="deliveries().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="changePage($event)"
+    >
+      <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="startCreate()">
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <div panelList class="list">
+        @for (delivery of deliveries(); track delivery.id) {
+          <button type="button" class="list-item" (click)="selectDelivery(delivery)">
+            <div>
+              <strong>{{ delivery.beneficiary.fullName }}</strong>
+              <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
+              <small>{{ delivery.administrator.name }}</small>
+            </div>
+            <div class="item-meta">
+              <span>x{{ delivery.quantity }}</span>
+              <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+              <small>#{{ delivery.reference }}</small>
+            </div>
+          </button>
+        }
       </div>
+    </app-list-panel>
 
-      @if (listLoading()) {
-        <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
-      }
-
-      @if (deliveries().length) {
-        <div class="list">
-          @for (delivery of deliveries(); track delivery.id) {
-            <button type="button" class="list-item" (click)="selectDelivery(delivery)">
-              <div>
-                <strong>{{ delivery.beneficiary.fullName }}</strong>
-                <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
-                <small>{{ delivery.administrator.name }}</small>
-              </div>
-              <div class="item-meta">
-                <span>x{{ delivery.quantity }}</span>
-                <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
-                <small>#{{ delivery.reference }}</small>
-              </div>
-            </button>
-          }
-        </div>
-        <div class="pagination">
-          <p>
-            {{
-              'common.paginationSummary'
-                | translate
-                  : {
-                      page: pagination().page,
-                      totalPages: pagination().totalPages,
-                      totalItems: pagination().totalItems
-                    }
-            }}
-          </p>
-          <div class="pagination-actions">
-            <app-button type="button" variant="ghost" [disabled]="pagination().page <= 1 || listLoading()" (click)="changePage(pagination().page - 1)">
-              {{ 'common.previous' | translate }}
-            </app-button>
-            <app-button type="button" variant="ghost" [disabled]="pagination().page >= pagination().totalPages || listLoading()" (click)="changePage(pagination().page + 1)">
-              {{ 'common.next' | translate }}
-            </app-button>
-          </div>
-        </div>
-      } @else {
-        <app-empty-state
-          title="features.benefitDeliveries.emptyTitle"
-          description="features.benefitDeliveries.emptyDescription"
-        />
-      }
-    </section>
-
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h3>
-            {{
-              selectedDelivery()
-                ? ('features.benefitDeliveries.detailTitle' | translate)
-                : ('features.benefitDeliveries.registerTitle' | translate)
-            }}
-          </h3>
-          <p>
-            {{
-              selectedDelivery()
-                ? ('features.benefitDeliveries.detailDescription' | translate)
-                : ('features.benefitDeliveries.formDescription' | translate)
-            }}
-          </p>
-        </div>
-      </div>
-
-      @if (selectedDelivery(); as delivery) {
-        <div class="detail-grid">
-          <label class="field">
-            <span>{{ 'forms.beneficiary' | translate }}</span>
-            <div class="input detail-value">{{ delivery.beneficiary.fullName }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.document' | translate }}</span>
-            <div class="input detail-value">{{ delivery.beneficiary.document }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.charityProgram' | translate }}</span>
-            <div class="input detail-value">{{ delivery.charityProgram.name }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.benefit' | translate }}</span>
-            <div class="input detail-value">{{ delivery.benefit.name }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.quantity' | translate }}</span>
-            <div class="input detail-value">{{ delivery.quantity }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.deliveryDate' | translate }}</span>
-            <div class="input detail-value">{{ delivery.deliveryDate | date: 'mediumDate' }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.administrator' | translate }}</span>
-            <div class="input detail-value">{{ delivery.administrator.name }}</div>
-          </label>
-          <label class="field">
-            <span>{{ 'forms.reference' | translate }}</span>
-            <div class="input detail-value">#{{ delivery.reference }}</div>
-          </label>
-          <label class="field detail-grid-full">
-            <span>{{ 'forms.notes' | translate }}</span>
-            <div class="input textarea detail-value">{{ delivery.notes || '—' }}</div>
-          </label>
-        </div>
+    <app-editor-panel
+      [title]="selectedDelivery() ? 'features.benefitDeliveries.detailTitle' : 'features.benefitDeliveries.registerTitle'"
+      [description]="selectedDelivery() ? 'features.benefitDeliveries.detailDescription' : 'features.benefitDeliveries.formDescription'"
+    >
+      @if (selectedDelivery()) {
+        <app-detail-grid [items]="selectedDeliveryDetails()" />
       } @else {
         <form class="form" [formGroup]="form" (ngSubmit)="submit()">
           <div class="field-grid">
-            <label class="field">
-              <span>{{ 'forms.charityProgram' | translate }}</span>
-              <select
-                class="input"
-                [class.input-invalid]="showControlError(form.controls.charityProgramId)"
-                formControlName="charityProgramId"
-                [attr.aria-invalid]="showControlError(form.controls.charityProgramId)"
-              >
-                <option value="">{{ 'common.selectOption' | translate }}</option>
-                @for (program of programs(); track program.id) {
-                  <option [value]="program.id">{{ program.name }}</option>
-                }
-              </select>
-              <app-form-error
-                [control]="form.controls.charityProgramId"
-                [errors]="[['required', 'validation.required']]"
-              />
-            </label>
+            <app-form-select
+              [control]="form.controls.charityProgramId"
+              label="forms.charityProgram"
+              [options]="programOptions()"
+              [errors]="[['required', 'validation.required']]"
+              placeholder="common.selectOption"
+            />
 
-            <label class="field">
-              <span>{{ 'forms.beneficiary' | translate }}</span>
-              <select
-                class="input"
-                [class.input-invalid]="showControlError(form.controls.beneficiaryId)"
-                formControlName="beneficiaryId"
-                [attr.aria-invalid]="showControlError(form.controls.beneficiaryId)"
-              >
-                <option value="">{{ 'common.selectOption' | translate }}</option>
-                @for (beneficiary of formBeneficiaries(); track beneficiary.id) {
-                  <option [value]="beneficiary.id">{{ beneficiary.fullName }}</option>
-                }
-              </select>
-              <app-form-error
-                [control]="form.controls.beneficiaryId"
-                [errors]="[['required', 'validation.required']]"
-              />
-            </label>
+            <app-form-select
+              [control]="form.controls.beneficiaryId"
+              label="forms.beneficiary"
+              [options]="formBeneficiaryOptions()"
+              [errors]="[['required', 'validation.required']]"
+              placeholder="common.selectOption"
+            />
           </div>
 
           <div class="field-grid">
-            <label class="field">
-              <span>{{ 'forms.benefit' | translate }}</span>
-              <select
-                class="input"
-                [class.input-invalid]="showControlError(form.controls.benefitId)"
-                formControlName="benefitId"
-                [attr.aria-invalid]="showControlError(form.controls.benefitId)"
-              >
-                <option value="">{{ 'common.selectOption' | translate }}</option>
-                @for (benefit of benefits(); track benefit.id) {
-                  <option [value]="benefit.id">{{ benefit.name }}</option>
-                }
-              </select>
-              <app-form-error
-                [control]="form.controls.benefitId"
-                [errors]="[['required', 'validation.required']]"
-              />
-            </label>
+            <app-form-select
+              [control]="form.controls.benefitId"
+              label="forms.benefit"
+              [options]="benefitOptions()"
+              [errors]="[['required', 'validation.required']]"
+              placeholder="common.selectOption"
+            />
           </div>
 
           <div class="field-grid">
@@ -274,6 +149,6 @@
           </div>
         </form>
       }
-    </section>
+    </app-editor-panel>
   </div>
 </div>

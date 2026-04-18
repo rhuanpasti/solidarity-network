@@ -4,11 +4,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AdministratorRole } from '@solidarity-network/shared';
 import { AuthService } from '../auth/auth.service';
 import { LanguageService } from '../i18n/language.service';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslateModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslateModule, LanguageSwitcherComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -11,8 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { FieldActionDirective } from '../../shared/components/input-field/field-action.directive';
-import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
+import { PasswordFieldComponent } from '../../shared/components/password-field/password-field.component';
 import { touchAll } from '../../shared/utils/form.utils';
 
 const PASSWORD_POLICY_REGEX =
@@ -36,8 +35,7 @@ function passwordMismatchValidator(control: AbstractControl): ValidationErrors |
     ReactiveFormsModule,
     TranslateModule,
     ButtonComponent,
-    InputFieldComponent,
-    FieldActionDirective,
+    PasswordFieldComponent,
   ],
   templateUrl: './first-access.page.html',
   styleUrl: './first-access.page.scss',
@@ -71,15 +69,6 @@ export class FirstAccessPage {
   });
 
   readonly session = this.authService.session;
-
-  togglePasswordVisibility(field: 'new' | 'confirm') {
-    if (field === 'new') {
-      this.passwordVisible.update((current) => !current);
-      return;
-    }
-
-    this.confirmVisible.update((current) => !current);
-  }
 
   logout() {
     this.authService.logout();

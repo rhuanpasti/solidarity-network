@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
   BenefitDeliveryListQuery,
@@ -6,6 +6,7 @@ import type {
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
+import { buildHttpParams } from '../../shared/utils/http.utils';
 
 export interface BenefitDeliveryPayload {
   beneficiaryId: string;
@@ -23,13 +24,7 @@ export class BenefitDeliveriesService {
   private readonly baseUrl = `${environment.apiBaseUrl}/benefit-deliveries`;
 
   list(query: BenefitDeliveryListQuery = {}) {
-    let params = new HttpParams();
-
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
+    const params = buildHttpParams(query);
 
     return this.httpClient.get<PaginatedResponse<BenefitDeliverySummary>>(this.baseUrl, { params });
   }

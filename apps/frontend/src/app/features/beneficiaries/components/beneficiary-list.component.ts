@@ -1,0 +1,53 @@
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
+import type { PaginationMeta, BeneficiarySummary } from '@solidarity-network/shared';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ListPanelComponent } from '../../../shared/components/list-panel/list-panel.component';
+
+@Component({
+  selector: 'app-beneficiary-list',
+  standalone: true,
+  imports: [TranslateModule, ButtonComponent, ListPanelComponent],
+  template: `
+    <app-list-panel
+      title="features.beneficiaries.title"
+      description="features.beneficiaries.formDescription"
+      emptyTitle="features.beneficiaries.emptyTitle"
+      emptyDescription="features.beneficiaries.emptyDescription"
+      [hasItems]="items().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="pageChange.emit($event)"
+    >
+      <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="create.emit()">
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <div panelList class="list">
+        @for (item of items(); track item.id) {
+          <button type="button" class="list-item" (click)="select.emit(item)">
+            <div>
+              <strong>{{ item.fullName }}</strong>
+              <p>{{ item.document }}</p>
+              @if (item.email) {
+                <small>{{ item.email }}</small>
+              }
+              <small>{{ item.charityProgram?.name ?? ('common.unassigned' | translate) }}</small>
+            </div>
+            <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
+          </button>
+        }
+      </div>
+    </app-list-panel>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BeneficiaryListComponent {
+  readonly items = input.required<BeneficiarySummary[]>();
+  readonly pagination = input.required<PaginationMeta>();
+  readonly listLoading = input(false);
+  readonly submitPending = input(false);
+  readonly create = output<void>();
+  readonly select = output<BeneficiarySummary>();
+  readonly pageChange = output<number>();
+}

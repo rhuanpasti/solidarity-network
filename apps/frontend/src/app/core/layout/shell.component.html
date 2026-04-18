@@ -36,24 +36,10 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="language-switcher">
-        <button
-          type="button"
-          class="language-button"
-          [class.active]="currentLanguage() === 'en'"
-          (click)="setLanguage('en')"
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          class="language-button"
-          [class.active]="currentLanguage() === 'pt-br'"
-          (click)="setLanguage('pt-br')"
-        >
-          PT-BR
-        </button>
-      </div>
+      <app-language-switcher
+        [currentLanguage]="currentLanguage()"
+        (languageChange)="setLanguage($event)"
+      />
 
       @if (session(); as currentSession) {
         <section class="user-card">
