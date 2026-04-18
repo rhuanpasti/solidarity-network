@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsString,
@@ -10,11 +11,17 @@ const PASSWORD_POLICY_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/;
 
 export class ChangePasswordDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @MaxLength(120)
   currentPassword!: string;
 
+  @ApiProperty({
+    minLength: 12,
+    description:
+      'Must contain uppercase, lowercase, number, and special character.',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(12)

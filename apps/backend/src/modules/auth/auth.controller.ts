@@ -1,5 +1,11 @@
 import { Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuditTrailService } from '../observability/audit-trail.service';
 import {
@@ -9,6 +15,11 @@ import {
 import { attachAuthCookie, clearAuthCookie } from './auth-cookie.util';
 import { AuthService } from './auth.service';
 import type { AuthenticatedRequest } from './auth.guard';
+import {
+  AuthResponseDto,
+  LogoutResponseDto,
+  SessionResponseDto,
+} from './dto/auth-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -24,6 +35,9 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @ApiOperation({ summary: 'Authenticate and create a session' })
+  @ApiBody({ type: LoginDto })
+  @ApiOkResponse({ type: AuthResponseDto })
   async login(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -35,12 +49,17 @@ export class AuthController {
   }
 
   @Get('session')
+  @ApiBearerAuth('bearer')
+  @ApiOperation({ summary: 'Get the authenticated session' })
+  @ApiOkResponse({ type: SessionResponseDto })
   getSession(@Req() request: AuthenticatedRequest) {
     return this.authService.getSession(request.authUser);
   }
 
   @Public()
   @Post('logout')
+  @ApiOperation({ summary: 'Clear the current session' })
+  @ApiOkResponse({ type: LogoutResponseDto })
   logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -55,6 +74,10 @@ export class AuthController {
 
   @AllowPasswordChangeWhenRequired()
   @Post('change-password')
+  @ApiBearerAuth('bearer')
+  @ApiOperation({ summary: 'Change the current account password' })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiOkResponse({ type: AuthResponseDto })
   async changePassword(
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true }) response: Response,

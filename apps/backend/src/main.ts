@@ -51,6 +51,17 @@ async function bootstrap() {
         'REST API for managing charity programs, administrators, beneficiaries, benefits, and benefit deliveries.',
       )
       .setVersion('1.0.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Use the token returned by POST /api/v1/auth/login as: Bearer <token>',
+        },
+        'bearer',
+      )
+      .addSecurityRequirements('bearer')
       .addTag('Charity Programs')
       .addTag('Auth')
       .addTag('Administrators')

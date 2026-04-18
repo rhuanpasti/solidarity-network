@@ -6,7 +6,7 @@
     "prestart:dev": "npm --prefix ../../packages/shared run build",
     "prebuild": "npm --prefix ../../packages/shared run build",
     "prestart": "npm --prefix ../../packages/shared run build",
-    "start:dev": "tsx watch src/main.ts",
+    "start:dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/apps/backend/src/main.js",
     "start:prod": "prisma migrate deploy && node dist/apps/backend/src/main.js",
