@@ -8,7 +8,7 @@ import { GlobalToastComponent } from './shared/components/global-toast/global-to
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, GlobalLoadingComponent, GlobalToastComponent],
-  template: '<app-global-loading /><router-outlet /><app-global-toast />',
+  template: '<app-global-loading /> <router-outlet /> <app-global-toast />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {

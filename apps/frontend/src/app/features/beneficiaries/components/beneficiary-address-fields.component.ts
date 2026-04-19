@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import type { BeneficiaryAddressForm } from '../beneficiaries.facade';
+import type { BeneficiaryAddressForm } from '../beneficiaries.state';
 import { InputFieldComponent } from '../../../shared/components/input-field/input-field.component';
 
 @Component({

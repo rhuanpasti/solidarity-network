@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@a
 import { BeneficiaryFiltersComponent } from './components/beneficiary-filters.component';
 import { BeneficiaryFormComponent } from './components/beneficiary-form.component';
 import { BeneficiaryListComponent } from './components/beneficiary-list.component';
-import { BeneficiariesFacade } from './beneficiaries.facade';
+import { BeneficiariesState } from './beneficiaries.state';
 
 @Component({
   selector: 'app-beneficiaries-page',
@@ -17,22 +17,21 @@ import { BeneficiariesFacade } from './beneficiaries.facade';
   templateUrl: './beneficiaries.page.html',
   styleUrl: './beneficiaries.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [BeneficiariesFacade],
+  providers: [BeneficiariesState],
 })
 export class BeneficiariesPage implements OnInit {
-  private readonly facade = inject(BeneficiariesFacade);
-  readonly vm = this.facade;
+  readonly state = inject(BeneficiariesState);
   readonly programOptions = computed(() =>
-    this.vm.programs().map((program) => ({ value: program.id, label: program.name })),
+    this.state.programs().map((program) => ({ value: program.id, label: program.name })),
   );
   readonly countryOptions = computed(() =>
-    this.vm.countryOptions.map((country) => ({
+    this.state.countryOptions.map((country) => ({
       value: country,
-      translationKey: this.vm.countryLabelKey(country),
+      translationKey: this.state.countryLabelKey(country),
     })),
   );
 
   ngOnInit() {
-    this.facade.initialize();
+    this.state.initialize();
   }
 }

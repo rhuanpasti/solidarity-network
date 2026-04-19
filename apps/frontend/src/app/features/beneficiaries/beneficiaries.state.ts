@@ -77,7 +77,7 @@ export type BeneficiaryForm = FormGroup<{
 const PROGRAM_OPTIONS_PAGE_SIZE = 100;
 
 @Injectable()
-export class BeneficiariesFacade {
+export class BeneficiariesState {
   readonly BeneficiaryStatus = BeneficiaryStatus;
   readonly countryOptions: SupportedCountry[] = [BRAZIL_COUNTRY, WORLD_COUNTRY];
 

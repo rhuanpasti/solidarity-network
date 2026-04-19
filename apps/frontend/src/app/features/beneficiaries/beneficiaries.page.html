@@ -6,38 +6,38 @@
   />
 
   <app-beneficiary-filters
-    [form]="vm.filterForm"
+    [form]="state.filterForm"
     [programOptions]="programOptions()"
-    [pageSizes]="vm.pageSizes"
-    (submitFilters)="vm.applyFilters()"
-    (pageSizeChange)="vm.changePageSize($event)"
+    [pageSizes]="state.pageSizes"
+    (submitFilters)="state.applyFilters()"
+    (pageSizeChange)="state.changePageSize($event)"
   />
 
   <div class="content-grid">
     <app-beneficiary-list
-      [items]="vm.items()"
-      [pagination]="vm.pagination()"
-      [listLoading]="vm.listLoading()"
-      [submitPending]="vm.submitPending()"
-      (create)="vm.editor.startCreate()"
-      (select)="vm.editor.select($event)"
-      (pageChange)="vm.changePage($event)"
+      [items]="state.items()"
+      [pagination]="state.pagination()"
+      [listLoading]="state.listLoading()"
+      [submitPending]="state.submitPending()"
+      (create)="state.editor.startCreate()"
+      (select)="state.editor.select($event)"
+      (pageChange)="state.changePage($event)"
     />
 
     <app-beneficiary-form
-      [form]="vm.form"
-      [selected]="vm.selected()"
-      [generatedCredential]="vm.generatedCredential()"
-      [isReadOnly]="vm.isReadOnly()"
-      [submitPending]="vm.submitPending()"
+      [form]="state.form"
+      [selected]="state.selected()"
+      [generatedCredential]="state.generatedCredential()"
+      [isReadOnly]="state.isReadOnly()"
+      [submitPending]="state.submitPending()"
       [programOptions]="programOptions()"
       [countryOptions]="countryOptions()"
-      [documentLabelKey]="vm.documentLabelKey()"
-      [addressLookupMessageKey]="vm.addressLookupMessageKey()"
-      (save)="vm.submit()"
-      (cancel)="vm.editor.cancel()"
-      (edit)="vm.editor.startEditing()"
-      (postalCodeBlur)="vm.lookupAddressByPostalCode()"
+      [documentLabelKey]="state.documentLabelKey()"
+      [addressLookupMessageKey]="state.addressLookupMessageKey()"
+      (save)="state.submit()"
+      (cancel)="state.editor.cancel()"
+      (edit)="state.editor.startEditing()"
+      (postalCodeBlur)="state.lookupAddressByPostalCode()"
     />
   </div>
 </div>

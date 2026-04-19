@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { BeneficiaryStatus } from '@solidarity-network/shared';
-import type { BeneficiaryFiltersForm } from '../beneficiaries.facade';
+import type { BeneficiaryFiltersForm } from '../beneficiaries.state';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { FormSelectComponent, type SelectOption } from '../../../shared/components/form-select/form-select.component';
 

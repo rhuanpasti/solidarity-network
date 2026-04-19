@@ -6,7 +6,7 @@ import { EditorPanelComponent } from '../../../shared/components/editor-panel/ed
 import { FormSelectComponent, type SelectOption } from '../../../shared/components/form-select/form-select.component';
 import { GeneratedCredentialCardComponent } from '../../../shared/components/generated-credential-card/generated-credential-card.component';
 import { InputFieldComponent } from '../../../shared/components/input-field/input-field.component';
-import type { BeneficiaryForm } from '../beneficiaries.facade';
+import type { BeneficiaryForm } from '../beneficiaries.state';
 import { BeneficiaryAddressFieldsComponent } from './beneficiary-address-fields.component';
 
 interface GeneratedCredentialInfo {
