@@ -26,6 +26,7 @@ import { InputFieldComponent } from '../input-field/input-field.component';
         type="button"
         class="field-action-button"
         [attr.aria-label]="toggleLabel() | translate"
+        [attr.aria-pressed]="visible()"
         (click)="toggleVisibility()"
       >
         <span class="material-symbols-rounded">
@@ -34,6 +35,7 @@ import { InputFieldComponent } from '../input-field/input-field.component';
       </button>
     </app-input-field>
   `,
+  styleUrl: './password-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PasswordFieldComponent {

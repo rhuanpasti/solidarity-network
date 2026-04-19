@@ -108,6 +108,7 @@ export class AdministratorsPage implements OnInit {
     ),
     charityProgramIds: this.formBuilder.nonNullable.control<string[]>([]),
   });
+
   readonly roleOptions: SelectOption[] = [
     {
       value: AdministratorRole.SuperAdmin,
@@ -122,12 +123,14 @@ export class AdministratorsPage implements OnInit {
       translationKey: "enums.roles.case_worker",
     },
   ];
+
   readonly programOptions = computed<SelectOption[]>(() =>
     this.programs().map((program) => ({
       value: program.id,
       label: program.name,
     })),
   );
+
   readonly editor = new CrudFormController<AdministratorSummary>({
     form: this.form,
     onCreate: () => {
@@ -151,6 +154,7 @@ export class AdministratorsPage implements OnInit {
       });
     },
   });
+
   readonly selected = this.editor.selected;
   readonly mode = this.editor.mode;
   readonly isReadOnly = this.editor.isReadOnly;
@@ -158,7 +162,7 @@ export class AdministratorsPage implements OnInit {
   ngOnInit() {
     this.load();
     this.charityProgramsService
-      .list({ pageSize: 100 })
+      .list({ pageSize: 10 })
       .subscribe((response) => this.programs.set(response.items));
   }
 
@@ -246,6 +250,7 @@ export class AdministratorsPage implements OnInit {
     }
 
     this.isSubmitting.set(true);
+    
     this.administratorsService.create(payload).subscribe({
       next: (response) => {
         this.isSubmitting.set(false);

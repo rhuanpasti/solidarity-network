@@ -136,7 +136,7 @@ export class AuthService {
         await firstValueFrom(this.httpClient.post(`${this.baseUrl}/logout`, {}));
       }
     } catch {
-      // The local session still needs to be cleared if the logout request fails.
+      console.error('Logout request failed, clearing local session state anyway.');
     } finally {
       this.clearSessionState();
     }

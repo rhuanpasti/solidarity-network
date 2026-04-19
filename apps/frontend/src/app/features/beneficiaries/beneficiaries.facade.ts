@@ -102,6 +102,7 @@ export class BeneficiariesFacade {
   readonly documentLabelKey = computed(() =>
     this.isBrazilSelected() ? 'forms.cpf' : 'forms.document',
   );
+
   readonly filters = signal({
     search: '',
     charityProgramId: '',
@@ -109,13 +110,16 @@ export class BeneficiariesFacade {
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
   });
+
   readonly pageSizes = [10, 25, 50];
+
   readonly filterForm: BeneficiaryFiltersForm = this.formBuilder.nonNullable.group({
     search: [''],
     charityProgramId: [''],
     status: [''],
     pageSize: [DEFAULT_PAGE_SIZE],
   });
+
   readonly form: BeneficiaryForm = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
     document: ['', [Validators.required, Validators.maxLength(40)]],
@@ -146,6 +150,7 @@ export class BeneficiariesFacade {
       complement: [''],
     }),
   });
+
   readonly editor = new CrudFormController<BeneficiarySummary>({
     form: this.form,
     onCreate: () => {
@@ -197,7 +202,9 @@ export class BeneficiariesFacade {
       this.addressLookupMessageKey.set(null);
     },
   });
+
   readonly selected = this.editor.selected;
+  
   readonly isReadOnly = this.editor.isReadOnly;
 
   initialize() {

@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import type { BenefitDeliverySummary } from '@solidarity-network/shared';
+import { forkJoin } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
@@ -34,26 +35,38 @@ export class DashboardPage implements OnInit {
   readonly recentDeliveries = signal<BenefitDeliverySummary[]>([]);
 
   ngOnInit() {
-    this.charityProgramsService.list().subscribe((response) =>
-      this.patchStat('programs', response.meta.totalItems),
-    );
-    this.administratorsService.list().subscribe((response) =>
-      this.patchStat('administrators', response.meta.totalItems),
-    );
-    this.beneficiariesService.list().subscribe((response) =>
-      this.patchStat('beneficiaries', response.meta.totalItems),
-    );
-    this.benefitsService.list().subscribe((response) =>
-      this.patchStat('benefits', response.meta.totalItems),
-    );
-    this.benefitDeliveriesService.list().subscribe((response) =>
-      this.recentDeliveries.set(response.items.slice(0, 5)),
-    );
-  }
-
-  private patchStat(key: string, value: number) {
-    this.stats.update((current) =>
-      current.map((item) => (item.key === key ? { ...item, value } : item)),
+    forkJoin({
+      programs: this.charityProgramsService.list(),
+      administrators: this.administratorsService.list(),
+      beneficiaries: this.beneficiariesService.list(),
+      benefits: this.benefitsService.list(),
+      deliveries: this.benefitDeliveriesService.list(),
+    }).subscribe(
+      ({ programs, administrators, beneficiaries, benefits, deliveries }) => {
+        this.stats.set([
+          {
+            key: 'programs',
+            label: 'features.dashboard.stats.programs',
+            value: programs.meta.totalItems,
+          },
+          {
+            key: 'administrators',
+            label: 'features.dashboard.stats.administrators',
+            value: administrators.meta.totalItems,
+          },
+          {
+            key: 'beneficiaries',
+            label: 'features.dashboard.stats.beneficiaries',
+            value: beneficiaries.meta.totalItems,
+          },
+          {
+            key: 'benefits',
+            label: 'features.dashboard.stats.benefits',
+            value: benefits.meta.totalItems,
+          },
+        ]);
+        this.recentDeliveries.set(deliveries.items.slice(0, 5));
+      },
     );
   }
 }

@@ -78,18 +78,22 @@ export class BenefitDeliveriesPage implements OnInit {
   readonly benefits = signal<BenefitSummary[]>([]);
   readonly listLoading = signal(false);
   readonly submitPending = signal(false);
+  
   readonly filters = signal({
     beneficiaryId: '',
     charityProgramId: '',
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
   });
+
   readonly pageSizes = [10, 25, 50];
+  
   readonly filterForm = this.formBuilder.nonNullable.group({
     beneficiaryId: [''],
     charityProgramId: [''],
     pageSize: [DEFAULT_PAGE_SIZE],
   });
+
   readonly form = this.formBuilder.nonNullable.group({
     beneficiaryId: ['', Validators.required],
     benefitId: ['', Validators.required],
@@ -99,6 +103,7 @@ export class BenefitDeliveriesPage implements OnInit {
     notes: [''],
     reference: ['', [Validators.required, Validators.maxLength(80)]],
   });
+  
   readonly programOptions = signal<SelectOption[]>([]);
   readonly filterBeneficiaryOptions = signal<SelectOption[]>([]);
   readonly formBeneficiaryOptions = signal<SelectOption[]>([]);
