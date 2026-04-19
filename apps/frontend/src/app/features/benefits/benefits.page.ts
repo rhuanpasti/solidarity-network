@@ -15,7 +15,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { CrudFormController } from '../../shared/utils/crud-form.controller';
 import {
   applyServerValidationErrors,
-  clearServerValidationErrors,
+  prepareFormForSubmit,
   touchAll,
 } from '../../shared/utils/form.utils';
 
@@ -51,7 +51,7 @@ export class BenefitsPage implements OnInit {
     category: this.formBuilder.nonNullable.control<BenefitCategory>(BenefitCategory.Food, {
       validators: [Validators.required],
     }),
-    active: [true, Validators.required],
+    active: [true],
   });
   readonly categoryOptions: SelectOption[] = [
     { value: BenefitCategory.Food, translationKey: 'enums.categories.food' },
@@ -99,6 +99,8 @@ export class BenefitsPage implements OnInit {
       return;
     }
 
+    prepareFormForSubmit(this.form);
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -109,7 +111,6 @@ export class BenefitsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
-    clearServerValidationErrors(this.form);
     const request = this.selected()
       ? this.benefitsService.update(this.selected()!.id, payload)
       : this.benefitsService.create(payload);

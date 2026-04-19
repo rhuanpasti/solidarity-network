@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   BRAZIL_COUNTRY,
   BeneficiaryStatus,
@@ -29,7 +29,7 @@ import {
 } from '../../shared/utils/pagination.utils';
 import {
   applyServerValidationErrors,
-  clearServerValidationErrors,
+  prepareFormForSubmit,
   touchAll,
 } from '../../shared/utils/form.utils';
 import {
@@ -43,6 +43,36 @@ interface GeneratedCredentialInfo {
   email: string;
   passkey: string;
 }
+
+export type BeneficiaryAddressForm = FormGroup<{
+  postalCode: FormControl<string>;
+  country: FormControl<SupportedCountry>;
+  street: FormControl<string>;
+  number: FormControl<string>;
+  district: FormControl<string>;
+  city: FormControl<string>;
+  state: FormControl<string>;
+  complement: FormControl<string>;
+}>;
+
+export type BeneficiaryFiltersForm = FormGroup<{
+  search: FormControl<string>;
+  charityProgramId: FormControl<string>;
+  status: FormControl<string>;
+  pageSize: FormControl<number>;
+}>;
+
+export type BeneficiaryForm = FormGroup<{
+  fullName: FormControl<string>;
+  document: FormControl<string>;
+  birthDate: FormControl<string>;
+  email: FormControl<string>;
+  phone: FormControl<string>;
+  notes: FormControl<string>;
+  charityProgramId: FormControl<string>;
+  status: FormControl<BeneficiaryStatus>;
+  address: BeneficiaryAddressForm;
+}>;
 
 const PROGRAM_OPTIONS_PAGE_SIZE = 100;
 
@@ -80,13 +110,13 @@ export class BeneficiariesFacade {
     pageSize: DEFAULT_PAGE_SIZE,
   });
   readonly pageSizes = [10, 25, 50];
-  readonly filterForm = this.formBuilder.nonNullable.group({
+  readonly filterForm: BeneficiaryFiltersForm = this.formBuilder.nonNullable.group({
     search: [''],
     charityProgramId: [''],
     status: [''],
     pageSize: [DEFAULT_PAGE_SIZE],
   });
-  readonly form = this.formBuilder.nonNullable.group({
+  readonly form: BeneficiaryForm = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
     document: ['', [Validators.required, Validators.maxLength(40)]],
     birthDate: ['', Validators.required],
@@ -237,6 +267,8 @@ export class BeneficiariesFacade {
       return;
     }
 
+    prepareFormForSubmit(this.form);
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -247,7 +279,6 @@ export class BeneficiariesFacade {
     }
 
     const raw = this.form.getRawValue();
-    clearServerValidationErrors(this.form);
     const payload = {
       ...raw,
       notes: raw.notes || null,

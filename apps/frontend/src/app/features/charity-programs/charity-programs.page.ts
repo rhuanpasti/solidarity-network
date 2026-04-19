@@ -25,7 +25,7 @@ import {
 } from '../../shared/utils/pagination.utils';
 import {
   applyServerValidationErrors,
-  clearServerValidationErrors,
+  prepareFormForSubmit,
   touchAll,
 } from '../../shared/utils/form.utils';
 
@@ -159,6 +159,8 @@ export class CharityProgramsPage implements OnInit {
       return;
     }
 
+    prepareFormForSubmit(this.form);
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -173,7 +175,6 @@ export class CharityProgramsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
-    clearServerValidationErrors(this.form);
     const request = this.selected()
       ? this.charityProgramsService.update(this.selected()!.id, payload)
       : this.charityProgramsService.create(payload);

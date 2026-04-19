@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { BeneficiaryStatus } from '@solidarity-network/shared';
+import type { BeneficiaryFiltersForm } from '../beneficiaries.facade';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { FormSelectComponent, type SelectOption } from '../../../shared/components/form-select/form-select.component';
 
@@ -18,14 +19,14 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
         </label>
 
         <app-form-select
-          [control]="charityProgramControl()"
+          [control]="form().controls.charityProgramId"
           label="forms.charityProgram"
           [options]="programOptions()"
           placeholder="common.all"
         />
 
         <app-form-select
-          [control]="statusControl()"
+          [control]="form().controls.status"
           label="forms.status"
           [options]="statusOptions"
           placeholder="common.all"
@@ -51,7 +52,7 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BeneficiaryFiltersComponent {
-  readonly form = input.required<FormGroup>();
+  readonly form = input.required<BeneficiaryFiltersForm>();
   readonly programOptions = input.required<SelectOption[]>();
   readonly pageSizes = input.required<number[]>();
   readonly submitFilters = output<void>();
@@ -61,12 +62,4 @@ export class BeneficiaryFiltersComponent {
     { value: BeneficiaryStatus.Inactive, translationKey: 'enums.beneficiaryStatuses.inactive' },
     { value: BeneficiaryStatus.Archived, translationKey: 'enums.beneficiaryStatuses.archived' },
   ];
-
-  charityProgramControl() {
-    return this.form().get('charityProgramId') as FormControl<string>;
-  }
-
-  statusControl() {
-    return this.form().get('status') as FormControl<string>;
-  }
 }

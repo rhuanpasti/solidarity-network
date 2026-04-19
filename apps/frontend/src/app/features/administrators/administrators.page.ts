@@ -19,7 +19,7 @@ import { ButtonComponent } from "../../shared/components/button/button.component
 import { InputFieldComponent } from "../../shared/components/input-field/input-field.component";
 import {
   applyServerValidationErrors,
-  clearServerValidationErrors,
+  prepareFormForSubmit,
   touchAll,
 } from "../../shared/utils/form.utils";
 import {
@@ -206,6 +206,8 @@ export class AdministratorsPage implements OnInit {
       return;
     }
 
+    prepareFormForSubmit(this.form);
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -216,7 +218,6 @@ export class AdministratorsPage implements OnInit {
     }
 
     const payload = this.form.getRawValue();
-    clearServerValidationErrors(this.form);
 
     if (this.selected()) {
       this.isSubmitting.set(true);

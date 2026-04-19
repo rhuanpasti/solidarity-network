@@ -34,7 +34,7 @@ import {
 } from '../../shared/utils/pagination.utils';
 import {
   applyServerValidationErrors,
-  clearServerValidationErrors,
+  prepareFormForSubmit,
   touchAll,
 } from '../../shared/utils/form.utils';
 
@@ -227,6 +227,8 @@ export class BenefitDeliveriesPage implements OnInit {
       return;
     }
 
+    prepareFormForSubmit(this.form);
+
     if (this.form.invalid) {
       touchAll(this.form);
       this.toastService.show({
@@ -237,7 +239,6 @@ export class BenefitDeliveriesPage implements OnInit {
     }
 
     const raw = this.form.getRawValue();
-    clearServerValidationErrors(this.form);
     this.submitPending.set(true);
     this.benefitDeliveriesService
       .create({

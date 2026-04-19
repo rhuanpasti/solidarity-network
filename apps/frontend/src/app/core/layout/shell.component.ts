@@ -7,14 +7,14 @@ import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 @Component({
-  selector: 'app-shell',
+  selector: 'app-layout',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslateModule, LanguageSwitcherComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShellComponent {
+export class AppLayoutComponent {
   private readonly languageService = inject(LanguageService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);

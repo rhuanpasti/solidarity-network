@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdministratorRole } from '@solidarity-network/shared';
 import { authGuard, loginGuard } from './core/auth/auth.guard';
-import { ShellComponent } from './core/layout/shell.component';
+import { AppLayoutComponent } from './core/layout/shell.component';
 
 export const appRoutes: Routes = [
   {
@@ -24,7 +24,7 @@ export const appRoutes: Routes = [
   },
   {
     path: '',
-    component: ShellComponent,
+    component: AppLayoutComponent,
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [

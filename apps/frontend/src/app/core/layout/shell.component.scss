@@ -1,7 +1,6 @@
-.shell {
+.app-layout {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
+  display: flex;
   background: #f3f4f6;
 }
 
@@ -21,17 +20,19 @@
   transform: translateY(0);
 }
 
-.shell-overlay {
+.app-layout-overlay {
   display: none;
 }
 
 .sidebar {
   position: sticky;
   top: 0;
+  flex: 0 0 264px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 2rem;
+  min-width: 0;
   height: 100vh;
   padding: 1.5rem 1rem 1rem;
   border-right: 1px solid #e5e7eb;
@@ -107,14 +108,22 @@
 }
 
 .sidebar-footer {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  min-width: 0;
+}
+
+app-language-switcher {
+  display: block;
+  min-width: 0;
 }
 
 .user-card {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  min-width: 0;
   padding: 0.85rem;
   border: 1px solid #e5e7eb;
   border-radius: 1rem;
@@ -133,16 +142,18 @@
 .user-card-copy strong,
 .user-card-copy span {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-card-copy span {
   color: #6b7280;
   font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.shell-main {
+.app-layout-main {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -216,11 +227,11 @@
 }
 
 @media (max-width: 960px) {
-  .shell {
-    grid-template-columns: 1fr;
+  .app-layout {
+    display: block;
   }
 
-  .shell-overlay {
+  .app-layout-overlay {
     position: fixed;
     inset: 0;
     z-index: 15;
@@ -230,7 +241,7 @@
     transition: opacity 180ms ease;
   }
 
-  .shell-overlay.visible {
+  .app-layout-overlay.visible {
     display: block;
     opacity: 1;
     pointer-events: auto;

@@ -60,8 +60,23 @@ function removeServerMessageErrors(control: AbstractControl) {
   Object.values(children).forEach((child) => removeServerMessageErrors(child));
 }
 
+function revalidateControlTree(control: AbstractControl) {
+  const children = (control as FormGroup).controls;
+
+  if (children) {
+    Object.values(children).forEach((child) => revalidateControlTree(child));
+  }
+
+  control.updateValueAndValidity({ emitEvent: false });
+}
+
 export function clearServerValidationErrors(control: AbstractControl) {
   removeServerMessageErrors(control);
+}
+
+export function prepareFormForSubmit(control: AbstractControl) {
+  clearServerValidationErrors(control);
+  revalidateControlTree(control);
 }
 
 export function applyServerValidationErrors(

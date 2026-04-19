@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { EditorPanelComponent } from '../../../shared/components/editor-panel/editor-panel.component';
 import { FormSelectComponent, type SelectOption } from '../../../shared/components/form-select/form-select.component';
 import { GeneratedCredentialCardComponent } from '../../../shared/components/generated-credential-card/generated-credential-card.component';
 import { InputFieldComponent } from '../../../shared/components/input-field/input-field.component';
+import type { BeneficiaryForm } from '../beneficiaries.facade';
 import { BeneficiaryAddressFieldsComponent } from './beneficiary-address-fields.component';
 
 interface GeneratedCredentialInfo {
@@ -54,7 +55,7 @@ interface GeneratedCredentialInfo {
       <form class="form" [formGroup]="form()" (ngSubmit)="save.emit()">
         <div class="field-grid">
           <app-input-field
-            [control]="fullNameControl()"
+            [control]="form().controls.fullName"
             label="forms.fullName"
             [errors]="[
               ['required', 'validation.required'],
@@ -64,7 +65,7 @@ interface GeneratedCredentialInfo {
           />
 
           <app-input-field
-            [control]="emailControl()"
+            [control]="form().controls.email"
             label="forms.email"
             type="email"
             [errors]="[
@@ -75,7 +76,7 @@ interface GeneratedCredentialInfo {
           />
 
           <app-form-select
-            [control]="countryControl()"
+            [control]="form().controls.address.controls.country"
             label="forms.country"
             [options]="countryOptions()"
             [readonly]="isReadOnly()"
@@ -84,7 +85,7 @@ interface GeneratedCredentialInfo {
 
         <div class="field-grid">
           <app-input-field
-            [control]="documentControl()"
+            [control]="form().controls.document"
             [label]="documentLabelKey()"
             [errors]="[
               ['required', 'validation.required'],
@@ -95,7 +96,7 @@ interface GeneratedCredentialInfo {
           />
 
           <app-input-field
-            [control]="birthDateControl()"
+            [control]="form().controls.birthDate"
             label="forms.birthDate"
             type="date"
             [errors]="[['required', 'validation.required']]"
@@ -105,7 +106,7 @@ interface GeneratedCredentialInfo {
 
         <div class="field-grid">
           <app-input-field
-            [control]="phoneControl()"
+            [control]="form().controls.phone"
             label="forms.phone"
             [errors]="[
               ['required', 'validation.required'],
@@ -116,7 +117,7 @@ interface GeneratedCredentialInfo {
           />
 
           <app-form-select
-            [control]="charityProgramControl()"
+            [control]="form().controls.charityProgramId"
             label="forms.charityProgram"
             [options]="programOptions()"
             placeholder="common.unassigned"
@@ -124,7 +125,7 @@ interface GeneratedCredentialInfo {
           />
 
           <app-form-select
-            [control]="statusControl()"
+            [control]="form().controls.status"
             label="forms.status"
             [options]="statusOptions"
             [readonly]="isReadOnly()"
@@ -132,14 +133,14 @@ interface GeneratedCredentialInfo {
         </div>
 
         <app-beneficiary-address-fields
-          [group]="addressGroup()"
+          [group]="form().controls.address"
           [lookupHint]="addressLookupMessageKey()"
           [readonly]="isReadOnly()"
           (postalCodeBlur)="postalCodeBlur.emit()"
         />
 
         <app-input-field
-          [control]="notesControl()"
+          [control]="form().controls.notes"
           label="forms.notes"
           [textarea]="true"
           [readonly]="isReadOnly()"
@@ -161,7 +162,7 @@ interface GeneratedCredentialInfo {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BeneficiaryFormComponent {
-  readonly form = input.required<FormGroup>();
+  readonly form = input.required<BeneficiaryForm>();
   readonly isReadOnly = input(false);
   readonly submitPending = input(false);
   readonly selected = input<unknown | null>(null);
@@ -179,35 +180,4 @@ export class BeneficiaryFormComponent {
     { value: 'inactive', translationKey: 'enums.beneficiaryStatuses.inactive' },
     { value: 'archived', translationKey: 'enums.beneficiaryStatuses.archived' },
   ];
-
-  fullNameControl() {
-    return this.form().get('fullName') as FormControl<string>;
-  }
-  emailControl() {
-    return this.form().get('email') as FormControl<string>;
-  }
-  countryControl() {
-    return this.form().get('address.country') as FormControl<string>;
-  }
-  documentControl() {
-    return this.form().get('document') as FormControl<string>;
-  }
-  birthDateControl() {
-    return this.form().get('birthDate') as FormControl<string>;
-  }
-  phoneControl() {
-    return this.form().get('phone') as FormControl<string>;
-  }
-  charityProgramControl() {
-    return this.form().get('charityProgramId') as FormControl<string>;
-  }
-  statusControl() {
-    return this.form().get('status') as FormControl<string>;
-  }
-  addressGroup() {
-    return this.form().get('address') as FormGroup;
-  }
-  notesControl() {
-    return this.form().get('notes') as FormControl<string>;
-  }
 }
