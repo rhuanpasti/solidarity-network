@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -54,10 +55,11 @@ export class CreateBeneficiaryDto {
   notes?: string;
 
   @ApiPropertyOptional()
-  @IsString()
   @IsOptional()
-  @IsNotEmpty()
-  charityProgramId?: string | null;
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  charityProgramIds?: string[];
 
   @ApiPropertyOptional({ enum: BeneficiaryStatus })
   @IsOptional()

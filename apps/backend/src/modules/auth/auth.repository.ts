@@ -65,7 +65,7 @@ export class AuthRepository {
         status: 'active',
       },
       include: {
-        charityProgram: true,
+        charityPrograms: true,
       },
     });
 
@@ -80,7 +80,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType: 'beneficiary',
-      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
+      programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };
@@ -123,6 +123,9 @@ export class AuthRepository {
 
     const beneficiary = await this.prisma.beneficiary.findUnique({
       where: { id: accountId },
+      include: {
+        charityPrograms: true,
+      },
     });
 
     if (
@@ -140,7 +143,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
-      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
+      programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       mustChangePassword: beneficiary.mustChangePassword,
       csrfToken: '',
     };
@@ -183,6 +186,9 @@ export class AuthRepository {
 
     const beneficiary = await this.prisma.beneficiary.findUnique({
       where: { id: accountId },
+      include: {
+        charityPrograms: true,
+      },
     });
 
     if (
@@ -200,7 +206,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
-      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
+      programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };
@@ -250,6 +256,9 @@ export class AuthRepository {
         mustChangePassword: false,
         lastPasswordChangedAt: new Date(),
       },
+      include: {
+        charityPrograms: true,
+      },
     });
 
     if (!beneficiary.email) {
@@ -263,7 +272,7 @@ export class AuthRepository {
       email: beneficiary.email,
       role: null,
       accountType,
-      programIds: beneficiary.charityProgramId ? [beneficiary.charityProgramId] : [],
+      programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       passwordHash: beneficiary.passwordHash ?? passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
     };

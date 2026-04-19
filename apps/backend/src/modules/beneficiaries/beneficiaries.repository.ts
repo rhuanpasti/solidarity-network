@@ -3,9 +3,14 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { ProgramAccessScope } from '../authorization/authorization.types';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
+import type { BeneficiaryWithPrograms } from './beneficiaries.mapper';
 
 const beneficiaryInclude = {
-  charityProgram: true,
+  charityPrograms: {
+    include: {
+      charityProgram: true,
+    },
+  },
 } satisfies Prisma.BeneficiaryInclude;
 
 @Injectable()
@@ -15,7 +20,7 @@ export class BeneficiariesRepository {
     private readonly prisma: PrismaService,
   ) {}
 
-  create(data: Prisma.BeneficiaryUncheckedCreateInput) {
+  create(data: Prisma.BeneficiaryCreateInput) {
     return this.prisma.beneficiary.create({
       data,
       include: beneficiaryInclude,
@@ -57,12 +62,43 @@ export class BeneficiariesRepository {
     });
   }
 
-  update(id: string, data: Prisma.BeneficiaryUncheckedUpdateInput) {
-    return this.prisma.beneficiary.update({
-      where: { id },
-      data,
-      include: beneficiaryInclude,
-    });
+  async update(
+    id: string,
+    data: Prisma.BeneficiaryUpdateInput,
+    charityProgramIds?: string[],
+  ): Promise<BeneficiaryWithPrograms> {
+    const operations: Prisma.PrismaPromise<unknown>[] = [];
+
+    if (charityProgramIds) {
+      operations.push(
+        this.prisma.beneficiaryProgramLink.deleteMany({
+          where: { beneficiaryId: id },
+        }),
+      );
+
+      if (charityProgramIds.length > 0) {
+        operations.push(
+          this.prisma.beneficiaryProgramLink.createMany({
+            data: charityProgramIds.map((charityProgramId) => ({
+              beneficiaryId: id,
+              charityProgramId,
+            })),
+            skipDuplicates: true,
+          }),
+        );
+      }
+    }
+
+    operations.push(
+      this.prisma.beneficiary.update({
+        where: { id },
+        data,
+        include: beneficiaryInclude,
+      }),
+    );
+
+    const results = await this.prisma.$transaction(operations);
+    return results[results.length - 1] as BeneficiaryWithPrograms;
   }
 
   private buildWhere(
@@ -77,7 +113,13 @@ export class BeneficiariesRepository {
     }
 
     if (query.charityProgramId) {
-      filters.push({ charityProgramId: query.charityProgramId });
+      filters.push({
+        charityPrograms: {
+          some: {
+            charityProgramId: query.charityProgramId,
+          },
+        },
+      });
     }
 
     if (query.status) {
@@ -96,8 +138,12 @@ export class BeneficiariesRepository {
 
     if (scope && !scope.hasGlobalAccess) {
       filters.push({
-        charityProgramId: {
-          in: scope.allowedProgramIds,
+        charityPrograms: {
+          some: {
+            charityProgramId: {
+              in: scope.allowedProgramIds,
+            },
+          },
         },
       });
     }

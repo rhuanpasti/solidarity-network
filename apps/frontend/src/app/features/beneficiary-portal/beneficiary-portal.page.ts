@@ -25,4 +25,8 @@ export class BeneficiaryPortalPage implements OnInit {
       .getMine()
       .subscribe((overview) => this.overview.set(overview));
   }
+
+  beneficiaryProgramNames(portal: BeneficiaryPortalSummary) {
+    return portal.beneficiary.charityPrograms.map((program) => program.name).join(', ');
+  }
 }

@@ -6,7 +6,11 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../../prisma/prisma.service';
 
 type BeneficiaryPortalBeneficiary = Prisma.BeneficiaryGetPayload<{
-  include: { charityProgram: true };
+  include: {
+    charityPrograms: {
+      include: { charityProgram: true };
+    };
+  };
 }>;
 
 type UpcomingDelivery = Prisma.BenefitDeliveryGetPayload<{
@@ -26,7 +30,11 @@ export class BeneficiaryPortalService {
       this.prisma.beneficiary.findUnique({
         where: { id: beneficiaryId },
         include: {
-          charityProgram: true,
+          charityPrograms: {
+            include: {
+              charityProgram: true,
+            },
+          },
         },
       }),
       this.prisma.benefitDelivery.findMany({
@@ -68,16 +76,14 @@ export class BeneficiaryPortalService {
       email: beneficiary.email,
       phone: beneficiary.phone,
       status: beneficiary.status,
-      charityProgram: beneficiary.charityProgram
-        ? {
-            id: beneficiary.charityProgram.id,
-            name: beneficiary.charityProgram.name,
-            description: beneficiary.charityProgram.description,
-            status: beneficiary.charityProgram.status,
-            createdAt: beneficiary.charityProgram.createdAt.toISOString(),
-            updatedAt: beneficiary.charityProgram.updatedAt.toISOString(),
-          }
-        : null,
+      charityPrograms: beneficiary.charityPrograms.map((link) => ({
+        id: link.charityProgram.id,
+        name: link.charityProgram.name,
+        description: link.charityProgram.description,
+        status: link.charityProgram.status,
+        createdAt: link.charityProgram.createdAt.toISOString(),
+        updatedAt: link.charityProgram.updatedAt.toISOString(),
+      })),
     };
   }
 

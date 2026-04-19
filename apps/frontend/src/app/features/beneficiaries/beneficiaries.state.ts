@@ -67,7 +67,7 @@ export type BeneficiaryForm = FormGroup<{
   email: FormControl<string>;
   phone: FormControl<string>;
   notes: FormControl<string>;
-  charityProgramId: FormControl<string>;
+  charityProgramIds: FormControl<string[]>;
   status: FormControl<BeneficiaryStatus>;
   address: BeneficiaryAddressForm;
 }>;
@@ -123,7 +123,7 @@ export class BeneficiariesState {
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
     notes: [''],
-    charityProgramId: [''],
+    charityProgramIds: this.formBuilder.nonNullable.control<string[]>([]),
     status: this.formBuilder.nonNullable.control<BeneficiaryStatus>(
       BeneficiaryStatus.Active,
       {
@@ -157,7 +157,7 @@ export class BeneficiariesState {
         email: '',
         phone: '',
         notes: '',
-        charityProgramId: '',
+        charityProgramIds: [],
         status: BeneficiaryStatus.Active,
         address: {
           postalCode: '',
@@ -181,7 +181,7 @@ export class BeneficiariesState {
         email: item.email ?? '',
         phone: item.phone,
         notes: item.notes ?? '',
-        charityProgramId: item.charityProgram?.id ?? '',
+        charityProgramIds: item.charityPrograms.map((program) => program.id),
         status: item.status,
         address: {
           postalCode: item.address.postalCode,
@@ -285,7 +285,7 @@ export class BeneficiariesState {
     const payload = {
       ...raw,
       notes: raw.notes || null,
-      charityProgramId: raw.charityProgramId || null,
+      charityProgramIds: raw.charityProgramIds,
     };
 
     if (this.selected()) {

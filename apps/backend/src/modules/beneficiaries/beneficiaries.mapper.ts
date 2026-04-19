@@ -2,13 +2,17 @@ import type { Beneficiary, CharityProgram, Prisma } from '@prisma/client';
 import type { Address, BeneficiarySummary } from '@solidarity-network/shared';
 import { toCharityProgramSummary } from '../charity-programs/charity-programs.mapper';
 
-type BeneficiaryWithProgram = Beneficiary & {
-  charityProgram: CharityProgram | null;
+export type BeneficiaryWithPrograms = Beneficiary & {
+  charityPrograms: Array<{
+    beneficiaryId: string;
+    charityProgramId: string;
+    charityProgram: CharityProgram;
+  }>;
   address: Prisma.JsonValue;
 };
 
 export function toBeneficiarySummary(
-  beneficiary: BeneficiaryWithProgram,
+  beneficiary: BeneficiaryWithPrograms,
 ): BeneficiarySummary {
   return {
     id: beneficiary.id,
@@ -19,9 +23,7 @@ export function toBeneficiarySummary(
     phone: beneficiary.phone,
     address: beneficiary.address as unknown as Address,
     notes: beneficiary.notes,
-    charityProgram: beneficiary.charityProgram
-      ? toCharityProgramSummary(beneficiary.charityProgram)
-      : null,
+    charityPrograms: beneficiary.charityPrograms.map((link) => toCharityProgramSummary(link.charityProgram)),
     createdAt: beneficiary.createdAt.toISOString(),
     status: beneficiary.status,
   };

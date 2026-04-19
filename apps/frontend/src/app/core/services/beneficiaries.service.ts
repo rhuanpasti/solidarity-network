@@ -19,7 +19,7 @@ export interface BeneficiaryPayload {
   phone: string;
   address: Address;
   notes?: string | null;
-  charityProgramId?: string | null;
+  charityProgramIds?: string[];
   status: 'active' | 'inactive' | 'archived';
 }
 

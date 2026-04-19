@@ -46,12 +46,12 @@ export class BeneficiariesService {
   ): Promise<CreateBeneficiaryResult> {
     this.authorizationService.assertCanEditBeneficiary(
       actor,
-      dto.charityProgramId,
+      dto.charityProgramIds ?? [],
       {
         action: 'beneficiary.create',
       },
     );
-    await this.assertProgramExists(dto.charityProgramId);
+    await this.assertProgramsExist(dto.charityProgramIds);
     const normalizedInput = normalizeBeneficiaryInput({
       document: dto.document,
       phone: dto.phone,
@@ -72,7 +72,15 @@ export class BeneficiariesService {
         mustChangePassword: true,
         address: normalizedInput.address as unknown as Prisma.InputJsonValue,
         notes: dto.notes,
-        charityProgramId: dto.charityProgramId ?? undefined,
+        charityPrograms: dto.charityProgramIds?.length
+          ? {
+              create: dto.charityProgramIds.map((charityProgramId) => ({
+                charityProgram: {
+                  connect: { id: charityProgramId },
+                },
+              })),
+            }
+          : undefined,
         status: dto.status ?? 'active',
       });
     } catch (error) {
@@ -84,9 +92,9 @@ export class BeneficiariesService {
       action: 'beneficiary.create',
       entityType: 'beneficiary',
       entityId: beneficiary.id,
-      charityProgramId: beneficiary.charityProgramId,
       actor,
       metadata: {
+        charityProgramIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         status: beneficiary.status,
       },
     });
@@ -149,16 +157,16 @@ export class BeneficiariesService {
       throw new DomainNotFoundException('beneficiary', id);
     }
 
-    if (dto.charityProgramId !== undefined) {
+    if (dto.charityProgramIds !== undefined) {
       this.authorizationService.assertCanEditBeneficiary(
         actor,
-        dto.charityProgramId,
+        dto.charityProgramIds,
         {
           action: 'beneficiary.reassign_program',
           beneficiaryId: id,
         },
       );
-      await this.assertProgramExists(dto.charityProgramId);
+      await this.assertProgramsExist(dto.charityProgramIds);
     }
 
     const mergedAddress = {
@@ -175,7 +183,7 @@ export class BeneficiariesService {
 
     this.authorizationService.assertCanEditBeneficiary(
       actor,
-      existingBeneficiary.charityProgramId,
+      existingBeneficiary.charityPrograms.map((link) => link.charityProgramId),
       {
         action: 'beneficiary.update',
         beneficiaryId: id,
@@ -194,9 +202,8 @@ export class BeneficiariesService {
           ? (normalizedInput.address as unknown as Prisma.InputJsonValue)
           : undefined,
         notes: dto.notes,
-        charityProgramId: dto.charityProgramId,
         status: dto.status,
-      });
+      }, dto.charityProgramIds);
     } catch (error) {
       this.rethrowUniqueDocumentError(error);
       throw error;
@@ -206,7 +213,6 @@ export class BeneficiariesService {
       action: 'beneficiary.update',
       entityType: 'beneficiary',
       entityId: beneficiary.id,
-      charityProgramId: beneficiary.charityProgramId,
       actor,
       metadata: {
         updatedFields: Object.keys(dto).filter(
@@ -215,6 +221,7 @@ export class BeneficiariesService {
             key !== 'address',
         ),
         updatedAddress: dto.address !== undefined,
+        charityProgramIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         status: beneficiary.status,
       },
     });
@@ -222,15 +229,20 @@ export class BeneficiariesService {
     return toBeneficiarySummary(beneficiary);
   }
 
-  private async assertProgramExists(charityProgramId?: string | null) {
-    if (!charityProgramId) {
+  private async assertProgramsExist(charityProgramIds?: string[]) {
+    if (!charityProgramIds?.length) {
       return;
     }
 
-    const program = await this.charityProgramsRepository.findById(charityProgramId);
+    const results = await Promise.all(
+      charityProgramIds.map((charityProgramId) =>
+        this.charityProgramsRepository.findById(charityProgramId),
+      ),
+    );
+    const missingIndex = results.findIndex((program) => !program);
 
-    if (!program) {
-      throw new DomainNotFoundException('charity_program', charityProgramId);
+    if (missingIndex >= 0) {
+      throw new DomainNotFoundException('charity_program', charityProgramIds[missingIndex]!);
     }
   }
 

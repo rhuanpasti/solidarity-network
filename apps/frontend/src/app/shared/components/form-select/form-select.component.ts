@@ -28,28 +28,48 @@ export interface SelectOption {
         }
       </span>
 
-      <select
-        class="input"
-        [class.input-invalid]="showError()"
-        [formControl]="control()"
-        [attr.aria-invalid]="showError()"
-        [multiple]="multiple()"
-        [disabled]="readonly()"
-      >
-        @if (placeholder(); as placeholderKey) {
-          <option value="">{{ placeholderKey | translate }}</option>
-        }
+      @if (multiple()) {
+        <select
+          class="input"
+          [class.input-invalid]="showError()"
+          [formControl]="control()"
+          [attr.aria-invalid]="showError()"
+          multiple
+          [disabled]="readonly()"
+        >
+          @for (option of options(); track option.value) {
+            <option [value]="option.value" [disabled]="option.disabled">
+              @if (option.translationKey) {
+                {{ option.translationKey | translate }}
+              } @else {
+                {{ option.label }}
+              }
+            </option>
+          }
+        </select>
+      } @else {
+        <select
+          class="input"
+          [class.input-invalid]="showError()"
+          [formControl]="control()"
+          [attr.aria-invalid]="showError()"
+          [disabled]="readonly()"
+        >
+          @if (placeholder(); as placeholderKey) {
+            <option value="">{{ placeholderKey | translate }}</option>
+          }
 
-        @for (option of options(); track option.value) {
-          <option [value]="option.value" [disabled]="option.disabled">
-            @if (option.translationKey) {
-              {{ option.translationKey | translate }}
-            } @else {
-              {{ option.label }}
-            }
-          </option>
-        }
-      </select>
+          @for (option of options(); track option.value) {
+            <option [value]="option.value" [disabled]="option.disabled">
+              @if (option.translationKey) {
+                {{ option.translationKey | translate }}
+              } @else {
+                {{ option.label }}
+              }
+            </option>
+          }
+        </select>
+      }
 
       <app-form-error [control]="control()" [errors]="errors()" [fallbackKey]="fallbackErrorKey()" />
     </label>

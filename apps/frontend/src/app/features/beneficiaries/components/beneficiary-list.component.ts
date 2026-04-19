@@ -32,7 +32,13 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
               @if (item.email) {
                 <small>{{ item.email }}</small>
               }
-              <small>{{ item.charityProgram?.name ?? ('common.unassigned' | translate) }}</small>
+              <small>
+                {{
+                  item.charityPrograms.length
+                    ? charityProgramNames(item)
+                    : ('common.unassigned' | translate)
+                }}
+              </small>
             </div>
             <small>{{ ('enums.beneficiaryStatuses.' + item.status) | translate }}</small>
           </button>
@@ -50,4 +56,8 @@ export class BeneficiaryListComponent {
   readonly create = output<void>();
   readonly select = output<BeneficiarySummary>();
   readonly pageChange = output<number>();
+
+  charityProgramNames(item: BeneficiarySummary) {
+    return item.charityPrograms.map((program) => program.name).join(', ');
+  }
 }

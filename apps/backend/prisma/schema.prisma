@@ -42,7 +42,7 @@ model CharityProgram {
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
   administrators     AdministratorProgramLink[]
-  beneficiaries      Beneficiary[]
+  beneficiaries      BeneficiaryProgramLink[]
   benefitDeliveries  BenefitDelivery[]
 }
 
@@ -96,17 +96,27 @@ model Beneficiary {
   lastPasswordChangedAt DateTime?
   address          Json
   notes            String?
-  charityProgramId String?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   status           BeneficiaryStatus   @default(active)
 
-  charityProgram   CharityProgram?     @relation(fields: [charityProgramId], references: [id])
+  charityPrograms  BeneficiaryProgramLink[]
   benefitDeliveries BenefitDelivery[]
 
-  @@index([charityProgramId])
   @@index([status])
   @@index([fullName])
+}
+
+model BeneficiaryProgramLink {
+  beneficiaryId   String
+  charityProgramId String
+  createdAt       DateTime @default(now())
+
+  beneficiary     Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  charityProgram  CharityProgram @relation(fields: [charityProgramId], references: [id], onDelete: Cascade)
+
+  @@id([beneficiaryId, charityProgramId])
+  @@index([charityProgramId])
 }
 
 model Benefit {

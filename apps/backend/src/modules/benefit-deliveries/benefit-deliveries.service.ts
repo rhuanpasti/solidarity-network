@@ -71,7 +71,11 @@ export class BenefitDeliveriesService {
         message: 'Cannot register a delivery for an inactive benefit.',
       });
     }
-    if (beneficiary.charityProgramId !== dto.charityProgramId) {
+    if (
+      !beneficiary.charityPrograms.some(
+        (link) => link.charityProgramId === dto.charityProgramId,
+      )
+    ) {
       throw new BadRequestException({
         code: 'BENEFICIARY_PROGRAM_MISMATCH',
         message: 'Beneficiary must belong to the selected charity program.',

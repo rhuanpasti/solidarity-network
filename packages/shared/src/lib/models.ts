@@ -41,7 +41,7 @@ export interface BeneficiarySummary {
   phone: string;
   address: Address;
   notes: string | null;
-  charityProgram: CharityProgramSummary | null;
+  charityPrograms: CharityProgramSummary[];
   createdAt: string;
   status: BeneficiaryStatus;
 }
@@ -79,7 +79,7 @@ export interface BeneficiaryPortalSummary {
     BeneficiarySummary,
   'id' | 'fullName' | 'document' | 'birthDate' | 'email' | 'phone' | 'status'
   > & {
-    charityProgram: CharityProgramSummary | null;
+    charityPrograms: CharityProgramSummary[];
   };
   upcomingDeliveries: Array<{
     id: string;

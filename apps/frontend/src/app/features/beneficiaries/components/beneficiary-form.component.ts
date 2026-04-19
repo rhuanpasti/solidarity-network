@@ -117,10 +117,10 @@ interface GeneratedCredentialInfo {
           />
 
           <app-form-select
-            [control]="form().controls.charityProgramId"
-            label="forms.charityProgram"
+            [control]="form().controls.charityProgramIds"
+            label="forms.charityPrograms"
             [options]="programOptions()"
-            placeholder="common.unassigned"
+            [multiple]="true"
             [readonly]="isReadOnly()"
           />
 

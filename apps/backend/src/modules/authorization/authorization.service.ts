@@ -96,9 +96,21 @@ export class AuthorizationService {
 
   canEditBeneficiary(
     user: AuthenticatedUser,
-    programId?: string | null,
+    programIds?: string[] | null,
   ) {
-    return this.canAccessProgram(user, programId);
+    if (user.accountType !== 'administrator') {
+      return false;
+    }
+
+    if (this.isSuperAdmin(user)) {
+      return true;
+    }
+
+    if (!programIds?.length) {
+      return false;
+    }
+
+    return programIds.some((programId) => user.programIds.includes(programId));
   }
 
   canRegisterDelivery(user: AuthenticatedUser, programId: string) {
@@ -195,16 +207,16 @@ export class AuthorizationService {
 
   assertCanEditBeneficiary(
     user: AuthenticatedUser,
-    programId?: string | null,
+    programIds?: string[] | null,
     details?: Record<string, unknown>,
   ) {
-    if (this.canEditBeneficiary(user, programId)) {
+    if (this.canEditBeneficiary(user, programIds)) {
       return;
     }
 
     this.logFailure('canEditBeneficiary', user, {
       ...details,
-      programId,
+      programIds,
     });
     throw new ForbiddenException({
       code: 'BENEFICIARY_EDIT_FORBIDDEN',
