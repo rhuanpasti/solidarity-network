@@ -110,7 +110,10 @@
     "reviewHighlightedFields": "Review the highlighted fields and try again.",
     "searchingPostalCode": "Looking up the address by postal code...",
     "addressAutoFilled": "Address filled automatically from the postal code.",
-    "postalCodeLookupFailed": "Unable to find an address for this postal code."
+    "postalCodeLookupFailed": "Unable to find an address for this postal code.",
+    "server": {
+      "beneficiaryDocumentAlreadyExists": "A beneficiary with this document already exists."
+    }
   },
   "errors": {
     "requestFailed": "Request failed. Please try again.",

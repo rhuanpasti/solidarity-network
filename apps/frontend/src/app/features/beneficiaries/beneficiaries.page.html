@@ -32,7 +32,7 @@
       [submitPending]="beneficiariesState.submitPending()"
       [programOptions]="programOptions()"
       [countryOptions]="countryOptions()"
-      [documentLabelKey]="beneficiariesState.documentLabelKey()"
+      [documentLabelKey]="beneficiariesState.documentLabelKey"
       [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
       (save)="beneficiariesState.submit()"
       (cancel)="beneficiariesState.editor.cancel()"

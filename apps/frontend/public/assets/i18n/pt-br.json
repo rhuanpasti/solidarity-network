@@ -110,7 +110,10 @@
     "reviewHighlightedFields": "Revise os campos destacados e tente novamente.",
     "searchingPostalCode": "Buscando endereco pelo CEP...",
     "addressAutoFilled": "Endereco preenchido automaticamente pelo CEP.",
-    "postalCodeLookupFailed": "Nao foi possivel localizar o endereco pelo CEP."
+    "postalCodeLookupFailed": "Nao foi possivel localizar o endereco pelo CEP.",
+    "server": {
+      "beneficiaryDocumentAlreadyExists": "Ja existe um beneficiario cadastrado com este documento."
+    }
   },
   "errors": {
     "requestFailed": "Nao foi possivel concluir a solicitacao. Tente novamente.",

@@ -58,21 +58,27 @@ export class BeneficiariesService {
       address: dto.address,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+    await this.assertDocumentAvailable(normalizedInput.document);
     const generatedPasskey = generateNumericPasskey(16);
-
-    const beneficiary = await this.repository.create({
-      fullName: dto.fullName,
-      document: normalizedInput.document,
-      birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-      email: dto.email.trim().toLowerCase(),
-      phone: normalizedInput.phone,
-      passwordHash: await hashPassword(generatedPasskey),
-      mustChangePassword: true,
-      address: normalizedInput.address as unknown as Prisma.InputJsonValue,
-      notes: dto.notes,
-      charityProgramId: dto.charityProgramId ?? undefined,
-      status: dto.status ?? 'active',
-    });
+    let beneficiary;
+    try {
+      beneficiary = await this.repository.create({
+        fullName: dto.fullName,
+        document: normalizedInput.document,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        email: dto.email.trim().toLowerCase(),
+        phone: normalizedInput.phone,
+        passwordHash: await hashPassword(generatedPasskey),
+        mustChangePassword: true,
+        address: normalizedInput.address as unknown as Prisma.InputJsonValue,
+        notes: dto.notes,
+        charityProgramId: dto.charityProgramId ?? undefined,
+        status: dto.status ?? 'active',
+      });
+    } catch (error) {
+      this.rethrowUniqueDocumentError(error);
+      throw error;
+    }
 
     await this.auditTrailService.record({
       action: 'beneficiary.create',
@@ -165,6 +171,7 @@ export class BeneficiariesService {
       address: mergedAddress,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+    await this.assertDocumentAvailable(normalizedInput.document, id);
 
     this.authorizationService.assertCanEditBeneficiary(
       actor,
@@ -175,19 +182,25 @@ export class BeneficiariesService {
       },
     );
 
-    const beneficiary = await this.repository.update(id, {
-      fullName: dto.fullName,
-      document: dto.document ? normalizedInput.document : undefined,
-      birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-      email: dto.email?.trim().toLowerCase(),
-      phone: dto.phone ? normalizedInput.phone : undefined,
-      address: dto.address
-        ? (normalizedInput.address as unknown as Prisma.InputJsonValue)
-        : undefined,
-      notes: dto.notes,
-      charityProgramId: dto.charityProgramId,
-      status: dto.status,
-    });
+    let beneficiary;
+    try {
+      beneficiary = await this.repository.update(id, {
+        fullName: dto.fullName,
+        document: dto.document ? normalizedInput.document : undefined,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        email: dto.email?.trim().toLowerCase(),
+        phone: dto.phone ? normalizedInput.phone : undefined,
+        address: dto.address
+          ? (normalizedInput.address as unknown as Prisma.InputJsonValue)
+          : undefined,
+        notes: dto.notes,
+        charityProgramId: dto.charityProgramId,
+        status: dto.status,
+      });
+    } catch (error) {
+      this.rethrowUniqueDocumentError(error);
+      throw error;
+    }
 
     await this.auditTrailService.record({
       action: 'beneficiary.update',
@@ -237,5 +250,46 @@ export class BeneficiariesService {
       message: errors[0],
       details: errors,
     });
+  }
+
+  private async assertDocumentAvailable(document: string, currentBeneficiaryId?: string) {
+    const existingBeneficiary = await this.repository.findByDocument(document);
+
+    if (!existingBeneficiary || existingBeneficiary.id === currentBeneficiaryId) {
+      return;
+    }
+
+    throw new BadRequestException({
+      code: 'BENEFICIARY_DOCUMENT_ALREADY_EXISTS',
+      message: 'A beneficiary with this document already exists.',
+      details: [
+        {
+          field: 'document',
+          code: 'beneficiaryDocumentAlreadyExists',
+          message: 'A beneficiary with this document already exists.',
+        },
+      ],
+    });
+  }
+
+  private rethrowUniqueDocumentError(error: unknown): never | void {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002' &&
+      Array.isArray(error.meta?.target) &&
+      error.meta.target.includes('document')
+    ) {
+      throw new BadRequestException({
+        code: 'BENEFICIARY_DOCUMENT_ALREADY_EXISTS',
+        message: 'A beneficiary with this document already exists.',
+        details: [
+          {
+            field: 'document',
+            code: 'beneficiaryDocumentAlreadyExists',
+            message: 'A beneficiary with this document already exists.',
+          },
+        ],
+      });
+    }
   }
 }

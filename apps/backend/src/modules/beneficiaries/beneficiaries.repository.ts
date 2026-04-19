@@ -50,6 +50,13 @@ export class BeneficiariesRepository {
     });
   }
 
+  findByDocument(document: string) {
+    return this.prisma.beneficiary.findUnique({
+      where: { document },
+      include: beneficiaryInclude,
+    });
+  }
+
   update(id: string, data: Prisma.BeneficiaryUncheckedUpdateInput) {
     return this.prisma.beneficiary.update({
       where: { id },

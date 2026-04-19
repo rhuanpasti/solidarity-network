@@ -74,7 +74,11 @@ let nextInputFieldId = 0;
         </div>
       }
 
-      @if (serverErrorMessage(); as message) {
+      @if (serverErrorTranslationKey(); as translationKey) {
+        <small class="field-error" [id]="errorId()" aria-live="polite">
+          {{ translationKey | translate }}
+        </small>
+      } @else if (serverErrorMessage(); as message) {
         <small class="field-error" [id]="errorId()" aria-live="polite">
           {{ message }}
         </small>
@@ -125,6 +129,11 @@ export class InputFieldComponent {
     const serverMessage = control?.getError('serverMessage');
     return typeof serverMessage === 'string' ? serverMessage : null;
   });
+  readonly serverErrorTranslationKey = computed(() => {
+    const control = this.control();
+    const serverMessageKey = control?.getError('serverMessageKey');
+    return typeof serverMessageKey === 'string' ? serverMessageKey : null;
+  });
   readonly isRequired = computed(() => {
     const control = this.control();
 
@@ -152,7 +161,7 @@ export class InputFieldComponent {
       !!(this.externalErrorVisible() && this.externalErrorKey()),
   );
   readonly describedBy = computed(() => {
-    if (this.serverErrorMessage() || this.errorKey()) {
+    if (this.serverErrorTranslationKey() || this.serverErrorMessage() || this.errorKey()) {
       return this.errorId();
     }
 

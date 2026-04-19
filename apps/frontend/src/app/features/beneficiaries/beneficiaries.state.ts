@@ -33,9 +33,7 @@ import {
   touchAll,
 } from '../../shared/utils/form.utils';
 import {
-  brazilianPhoneValidator,
   brazilianPostalCodeValidator,
-  cpfValidator,
 } from '../../shared/utils/validation.utils';
 
 interface GeneratedCredentialInfo {
@@ -99,9 +97,7 @@ export class BeneficiariesState {
   readonly listLoading = signal(false);
   readonly submitPending = signal(false);
   readonly isBrazilSelected = computed(() => isBrazilCountry(this.selectedCountry()));
-  readonly documentLabelKey = computed(() =>
-    this.isBrazilSelected() ? 'forms.cpf' : 'forms.document',
-  );
+  readonly documentLabelKey = 'forms.document';
 
   readonly filters = signal({
     search: '',
@@ -396,22 +392,14 @@ export class BeneficiariesState {
   }
 
   private applyCountryValidators(country: SupportedCountry) {
-    const documentValidators = [Validators.required, Validators.maxLength(40)];
-    const phoneValidators = [Validators.required, Validators.maxLength(30)];
     const postalCodeValidators = [Validators.required];
 
     if (isBrazilCountry(country)) {
-      documentValidators.push(cpfValidator());
-      phoneValidators.push(brazilianPhoneValidator());
       postalCodeValidators.push(brazilianPostalCodeValidator());
     }
 
-    this.form.controls.document.setValidators(documentValidators);
-    this.form.controls.phone.setValidators(phoneValidators);
     this.form.controls.address.controls.postalCode.setValidators(postalCodeValidators);
 
-    this.form.controls.document.updateValueAndValidity({ emitEvent: false });
-    this.form.controls.phone.updateValueAndValidity({ emitEvent: false });
     this.form.controls.address.controls.postalCode.updateValueAndValidity({
       emitEvent: false,
     });

@@ -47,15 +47,15 @@ export function getBeneficiaryValidationErrors(input: BeneficiaryValidationInput
 
   if (isBrazilCountry(normalized.address.country)) {
     if (!isValidCpf(normalized.document)) {
-      errors.push('CPF invalido para beneficiario com pais Brazil.');
+      errors.push('Invalid CPF for a beneficiary with country Brazil.');
     }
 
     if (!isValidBrazilianPhone(normalized.phone)) {
-      errors.push('Telefone invalido para beneficiario com pais Brazil.');
+      errors.push('Invalid phone number for a beneficiary with country Brazil.');
     }
 
     if (!isValidBrazilianPostalCode(normalized.address.postalCode)) {
-      errors.push('CEP invalido para beneficiario com pais Brazil.');
+      errors.push('Invalid postal code for a beneficiary with country Brazil.');
     }
   }
 

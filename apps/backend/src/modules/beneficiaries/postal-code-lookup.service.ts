@@ -27,7 +27,7 @@ export class PostalCodeLookupService {
     if (!isValidBrazilianPostalCode(postalCode)) {
       throw new BadRequestException({
         code: 'INVALID_POSTAL_CODE',
-        message: 'CEP invalido.',
+        message: 'Invalid postal code.',
       });
     }
 
@@ -43,14 +43,14 @@ export class PostalCodeLookupService {
     } catch {
       throw new BadGatewayException({
         code: 'POSTAL_CODE_LOOKUP_FAILED',
-        message: 'Falha ao consultar o CEP.',
+        message: 'Failed to look up the postal code.',
       });
     }
 
     if (!response.ok) {
       throw new BadGatewayException({
         code: 'POSTAL_CODE_LOOKUP_FAILED',
-        message: 'Falha ao consultar o CEP.',
+        message: 'Failed to look up the postal code.',
       });
     }
 
@@ -59,7 +59,7 @@ export class PostalCodeLookupService {
     if (payload.erro) {
       throw new BadRequestException({
         code: 'POSTAL_CODE_NOT_FOUND',
-        message: 'CEP nao encontrado.',
+        message: 'Postal code not found.',
       });
     }
 

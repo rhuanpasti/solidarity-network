@@ -9,6 +9,10 @@ export function touchAll(control: AbstractControl) {
 
 export type ControlErrorMap = ReadonlyArray<readonly [string, string]>;
 
+function getServerValidationTranslationKey(code: string) {
+  return `validation.server.${code}`;
+}
+
 export function shouldShowControlError(control: AbstractControl | null) {
   return !!control && control.invalid && (control.touched || control.dirty);
 }
@@ -47,8 +51,12 @@ function isValidationDetail(
 function removeServerMessageErrors(control: AbstractControl) {
   const currentErrors = control.errors;
 
-  if (currentErrors?.['serverMessage']) {
-    const { serverMessage: _serverMessage, ...remainingErrors } = currentErrors;
+  if (currentErrors?.['serverMessage'] || currentErrors?.['serverMessageKey']) {
+    const {
+      serverMessage: _serverMessage,
+      serverMessageKey: _serverMessageKey,
+      ...remainingErrors
+    } = currentErrors;
     control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 
@@ -103,6 +111,7 @@ export function applyServerValidationErrors(
 
     targetControl.setErrors({
       ...(targetControl.errors ?? {}),
+      serverMessageKey: detail.code ? getServerValidationTranslationKey(detail.code) : null,
       serverMessage: detail.message,
     });
     targetControl.markAsTouched();

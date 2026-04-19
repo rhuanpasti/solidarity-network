@@ -16,7 +16,9 @@ import {
   standalone: true,
   imports: [TranslateModule],
   template: `
-    @if (serverErrorMessage(); as message) {
+    @if (serverErrorTranslationKey(); as translationKey) {
+      <small class="field-error" aria-live="polite">{{ translationKey | translate }}</small>
+    } @else if (serverErrorMessage(); as message) {
       <small class="field-error" aria-live="polite">{{ message }}</small>
     } @else if (errorKey(); as key) {
       <small class="field-error" aria-live="polite">{{ key | translate }}</small>
@@ -31,6 +33,10 @@ export class FormErrorComponent {
   readonly serverErrorMessage = computed(() => {
     const serverMessage = this.control()?.getError('serverMessage');
     return typeof serverMessage === 'string' ? serverMessage : null;
+  });
+  readonly serverErrorTranslationKey = computed(() => {
+    const serverMessageKey = this.control()?.getError('serverMessageKey');
+    return typeof serverMessageKey === 'string' ? serverMessageKey : null;
   });
 
   readonly errorKey = computed(() =>
