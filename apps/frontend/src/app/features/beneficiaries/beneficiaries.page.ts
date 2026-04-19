@@ -20,18 +20,20 @@ import { BeneficiariesState } from './beneficiaries.state';
   providers: [BeneficiariesState],
 })
 export class BeneficiariesPage implements OnInit {
-  readonly state = inject(BeneficiariesState);
+  readonly beneficiariesState = inject(BeneficiariesState);
   readonly programOptions = computed(() =>
-    this.state.programs().map((program) => ({ value: program.id, label: program.name })),
+    this.beneficiariesState
+      .programs()
+      .map((program) => ({ value: program.id, label: program.name })),
   );
   readonly countryOptions = computed(() =>
-    this.state.countryOptions.map((country) => ({
+    this.beneficiariesState.countryOptions.map((country) => ({
       value: country,
-      translationKey: this.state.countryLabelKey(country),
+      translationKey: this.beneficiariesState.countryLabelKey(country),
     })),
   );
 
   ngOnInit() {
-    this.state.initialize();
+    this.beneficiariesState.initialize();
   }
 }

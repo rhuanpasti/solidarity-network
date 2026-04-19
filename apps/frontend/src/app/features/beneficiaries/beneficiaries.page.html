@@ -6,38 +6,38 @@
   />
 
   <app-beneficiary-filters
-    [form]="state.filterForm"
+    [form]="beneficiariesState.filterForm"
     [programOptions]="programOptions()"
-    [pageSizes]="state.pageSizes"
-    (submitFilters)="state.applyFilters()"
-    (pageSizeChange)="state.changePageSize($event)"
+    [pageSizes]="beneficiariesState.pageSizes"
+    (submitFilters)="beneficiariesState.applyFilters()"
+    (pageSizeChange)="beneficiariesState.changePageSize($event)"
   />
 
   <div class="content-grid">
     <app-beneficiary-list
-      [items]="state.items()"
-      [pagination]="state.pagination()"
-      [listLoading]="state.listLoading()"
-      [submitPending]="state.submitPending()"
-      (create)="state.editor.startCreate()"
-      (select)="state.editor.select($event)"
-      (pageChange)="state.changePage($event)"
+      [items]="beneficiariesState.items()"
+      [pagination]="beneficiariesState.pagination()"
+      [listLoading]="beneficiariesState.listLoading()"
+      [submitPending]="beneficiariesState.submitPending()"
+      (create)="beneficiariesState.editor.startCreate()"
+      (select)="beneficiariesState.editor.select($event)"
+      (pageChange)="beneficiariesState.changePage($event)"
     />
 
     <app-beneficiary-form
-      [form]="state.form"
-      [selected]="state.selected()"
-      [generatedCredential]="state.generatedCredential()"
-      [isReadOnly]="state.isReadOnly()"
-      [submitPending]="state.submitPending()"
+      [form]="beneficiariesState.form"
+      [selected]="beneficiariesState.selected()"
+      [generatedCredential]="beneficiariesState.generatedCredential()"
+      [isReadOnly]="beneficiariesState.isReadOnly()"
+      [submitPending]="beneficiariesState.submitPending()"
       [programOptions]="programOptions()"
       [countryOptions]="countryOptions()"
-      [documentLabelKey]="state.documentLabelKey()"
-      [addressLookupMessageKey]="state.addressLookupMessageKey()"
-      (save)="state.submit()"
-      (cancel)="state.editor.cancel()"
-      (edit)="state.editor.startEditing()"
-      (postalCodeBlur)="state.lookupAddressByPostalCode()"
+      [documentLabelKey]="beneficiariesState.documentLabelKey()"
+      [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
+      (save)="beneficiariesState.submit()"
+      (cancel)="beneficiariesState.editor.cancel()"
+      (edit)="beneficiariesState.editor.startEditing()"
+      (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
     />
   </div>
 </div>
