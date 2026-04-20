@@ -23,67 +23,66 @@ export class AuthRepository {
     private readonly prisma: PrismaService,
   ) {}
 
-  async findCredentialByIdentifier(
+  async findCredentialsByIdentifier(
     identifier: string,
-  ): Promise<AuthAccountRecord | null> {
-    const administratorCredential = await this.prisma.authCredential.findFirst({
-      where: {
-        OR: [
-          { username: { equals: identifier, mode: 'insensitive' } },
-          { administrator: { email: { equals: identifier, mode: 'insensitive' } } },
-        ],
-      },
-      include: {
-        administrator: {
-          include: {
-            charityPrograms: true,
+  ): Promise<AuthAccountRecord[]> {
+    const [administratorCredentials, beneficiary] = await Promise.all([
+      this.prisma.authCredential.findMany({
+        where: {
+          OR: [
+            { username: { equals: identifier, mode: 'insensitive' } },
+            { administrator: { email: { equals: identifier, mode: 'insensitive' } } },
+          ],
+        },
+        include: {
+          administrator: {
+            include: {
+              charityPrograms: true,
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.beneficiary.findFirst({
+        where: {
+          email: { equals: identifier, mode: 'insensitive' },
+          passwordHash: { not: null },
+          status: 'active',
+        },
+        include: {
+          charityPrograms: true,
+        },
+      }),
+    ]);
 
-    if (administratorCredential) {
-      return {
-        id: administratorCredential.administrator.id,
-        username: administratorCredential.username,
-        name: administratorCredential.administrator.name,
-        email: administratorCredential.administrator.email,
-        role: administratorCredential.administrator.role,
-        accountType: 'administrator',
-        programIds: administratorCredential.administrator.charityPrograms.map(
-          (link) => link.charityProgramId,
-        ),
-        passwordHash: administratorCredential.passwordHash,
-        mustChangePassword: administratorCredential.mustChangePassword,
-      };
+    const credentials: AuthAccountRecord[] = administratorCredentials.map((credential) => ({
+      id: credential.administrator.id,
+      username: credential.username,
+      name: credential.administrator.name,
+      email: credential.administrator.email,
+      role: credential.administrator.role,
+      accountType: 'administrator',
+      programIds: credential.administrator.charityPrograms.map(
+        (link) => link.charityProgramId,
+      ),
+      passwordHash: credential.passwordHash,
+      mustChangePassword: credential.mustChangePassword,
+    }));
+
+    if (beneficiary?.email && beneficiary.passwordHash) {
+      credentials.push({
+        id: beneficiary.id,
+        username: beneficiary.email,
+        name: beneficiary.fullName,
+        email: beneficiary.email,
+        role: null,
+        accountType: 'beneficiary',
+        programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
+        passwordHash: beneficiary.passwordHash,
+        mustChangePassword: beneficiary.mustChangePassword,
+      });
     }
 
-    const beneficiary = await this.prisma.beneficiary.findFirst({
-      where: {
-        email: { equals: identifier, mode: 'insensitive' },
-        passwordHash: { not: null },
-        status: 'active',
-      },
-      include: {
-        charityPrograms: true,
-      },
-    });
-
-    if (!beneficiary?.email || !beneficiary.passwordHash) {
-      return null;
-    }
-
-    return {
-      id: beneficiary.id,
-      username: beneficiary.email,
-      name: beneficiary.fullName,
-      email: beneficiary.email,
-      role: null,
-      accountType: 'beneficiary',
-      programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
-      passwordHash: beneficiary.passwordHash,
-      mustChangePassword: beneficiary.mustChangePassword,
-    };
+    return credentials;
   }
 
   async findAuthenticatedUser(

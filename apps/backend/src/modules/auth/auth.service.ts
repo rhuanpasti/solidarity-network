@@ -64,11 +64,15 @@ export class AuthService {
       );
     }
 
-    const credential = await this.repository.findCredentialByIdentifier(
+    const credentials = await this.repository.findCredentialsByIdentifier(
       normalizedIdentifier,
     );
+    const matchingCredential = await this.findMatchingCredential(
+      credentials,
+      dto.password,
+    );
 
-    if (!credential) {
+    if (!matchingCredential) {
       this.authRateLimitService.registerFailure(rateLimitKeys);
       await this.auditTrailService.record({
         action: 'auth.login.failed',
@@ -84,40 +88,14 @@ export class AuthService {
       });
     }
 
-    const passwordMatches = await verifyPassword(
-      dto.password,
-      credential.passwordHash,
-    );
-
-    if (!passwordMatches) {
-      this.authRateLimitService.registerFailure(rateLimitKeys);
-      await this.auditTrailService.record({
-        action: 'auth.login.failed',
-        status: 'failure',
-        actor: {
-          sub: credential.id,
-          accountType: credential.accountType,
-          role: credential.role,
-        },
-        metadata: {
-          identifierFingerprint,
-          reason: 'password_mismatch',
-        },
-      });
-      throw new UnauthorizedException({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid login or password.',
-      });
-    }
-
     this.authRateLimitService.registerSuccess(rateLimitKeys);
     await this.auditTrailService.record({
       action: 'auth.login.succeeded',
       status: 'success',
       actor: {
-        sub: credential.id,
-        accountType: credential.accountType,
-        role: credential.role,
+        sub: matchingCredential.id,
+        accountType: matchingCredential.accountType,
+        role: matchingCredential.role,
       },
       metadata: {
         identifierFingerprint,
@@ -125,14 +103,14 @@ export class AuthService {
     });
 
     return this.toAuthResponse({
-      sub: credential.id,
-      username: credential.username,
-      name: credential.name,
-      email: credential.email,
-      role: credential.role,
-      accountType: credential.accountType,
-      programIds: credential.programIds,
-      mustChangePassword: credential.mustChangePassword,
+      sub: matchingCredential.id,
+      username: matchingCredential.username,
+      name: matchingCredential.name,
+      email: matchingCredential.email,
+      role: matchingCredential.role,
+      accountType: matchingCredential.accountType,
+      programIds: matchingCredential.programIds,
+      mustChangePassword: matchingCredential.mustChangePassword,
       csrfToken: this.createCsrfToken(),
       iat: 0,
       exp: 0,
@@ -249,5 +227,20 @@ export class AuthService {
 
   private createCsrfToken() {
     return randomBytes(32).toString('hex');
+  }
+
+  private async findMatchingCredential(
+    credentials: Awaited<ReturnType<AuthRepository['findCredentialsByIdentifier']>>,
+    password: string,
+  ) {
+    for (const credential of credentials) {
+      const passwordMatches = await verifyPassword(password, credential.passwordHash);
+
+      if (passwordMatches) {
+        return credential;
+      }
+    }
+
+    return null;
   }
 }

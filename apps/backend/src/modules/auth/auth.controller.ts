@@ -49,6 +49,7 @@ export class AuthController {
   }
 
   @Get('session')
+  @AllowPasswordChangeWhenRequired()
   @ApiBearerAuth('bearer')
   @ApiOperation({ summary: 'Get the authenticated session' })
   @ApiOkResponse({ type: SessionResponseDto })

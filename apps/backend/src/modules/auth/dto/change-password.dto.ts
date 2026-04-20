@@ -18,13 +18,13 @@ export class ChangePasswordDto {
   currentPassword!: string;
 
   @ApiProperty({
-    minLength: 12,
+    minLength: 8,
     description:
       'Must contain uppercase, lowercase, number, and special character.',
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(12)
+  @MinLength(8)
   @Matches(PASSWORD_POLICY_REGEX, {
     message:
       'New password must contain uppercase, lowercase, number, and special character.',

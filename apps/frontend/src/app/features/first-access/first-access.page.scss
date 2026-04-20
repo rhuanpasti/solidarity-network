@@ -68,6 +68,89 @@
   gap: 1rem;
 }
 
+.password-feedback {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: -0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  background: #f9fafb;
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.password-strength-bar {
+  flex: 1;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.password-strength-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  transition:
+    width 160ms ease,
+    background-color 160ms ease;
+}
+
+.password-strength-bar[data-strength='weak'] span {
+  width: 33%;
+  background: #dc2626;
+}
+
+.password-strength-bar[data-strength='medium'] span {
+  width: 66%;
+  background: #d97706;
+}
+
+.password-strength-bar[data-strength='strong'] span {
+  width: 100%;
+  background: #16a34a;
+}
+
+.password-strength-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.password-requirements {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.password-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.password-requirements li.is-met {
+  color: #166534;
+}
+
+.password-requirement-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  font-weight: 700;
+}
+
 .auth-error {
   margin: 0;
   padding: 0.9rem 1rem;

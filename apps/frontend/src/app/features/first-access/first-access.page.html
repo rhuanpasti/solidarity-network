@@ -28,6 +28,7 @@
         [control]="form.controls.newPassword"
         label="auth.newPasswordLabel"
         autocomplete="new-password"
+        hint="auth.passwordPolicy"
         [errors]="[
           ['required', 'validation.required'],
           ['minlength', 'auth.passwordPolicy'],
@@ -36,6 +37,30 @@
         ]"
         [(visible)]="passwordVisible"
       />
+
+      @if (shouldShowPasswordFeedback()) {
+        <section class="password-feedback" aria-live="polite">
+          <div class="password-strength">
+            <div class="password-strength-bar" [attr.data-strength]="passwordStrength()">
+              <span></span>
+            </div>
+            @if (passwordStrengthLabel(); as strengthLabel) {
+              <span class="password-strength-label">{{ strengthLabel | translate }}</span>
+            }
+          </div>
+
+          <ul class="password-requirements">
+            @for (requirement of passwordRequirements(); track requirement.key) {
+              <li [class.is-met]="requirement.met">
+                <span class="password-requirement-icon" aria-hidden="true">
+                  {{ requirement.met ? '✓' : '•' }}
+                </span>
+                <span>{{ requirement.key | translate }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
 
       <app-password-field
         [control]="form.controls.confirmPassword"

@@ -15,7 +15,12 @@ import { PasswordFieldComponent } from '../../shared/components/password-field/p
 import { touchAll } from '../../shared/utils/form.utils';
 
 const PASSWORD_POLICY_REGEX =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+
+type PasswordRequirement = {
+  key: string;
+  met: boolean;
+};
 
 function passwordMismatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -58,7 +63,7 @@ export class FirstAccessPage {
       '',
       [
         Validators.required,
-        Validators.minLength(12),
+        Validators.minLength(8),
         Validators.pattern(PASSWORD_POLICY_REGEX),
         Validators.maxLength(120),
       ],
@@ -116,5 +121,66 @@ export class FirstAccessPage {
       this.form.hasError('passwordMismatch') &&
       (this.form.controls.confirmPassword.touched || this.form.controls.confirmPassword.dirty)
     );
+  }
+
+  shouldShowPasswordFeedback() {
+    const control = this.form.controls.newPassword;
+    return control.touched || control.dirty || control.value.length > 0;
+  }
+
+  passwordRequirements(): PasswordRequirement[] {
+    const password = this.form.controls.newPassword.value;
+
+    return [
+      {
+        key: 'auth.passwordRequirementMinLength',
+        met: password.length >= 8,
+      },
+      {
+        key: 'auth.passwordRequirementUppercase',
+        met: /[A-Z]/.test(password),
+      },
+      {
+        key: 'auth.passwordRequirementLowercase',
+        met: /[a-z]/.test(password),
+      },
+      {
+        key: 'auth.passwordRequirementNumber',
+        met: /\d/.test(password),
+      },
+      {
+        key: 'auth.passwordRequirementSpecial',
+        met: /[^A-Za-z\d]/.test(password),
+      },
+    ];
+  }
+
+  passwordStrength() {
+    const password = this.form.controls.newPassword.value;
+    const score = this.passwordRequirements().filter((requirement) => requirement.met).length;
+
+    if (!password) {
+      return null;
+    }
+
+    if (score <= 2) {
+      return 'weak';
+    }
+
+    if (score <= 4) {
+      return 'medium';
+    }
+
+    return 'strong';
+  }
+
+  passwordStrengthLabel() {
+    const strength = this.passwordStrength();
+
+    if (!strength) {
+      return null;
+    }
+
+    return `auth.passwordStrength.${strength}`;
   }
 }

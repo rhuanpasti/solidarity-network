@@ -249,7 +249,17 @@
     "tooManyLoginAttempts": "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
     "invalidCurrentPassword": "A senha atual esta invalida.",
     "passwordReuseNotAllowed": "A nova senha deve ser diferente da senha atual.",
-    "passwordPolicy": "Use ao menos 12 caracteres com letra maiuscula, minuscula, numero e caractere especial.",
+    "passwordPolicy": "Use ao menos 8 caracteres com letra maiuscula, minuscula, numero e caractere especial.",
+    "passwordRequirementMinLength": "Pelo menos 8 caracteres",
+    "passwordRequirementUppercase": "Pelo menos uma letra maiuscula",
+    "passwordRequirementLowercase": "Pelo menos uma letra minuscula",
+    "passwordRequirementNumber": "Pelo menos um numero",
+    "passwordRequirementSpecial": "Pelo menos um caractere especial",
+    "passwordStrength": {
+      "weak": "Senha fraca",
+      "medium": "Senha media",
+      "strong": "Senha forte"
+    },
     "passwordMismatch": "A confirmacao da senha nao corresponde a nova senha.",
     "firstAccessEyebrow": "Primeiro acesso",
     "firstAccessTitle": "Defina uma nova senha antes de continuar",

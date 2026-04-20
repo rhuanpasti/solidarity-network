@@ -16,6 +16,7 @@ import { InputFieldComponent } from '../input-field/input-field.component';
       [type]="visible() ? 'text' : 'password'"
       [autocomplete]="autocomplete()"
       [placeholder]="placeholder()"
+      [hint]="hint()"
       [errors]="errors()"
       [externalErrorKey]="externalErrorKey()"
       [externalErrorVisible]="externalErrorVisible()"
@@ -44,6 +45,7 @@ export class PasswordFieldComponent {
   readonly errors = input<ControlErrorMap>([]);
   readonly autocomplete = input<string | null>(null);
   readonly placeholder = input<string | null>(null);
+  readonly hint = input<string | null>(null);
   readonly externalErrorKey = input<string | null>(null);
   readonly externalErrorVisible = input(false);
   readonly readonly = input(false);
