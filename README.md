@@ -2,9 +2,23 @@
 
 Solidarity Network is a production-oriented full stack platform for managing charity programs, administrators, beneficiaries, benefits, and benefit deliveries.
 
+This is an open source project intended to serve as a practical starting point for social impact initiatives. If you need a base for a nonprofit, community, charity, or other social project, the idea is simple: fork this repository and adapt it to your reality.
+
+From that point on, you can change anything you consider necessary, including the domain model, user flows, visual identity, integrations, deployment model, and operational rules.
+
 Em portugues, a interface exibe o nome institucional **Rede Solidaria**.
 
-## Why NestJS + Angular 21
+## Open Source Usage Recommendation
+
+The recommended workflow is to fork this project instead of treating it as a closed template. A fork gives you freedom to evolve the codebase according to your organization, region, policies, and service model while preserving the original structure as a reliable starting point.
+
+## Security Recommendation
+
+I strongly recommend using a dedicated authentication provider or identity service for user authentication instead of building and maintaining the full authentication flow yourself. This usually brings better security, more mature account protection features, and a lower long-term maintenance burden for the application.
+
+Examples include managed identity providers, external OAuth/OIDC providers, or any equivalent service that offers secure session management, password policies, multi-factor authentication, auditability, and recovery flows.
+
+## Technical Overview
 
 This solution uses:
 
@@ -13,6 +27,33 @@ This solution uses:
 - `Prisma + PostgreSQL` for a typed relational model with safe schema evolution and a free-tier friendly deployment path.
 
 NestJS was preferred over raw Express because the project needs consistent architecture, scalable module boundaries, validation, interceptors, and future authorization support without hand-rolling cross-cutting concerns.
+
+## Technical Patterns And Technologies
+
+This repository follows a full stack monorepo approach with clear separation of concerns across frontend, backend, and shared contracts.
+
+Main technologies:
+
+- `Angular 21` for the frontend application
+- `NestJS` for the backend API
+- `TypeScript` across the stack
+- `Prisma` as the ORM
+- `PostgreSQL` as the relational database
+- `Docker Compose` for local infrastructure support
+- `npm workspaces` for monorepo dependency management
+
+Main patterns:
+
+- monorepo organization with isolated applications and shared packages
+- layered backend architecture with `controller -> service -> repository`
+- DTO-based request validation and consistent API contracts
+- reusable shared types and domain contracts across applications
+- feature-oriented frontend structure for route and page isolation
+- standalone Angular components to reduce module overhead
+- Angular Signals for localized reactive state
+- reactive forms with strong typing
+- centralized error normalization and interceptor-based cross-cutting behavior
+- environment-driven configuration for local and deployable setups
 
 ## Monorepo Structure
 
