@@ -165,6 +165,9 @@ model AuditTrail {
   requestId        String?
   ipAddress        String?
   userAgent        String?
+  changedFields    String[] @default([])
+  previousValues   Json?
+  newValues        Json?
   metadata         Json?
   createdAt        DateTime @default(now())
 

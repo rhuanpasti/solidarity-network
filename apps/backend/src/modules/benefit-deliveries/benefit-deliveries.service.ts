@@ -112,6 +112,9 @@ export class BenefitDeliveriesService {
       entityId: delivery.id,
       charityProgramId: dto.charityProgramId,
       actor,
+      changedFields: Object.keys(this.toAuditSnapshot(delivery)),
+      previousValues: null,
+      newValues: this.toAuditSnapshot(delivery),
       metadata: {
         beneficiaryId: dto.beneficiaryId,
         benefitId: dto.benefitId,
@@ -159,5 +162,27 @@ export class BenefitDeliveriesService {
     }
 
     return toBenefitDeliverySummary(delivery);
+  }
+
+  private toAuditSnapshot(delivery: {
+    beneficiaryId: string;
+    benefitId: string;
+    charityProgramId: string;
+    quantity: number;
+    deliveryDate: Date;
+    notes: string | null;
+    administratorId: string;
+    reference: string;
+  }) {
+    return {
+      beneficiaryId: delivery.beneficiaryId,
+      benefitId: delivery.benefitId,
+      charityProgramId: delivery.charityProgramId,
+      quantity: delivery.quantity,
+      deliveryDate: delivery.deliveryDate.toISOString(),
+      notes: delivery.notes,
+      administratorId: delivery.administratorId,
+      reference: delivery.reference,
+    };
   }
 }

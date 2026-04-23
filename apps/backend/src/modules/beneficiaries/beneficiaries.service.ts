@@ -93,6 +93,9 @@ export class BeneficiariesService {
       entityType: 'beneficiary',
       entityId: beneficiary.id,
       actor,
+      changedFields: Object.keys(this.toAuditSnapshot(beneficiary)),
+      previousValues: null,
+      newValues: this.toAuditSnapshot(beneficiary),
       metadata: {
         charityProgramIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         status: beneficiary.status,
@@ -190,6 +193,7 @@ export class BeneficiariesService {
       },
     );
 
+    const previousSnapshot = this.toAuditSnapshot(existingBeneficiary);
     let beneficiary;
     try {
       beneficiary = await this.repository.update(id, {
@@ -208,12 +212,17 @@ export class BeneficiariesService {
       this.rethrowUniqueDocumentError(error);
       throw error;
     }
+    const newSnapshot = this.toAuditSnapshot(beneficiary);
+    const auditChanges = this.getAuditChanges(previousSnapshot, newSnapshot);
 
     await this.auditTrailService.record({
       action: 'beneficiary.update',
       entityType: 'beneficiary',
       entityId: beneficiary.id,
       actor,
+      changedFields: auditChanges.changedFields,
+      previousValues: auditChanges.previousValues,
+      newValues: auditChanges.newValues,
       metadata: {
         updatedFields: Object.keys(dto).filter(
           (key) =>
@@ -303,5 +312,51 @@ export class BeneficiariesService {
         ],
       });
     }
+  }
+
+  private toAuditSnapshot(beneficiary: {
+    fullName: string;
+    document: string;
+    birthDate: Date | null;
+    email: string | null;
+    phone: string;
+    address: unknown;
+    notes: string | null;
+    status: string;
+    charityPrograms: Array<{ charityProgramId: string }>;
+  }) {
+    return {
+      fullName: beneficiary.fullName,
+      document: beneficiary.document,
+      birthDate: beneficiary.birthDate?.toISOString() ?? null,
+      email: beneficiary.email,
+      phone: beneficiary.phone,
+      address: beneficiary.address,
+      notes: beneficiary.notes,
+      status: beneficiary.status,
+      charityProgramIds: beneficiary.charityPrograms
+        .map((link) => link.charityProgramId)
+        .sort(),
+    };
+  }
+
+  private getAuditChanges(
+    previousSnapshot: Record<string, unknown>,
+    newSnapshot: Record<string, unknown>,
+  ) {
+    const changedFields = Object.keys(newSnapshot).filter(
+      (key) =>
+        JSON.stringify(previousSnapshot[key]) !== JSON.stringify(newSnapshot[key]),
+    );
+
+    return {
+      changedFields,
+      previousValues: Object.fromEntries(
+        changedFields.map((field) => [field, previousSnapshot[field]]),
+      ),
+      newValues: Object.fromEntries(
+        changedFields.map((field) => [field, newSnapshot[field]]),
+      ),
+    };
   }
 }

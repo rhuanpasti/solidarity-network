@@ -13,6 +13,9 @@ interface AuditTrailInput {
   entityId?: string;
   charityProgramId?: string | null;
   actor?: Pick<AuthenticatedUser, 'sub' | 'accountType' | 'role'> | null;
+  changedFields?: string[];
+  previousValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -37,6 +40,8 @@ export class AuditTrailService {
     const metadata = sanitizeForLogs(input.metadata) as
       | Prisma.InputJsonValue
       | undefined;
+    const previousValues = this.toNullableJson(input.previousValues);
+    const newValues = this.toNullableJson(input.newValues);
 
     try {
       await this.prisma.auditTrail.create({
@@ -52,6 +57,9 @@ export class AuditTrailService {
           requestId: context?.requestId,
           ipAddress: context?.ipAddress,
           userAgent: context?.userAgent,
+          changedFields: input.changedFields ?? [],
+          previousValues,
+          newValues,
           metadata,
         },
       });
@@ -88,6 +96,20 @@ export class AuditTrailService {
       entityType: input.entityType,
       entityId: input.entityId,
       charityProgramId: input.charityProgramId,
+      changedFields: input.changedFields ?? [],
+    });
+  }
+
+  history(entityType: string, entityId: string, take = 50) {
+    return this.prisma.auditTrail.findMany({
+      where: {
+        entityType,
+        entityId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take,
     });
   }
 
@@ -98,6 +120,18 @@ export class AuditTrailService {
       'code' in error &&
       error.code === 'P2021'
     );
+  }
+
+  private toNullableJson(value: Record<string, unknown> | null | undefined) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (value === null) {
+      return Prisma.JsonNull;
+    }
+
+    return sanitizeForLogs(value) as Prisma.InputJsonValue;
   }
 
   private logInfo(message: string, details: Record<string, unknown>) {

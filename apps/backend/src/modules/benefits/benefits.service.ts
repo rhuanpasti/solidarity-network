@@ -7,6 +7,7 @@ import {
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { toBenefitSummary } from './benefits.mapper';
 import { BenefitsRepository } from './benefits.repository';
@@ -17,6 +18,8 @@ import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
 @Injectable()
 export class BenefitsService {
   constructor(
+    @Inject(AuditTrailService)
+    private readonly auditTrailService: AuditTrailService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BenefitsRepository)
@@ -33,6 +36,15 @@ export class BenefitsService {
     const benefit = await this.repository.create({
       ...dto,
       active: dto.active ?? true,
+    });
+    await this.auditTrailService.record({
+      action: 'benefit.create',
+      entityType: 'benefit',
+      entityId: benefit.id,
+      actor,
+      changedFields: Object.keys(this.toAuditSnapshot(benefit)),
+      previousValues: null,
+      newValues: this.toAuditSnapshot(benefit),
     });
     return toBenefitSummary(benefit);
   }
@@ -86,8 +98,20 @@ export class BenefitsService {
       action: 'benefit.update',
       benefitId: id,
     });
-    await this.findOne(id, actor);
+    const existingBenefit = await this.findExistingBenefit(id);
+    const previousSnapshot = this.toAuditSnapshot(existingBenefit);
     const benefit = await this.repository.update(id, dto);
+    const newSnapshot = this.toAuditSnapshot(benefit);
+    const auditChanges = this.getAuditChanges(previousSnapshot, newSnapshot);
+    await this.auditTrailService.record({
+      action: 'benefit.update',
+      entityType: 'benefit',
+      entityId: benefit.id,
+      actor,
+      changedFields: auditChanges.changedFields,
+      previousValues: auditChanges.previousValues,
+      newValues: auditChanges.newValues,
+    });
     return toBenefitSummary(benefit);
   }
 
@@ -100,8 +124,63 @@ export class BenefitsService {
       action: 'benefit.update_status',
       benefitId: id,
     });
-    await this.findOne(id, actor);
+    const existingBenefit = await this.findExistingBenefit(id);
+    const previousSnapshot = this.toAuditSnapshot(existingBenefit);
     const benefit = await this.repository.update(id, { active: dto.active });
+    const newSnapshot = this.toAuditSnapshot(benefit);
+    const auditChanges = this.getAuditChanges(previousSnapshot, newSnapshot);
+    await this.auditTrailService.record({
+      action: 'benefit.update_status',
+      entityType: 'benefit',
+      entityId: benefit.id,
+      actor,
+      changedFields: auditChanges.changedFields,
+      previousValues: auditChanges.previousValues,
+      newValues: auditChanges.newValues,
+    });
     return toBenefitSummary(benefit);
+  }
+
+  private async findExistingBenefit(id: string) {
+    const benefit = await this.repository.findById(id);
+
+    if (!benefit) {
+      throw new DomainNotFoundException('benefit', id);
+    }
+
+    return benefit;
+  }
+
+  private toAuditSnapshot(benefit: {
+    name: string;
+    description: string;
+    category: string;
+    active: boolean;
+  }) {
+    return {
+      name: benefit.name,
+      description: benefit.description,
+      category: benefit.category,
+      active: benefit.active,
+    };
+  }
+
+  private getAuditChanges(
+    previousSnapshot: Record<string, unknown>,
+    newSnapshot: Record<string, unknown>,
+  ) {
+    const changedFields = Object.keys(newSnapshot).filter(
+      (key) => previousSnapshot[key] !== newSnapshot[key],
+    );
+
+    return {
+      changedFields,
+      previousValues: Object.fromEntries(
+        changedFields.map((field) => [field, previousSnapshot[field]]),
+      ),
+      newValues: Object.fromEntries(
+        changedFields.map((field) => [field, newSnapshot[field]]),
+      ),
+    };
   }
 }
