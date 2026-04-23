@@ -76,6 +76,7 @@ function makeService(overrides: {
     Object.hasOwn(overrides, key) ? overrides[key] : fallback;
   const delivery = makeDelivery();
   const auditTrailService = { record: mock.fn() };
+  const entityVersioningService = { recordVersion: mock.fn() };
   const authorizationService = {
     assertCanRegisterDelivery: mock.fn(),
     getProgramScope: mock.fn(() => ({ hasGlobalAccess: false, allowedProgramIds: ['program-1'] })),
@@ -109,6 +110,7 @@ function makeService(overrides: {
   return {
     service: new BenefitDeliveriesService(
       auditTrailService as never,
+      entityVersioningService as never,
       authorizationService as never,
       repository as never,
       beneficiariesRepository as never,
@@ -117,6 +119,7 @@ function makeService(overrides: {
       administratorsRepository as never,
     ),
     auditTrailService,
+    entityVersioningService,
     authorizationService,
     repository,
   };
@@ -124,7 +127,13 @@ function makeService(overrides: {
 
 describe('BenefitDeliveriesService', () => {
   it('creates a delivery, records an audit event, and maps the summary', async () => {
-    const { service, auditTrailService, authorizationService, repository } = makeService();
+    const {
+      service,
+      auditTrailService,
+      entityVersioningService,
+      authorizationService,
+      repository,
+    } = makeService();
 
     const result = await service.create(dto, actor);
 
@@ -140,6 +149,11 @@ describe('BenefitDeliveriesService', () => {
       reference: dto.reference,
     });
     assert.equal(auditTrailService.record.mock.callCount(), 1);
+    assert.equal(entityVersioningService.recordVersion.mock.callCount(), 1);
+    assert.equal(
+      entityVersioningService.recordVersion.mock.calls[0]?.arguments[0].entityType,
+      'benefit_delivery',
+    );
     assert.equal(result.id, 'delivery-1');
     assert.equal(result.beneficiary.fullName, 'Maria Silva');
     assert.equal(result.createdAt, '2026-04-23T12:30:00.000Z');

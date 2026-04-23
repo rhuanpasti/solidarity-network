@@ -10,6 +10,7 @@ import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { AdministratorsRepository } from '../administrators/administrators.repository';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditTrailService } from '../observability/audit-trail.service';
+import { EntityVersioningService } from '../observability/entity-versioning.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { BeneficiariesRepository } from '../beneficiaries/beneficiaries.repository';
 import { BenefitsRepository } from '../benefits/benefits.repository';
@@ -24,6 +25,8 @@ export class BenefitDeliveriesService {
   constructor(
     @Inject(AuditTrailService)
     private readonly auditTrailService: AuditTrailService,
+    @Inject(EntityVersioningService)
+    private readonly entityVersioningService: EntityVersioningService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BenefitDeliveriesRepository)
@@ -106,20 +109,35 @@ export class BenefitDeliveriesService {
       reference: dto.reference,
     });
 
+    const newSnapshot = this.toAuditSnapshot(delivery);
+
     await this.auditTrailService.record({
       action: 'benefit_delivery.create',
       entityType: 'benefit_delivery',
       entityId: delivery.id,
       charityProgramId: dto.charityProgramId,
       actor,
-      changedFields: Object.keys(this.toAuditSnapshot(delivery)),
+      changedFields: Object.keys(newSnapshot),
       previousValues: null,
-      newValues: this.toAuditSnapshot(delivery),
+      newValues: newSnapshot,
       metadata: {
         beneficiaryId: dto.beneficiaryId,
         benefitId: dto.benefitId,
         quantity: dto.quantity,
         reference: dto.reference,
+      },
+    });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'benefit_delivery',
+      entityId: delivery.id,
+      action: 'benefit_delivery.create',
+      charityProgramId: dto.charityProgramId,
+      actor,
+      changedFields: Object.keys(newSnapshot),
+      snapshot: newSnapshot,
+      diff: {
+        previousValues: null,
+        newValues: newSnapshot,
       },
     });
 

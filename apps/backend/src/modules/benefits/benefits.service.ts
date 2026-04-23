@@ -8,6 +8,7 @@ import { createPaginatedResponse } from '../../common/dto/pagination-response';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditTrailService } from '../observability/audit-trail.service';
+import { EntityVersioningService } from '../observability/entity-versioning.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { toBenefitSummary } from './benefits.mapper';
 import { BenefitsRepository } from './benefits.repository';
@@ -20,6 +21,8 @@ export class BenefitsService {
   constructor(
     @Inject(AuditTrailService)
     private readonly auditTrailService: AuditTrailService,
+    @Inject(EntityVersioningService)
+    private readonly entityVersioningService: EntityVersioningService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BenefitsRepository)
@@ -37,14 +40,27 @@ export class BenefitsService {
       ...dto,
       active: dto.active ?? true,
     });
+    const newSnapshot = this.toAuditSnapshot(benefit);
     await this.auditTrailService.record({
       action: 'benefit.create',
       entityType: 'benefit',
       entityId: benefit.id,
       actor,
-      changedFields: Object.keys(this.toAuditSnapshot(benefit)),
+      changedFields: Object.keys(newSnapshot),
       previousValues: null,
-      newValues: this.toAuditSnapshot(benefit),
+      newValues: newSnapshot,
+    });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'benefit',
+      entityId: benefit.id,
+      action: 'benefit.create',
+      actor,
+      changedFields: Object.keys(newSnapshot),
+      snapshot: newSnapshot,
+      diff: {
+        previousValues: null,
+        newValues: newSnapshot,
+      },
     });
     return toBenefitSummary(benefit);
   }
@@ -112,6 +128,15 @@ export class BenefitsService {
       previousValues: auditChanges.previousValues,
       newValues: auditChanges.newValues,
     });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'benefit',
+      entityId: benefit.id,
+      action: 'benefit.update',
+      actor,
+      changedFields: auditChanges.changedFields,
+      snapshot: newSnapshot,
+      diff: auditChanges,
+    });
     return toBenefitSummary(benefit);
   }
 
@@ -137,6 +162,15 @@ export class BenefitsService {
       changedFields: auditChanges.changedFields,
       previousValues: auditChanges.previousValues,
       newValues: auditChanges.newValues,
+    });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'benefit',
+      entityId: benefit.id,
+      action: 'benefit.update_status',
+      actor,
+      changedFields: auditChanges.changedFields,
+      snapshot: newSnapshot,
+      diff: auditChanges,
     });
     return toBenefitSummary(benefit);
   }

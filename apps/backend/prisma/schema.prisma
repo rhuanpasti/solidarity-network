@@ -179,3 +179,25 @@ model AuditTrail {
   @@index([requestId])
   @@index([createdAt])
 }
+
+model EntityVersion {
+  id               String   @id @default(cuid())
+  entityType       String
+  entityId         String
+  version          Int
+  action           String
+  charityProgramId String?
+  actorAccountId   String?
+  actorAccountType String?
+  actorRole        String?
+  changedFields    String[] @default([])
+  snapshot         Json
+  diff             Json?
+  createdAt        DateTime @default(now())
+
+  @@unique([entityType, entityId, version])
+  @@index([entityType, entityId, createdAt])
+  @@index([entityType, entityId, version])
+  @@index([charityProgramId])
+  @@index([createdAt])
+}

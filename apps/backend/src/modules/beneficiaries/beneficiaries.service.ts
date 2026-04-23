@@ -15,6 +15,7 @@ import {
 } from '../auth/password.util';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditTrailService } from '../observability/audit-trail.service';
+import { EntityVersioningService } from '../observability/entity-versioning.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
 import { BeneficiariesRepository } from './beneficiaries.repository';
@@ -32,6 +33,8 @@ export class BeneficiariesService {
   constructor(
     @Inject(AuditTrailService)
     private readonly auditTrailService: AuditTrailService,
+    @Inject(EntityVersioningService)
+    private readonly entityVersioningService: EntityVersioningService,
     @Inject(AuthorizationService)
     private readonly authorizationService: AuthorizationService,
     @Inject(BeneficiariesRepository)
@@ -88,17 +91,31 @@ export class BeneficiariesService {
       throw error;
     }
 
+    const newSnapshot = this.toAuditSnapshot(beneficiary);
+
     await this.auditTrailService.record({
       action: 'beneficiary.create',
       entityType: 'beneficiary',
       entityId: beneficiary.id,
       actor,
-      changedFields: Object.keys(this.toAuditSnapshot(beneficiary)),
+      changedFields: Object.keys(newSnapshot),
       previousValues: null,
-      newValues: this.toAuditSnapshot(beneficiary),
+      newValues: newSnapshot,
       metadata: {
         charityProgramIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         status: beneficiary.status,
+      },
+    });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'beneficiary',
+      entityId: beneficiary.id,
+      action: 'beneficiary.create',
+      actor,
+      changedFields: Object.keys(newSnapshot),
+      snapshot: newSnapshot,
+      diff: {
+        previousValues: null,
+        newValues: newSnapshot,
       },
     });
 
@@ -233,6 +250,15 @@ export class BeneficiariesService {
         charityProgramIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         status: beneficiary.status,
       },
+    });
+    await this.entityVersioningService.recordVersion({
+      entityType: 'beneficiary',
+      entityId: beneficiary.id,
+      action: 'beneficiary.update',
+      actor,
+      changedFields: auditChanges.changedFields,
+      snapshot: newSnapshot,
+      diff: auditChanges,
     });
 
     return toBeneficiarySummary(beneficiary);

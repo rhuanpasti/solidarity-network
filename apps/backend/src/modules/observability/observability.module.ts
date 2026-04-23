@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuditTrailService } from './audit-trail.service';
+import { EntityVersioningService } from './entity-versioning.service';
 import { RequestContextService } from './request-context.service';
 import { RequestLoggingInterceptor } from './request-logging.interceptor';
 import { RequestTracingMiddleware } from './request-tracing.middleware';
@@ -16,6 +17,7 @@ import { StructuredLoggerService } from './structured-logger.service';
   imports: [PrismaModule],
   providers: [
     AuditTrailService,
+    EntityVersioningService,
     RequestContextService,
     RequestLoggingInterceptor,
     RequestTracingMiddleware,
@@ -23,6 +25,7 @@ import { StructuredLoggerService } from './structured-logger.service';
   ],
   exports: [
     AuditTrailService,
+    EntityVersioningService,
     RequestContextService,
     RequestLoggingInterceptor,
     StructuredLoggerService,
@@ -33,4 +36,3 @@ export class ObservabilityModule implements NestModule {
     consumer.apply(RequestTracingMiddleware).forRoutes('*');
   }
 }
-
