@@ -98,10 +98,9 @@ export class AuthRateLimitService {
     }
 
     if (Array.isArray(forwardedFor) && forwardedFor.length) {
-      return forwardedFor[0] ?? request.ip;
+      return forwardedFor[0]?.split(',')[0]?.trim() || request.ip;
     }
 
     return request.ip;
   }
 }
-

@@ -5,7 +5,15 @@ export function readNumberQueryParam(
   key: string,
   fallback: number,
 ) {
-  return Number(params.get(key) ?? fallback) || fallback;
+  const raw = params.get(key);
+
+  if (raw === null || raw.trim() === '') {
+    return fallback;
+  }
+
+  const value = Number(raw);
+
+  return Number.isSafeInteger(value) && value >= 1 ? value : fallback;
 }
 
 export function navigateWithMergedQuery(
@@ -21,5 +29,5 @@ export function navigateWithMergedQuery(
 }
 
 export function normalizeEmptyQueryValue<T>(value: T | '' | null | undefined) {
-  return value || null;
+  return value === '' || value === null || value === undefined ? null : value;
 }

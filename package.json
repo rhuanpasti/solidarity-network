@@ -13,6 +13,9 @@
     "build:frontend": "npm --prefix apps/frontend run build",
     "build:backend": "npm --prefix apps/backend run build",
     "build:shared": "npm --prefix packages/shared run build",
+    "test:frontend": "npm --prefix apps/frontend run test",
+    "test:backend": "npm --prefix apps/backend run test",
+    "test": "npm run test:backend && npm run test:frontend",
     "deploy:frontend:workers": "npx wrangler deploy --config apps/frontend/wrangler.jsonc"
   }
 }

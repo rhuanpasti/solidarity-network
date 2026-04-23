@@ -8,6 +8,7 @@
     "prestart": "npm --prefix ../../packages/shared run build",
     "start:dev": "nest start --watch",
     "build": "nest build",
+    "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts",
     "start": "node dist/apps/backend/src/main.js",
     "start:prod": "prisma migrate deploy && node dist/apps/backend/src/main.js",
     "prisma:generate": "prisma generate",

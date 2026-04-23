@@ -11,6 +11,17 @@ const SENSITIVE_KEYS = new Set([
   'secret',
 ]);
 
+function isSensitiveKey(key: string) {
+  const normalizedKey = key.toLowerCase();
+
+  return (
+    SENSITIVE_KEYS.has(normalizedKey) ||
+    normalizedKey.includes('password') ||
+    normalizedKey.includes('token') ||
+    normalizedKey.includes('secret')
+  );
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -26,7 +37,7 @@ export function sanitizeForLogs(value: unknown): unknown {
 
   return Object.fromEntries(
     Object.entries(value).map(([key, entryValue]) => {
-      if (SENSITIVE_KEYS.has(key)) {
+      if (isSensitiveKey(key)) {
         return [key, '[REDACTED]'];
       }
 
@@ -34,4 +45,3 @@ export function sanitizeForLogs(value: unknown): unknown {
     }),
   );
 }
-

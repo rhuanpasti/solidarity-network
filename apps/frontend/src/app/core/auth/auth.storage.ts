@@ -14,12 +14,32 @@ export interface AuthSession {
 export const AUTH_SESSION_STORAGE_KEY = 'solidarity-network-auth-session';
 
 function getAvailableStorages() {
-  return [sessionStorage, localStorage];
+  const storages: Storage[] = [];
+
+  for (const key of ['sessionStorage', 'localStorage'] as const) {
+    try {
+      const storage = globalThis[key];
+
+      if (storage) {
+        storages.push(storage);
+      }
+    } catch {
+      // Storage can be unavailable in SSR, private modes, or locked-down browsers.
+    }
+  }
+
+  return storages;
 }
 
 export function readStoredAuthSession(): AuthSession | null {
   for (const storage of getAvailableStorages()) {
-    const raw = storage.getItem(AUTH_SESSION_STORAGE_KEY);
+    let raw: string | null;
+
+    try {
+      raw = storage.getItem(AUTH_SESSION_STORAGE_KEY);
+    } catch {
+      continue;
+    }
 
     if (!raw) {
       continue;
@@ -35,7 +55,7 @@ export function readStoredAuthSession(): AuthSession | null {
         !session.displayName ||
         !session.csrfToken
       ) {
-        storage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        safeRemoveItem(storage);
         continue;
       }
 
@@ -50,7 +70,7 @@ export function readStoredAuthSession(): AuthSession | null {
         csrfToken: session.csrfToken,
       };
     } catch {
-      storage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      safeRemoveItem(storage);
     }
   }
 
@@ -60,16 +80,49 @@ export function readStoredAuthSession(): AuthSession | null {
 export function persistAuthSession(session: AuthSession, rememberMe: boolean) {
   clearStoredAuthSession();
 
-  const storage = rememberMe ? localStorage : sessionStorage;
-  storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
+  const serializedSession = JSON.stringify(session);
+  const [sessionStore, localStore] = getAvailableStorages();
+  const preferredStorage = rememberMe ? localStore : sessionStore;
+  const fallbackStorage = rememberMe ? sessionStore : localStore;
+
+  if (safeSetItem(preferredStorage, serializedSession)) {
+    return;
+  }
+
+  safeSetItem(fallbackStorage, serializedSession);
 }
 
 export function isSessionStoredInLocalStorage() {
-  return Boolean(localStorage.getItem(AUTH_SESSION_STORAGE_KEY));
+  try {
+    return Boolean(globalThis.localStorage?.getItem(AUTH_SESSION_STORAGE_KEY));
+  } catch {
+    return false;
+  }
 }
 
 export function clearStoredAuthSession() {
   for (const storage of getAvailableStorages()) {
+    safeRemoveItem(storage);
+  }
+}
+
+function safeSetItem(storage: Storage | undefined, value: string) {
+  if (!storage) {
+    return false;
+  }
+
+  try {
+    storage.setItem(AUTH_SESSION_STORAGE_KEY, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function safeRemoveItem(storage: Storage) {
+  try {
     storage.removeItem(AUTH_SESSION_STORAGE_KEY);
+  } catch {
+    // Best effort cleanup only.
   }
 }
