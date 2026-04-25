@@ -1,7 +1,10 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import type { BeneficiaryPortalSummary } from '@solidarity-network/shared';
+import type {
+  BeneficiaryPortalDeliverySummary,
+  BeneficiaryPortalSummary,
+} from '@solidarity-network/shared';
 import { BeneficiaryPortalService } from '../../core/services/beneficiary-portal.service';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -27,6 +30,10 @@ export class BeneficiaryPortalPage implements OnInit {
   }
 
   beneficiaryProgramNames(portal: BeneficiaryPortalSummary) {
-    return portal.beneficiary.charityPrograms.map((program) => program.name).join(', ');
+    return portal.programs.map((program) => program.name).join(', ');
+  }
+
+  deliveryTrackBy(_: number, delivery: BeneficiaryPortalDeliverySummary) {
+    return delivery.id;
   }
 }

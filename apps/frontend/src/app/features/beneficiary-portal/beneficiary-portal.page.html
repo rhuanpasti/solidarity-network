@@ -11,7 +11,7 @@
         <p>{{ 'forms.charityPrograms' | translate }}</p>
         <strong>
           {{
-            portal.beneficiary.charityPrograms.length
+            portal.programs.length
               ? beneficiaryProgramNames(portal)
               : ('common.unassigned' | translate)
           }}
@@ -28,6 +28,16 @@
           }
         </strong>
       </article>
+
+      <article class="stat-card">
+        <p>{{ 'features.beneficiaryPortal.peopleTitle' | translate }}</p>
+        <strong>{{ portal.beneficiaries.length }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <p>{{ 'features.beneficiaryPortal.deliveryHistoryTitle' | translate }}</p>
+        <strong>{{ portal.pastDeliveries.length }}</strong>
+      </article>
     </section>
 
     <div class="content-grid portal-grid">
@@ -39,9 +49,9 @@
           </div>
         </div>
 
-        @if (portal.beneficiary.charityPrograms.length) {
+        @if (portal.programs.length) {
           <div class="list compact-list">
-            @for (charityProgram of portal.beneficiary.charityPrograms; track charityProgram.id) {
+            @for (charityProgram of portal.programs; track charityProgram.id) {
               <article class="program-card">
                 <strong>{{ charityProgram.name }}</strong>
                 <p>{{ charityProgram.description }}</p>
@@ -66,6 +76,34 @@
       <section class="panel">
         <div class="panel-heading">
           <div>
+            <h3>{{ 'features.beneficiaryPortal.peopleTitle' | translate }}</h3>
+            <p>{{ 'features.beneficiaryPortal.peopleDescription' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="list compact-list">
+          @for (person of portal.beneficiaries; track person.id) {
+            <article class="list-item static-item">
+              <div>
+                <strong>{{ person.fullName }}</strong>
+                <p>{{ ('enums.dependentRelationships.' + person.relationship) | translate }}</p>
+              </div>
+              <div class="item-meta">
+                @if (person.document) {
+                  <span>{{ person.document }}</span>
+                }
+                @if (person.birthDate) {
+                  <small>{{ person.birthDate | date: 'mediumDate' }}</small>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
             <h3>{{ 'features.beneficiaryPortal.deliveriesTitle' | translate }}</h3>
             <p>{{ 'features.beneficiaryPortal.deliveriesDescription' | translate }}</p>
           </div>
@@ -77,7 +115,7 @@
               <article class="list-item static-item">
                 <div>
                   <strong>{{ delivery.benefit.name }}</strong>
-                  <p>{{ delivery.charityProgram.name }}</p>
+                  <p>{{ delivery.charityProgram.name }} - {{ 'forms.quantity' | translate }}: {{ delivery.quantity }}</p>
                 </div>
                 <div class="item-meta">
                   <span>#{{ delivery.reference }}</span>
@@ -90,6 +128,37 @@
           <app-empty-state
             title="features.beneficiaryPortal.emptyTitle"
             description="features.beneficiaryPortal.emptyDescription"
+          />
+        }
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h3>{{ 'features.beneficiaryPortal.deliveryHistoryTitle' | translate }}</h3>
+            <p>{{ 'features.beneficiaryPortal.deliveryHistoryDescription' | translate }}</p>
+          </div>
+        </div>
+
+        @if (portal.pastDeliveries.length) {
+          <div class="list compact-list">
+            @for (delivery of portal.pastDeliveries; track delivery.id) {
+              <article class="list-item static-item">
+                <div>
+                  <strong>{{ delivery.benefit.name }}</strong>
+                  <p>{{ delivery.charityProgram.name }} - {{ 'forms.quantity' | translate }}: {{ delivery.quantity }}</p>
+                </div>
+                <div class="item-meta">
+                  <span>#{{ delivery.reference }}</span>
+                  <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <app-empty-state
+            title="features.beneficiaryPortal.noDeliveryHistoryTitle"
+            description="features.beneficiaryPortal.noDeliveryHistoryDescription"
           />
         }
       </section>

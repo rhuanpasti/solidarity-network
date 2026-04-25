@@ -86,6 +86,7 @@
       "archived": "Archived"
     },
     "dependentRelationships": {
+      "primary": "Beneficiary",
       "child": "Child",
       "grandchild": "Grandchild",
       "other": "Other"
@@ -197,14 +198,20 @@
       "title": "Programs and upcoming deliveries",
       "description": "Review the program you are registered in and the next scheduled support dates.",
       "nextDelivery": "Next delivery",
-      "programsTitle": "Registered program",
-      "programsDescription": "This is the active program linked to your beneficiary record.",
+      "programsTitle": "Registered programs",
+      "programsDescription": "Active and inactive programs linked to your beneficiary record.",
       "noProgramTitle": "No program assigned",
       "noProgramDescription": "Your beneficiary record does not have an assigned charity program yet.",
+      "peopleTitle": "Beneficiaries",
+      "peopleDescription": "People covered by this beneficiary record.",
       "deliveriesTitle": "Upcoming deliveries",
       "deliveriesDescription": "Future support dates already scheduled for your record.",
       "emptyTitle": "No upcoming deliveries",
-      "emptyDescription": "When a new delivery is scheduled, it will appear here."
+      "emptyDescription": "When a new delivery is scheduled, it will appear here.",
+      "deliveryHistoryTitle": "Past deliveries",
+      "deliveryHistoryDescription": "Previous support delivered for your record.",
+      "noDeliveryHistoryTitle": "No past deliveries",
+      "noDeliveryHistoryDescription": "Completed deliveries will appear here."
     },
     "benefits": {
       "eyebrow": "Benefits",

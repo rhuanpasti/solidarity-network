@@ -86,6 +86,7 @@
       "archived": "Arquivado"
     },
     "dependentRelationships": {
+      "primary": "Beneficiado",
       "child": "Filho",
       "grandchild": "Neto",
       "other": "Outro"
@@ -197,14 +198,20 @@
       "title": "Programas e proximas entregas",
       "description": "Consulte o programa em que voce esta cadastrado e as proximas datas de apoio previstas.",
       "nextDelivery": "Proxima entrega",
-      "programsTitle": "Programa vinculado",
-      "programsDescription": "Este e o programa ativo associado ao seu cadastro.",
+      "programsTitle": "Programas vinculados",
+      "programsDescription": "Programas ativos e inativos associados ao seu cadastro.",
       "noProgramTitle": "Nenhum programa vinculado",
       "noProgramDescription": "Seu cadastro de beneficiado ainda nao possui um programa social vinculado.",
+      "peopleTitle": "Beneficiados",
+      "peopleDescription": "Pessoas cobertas por este cadastro de beneficiado.",
       "deliveriesTitle": "Proximas entregas",
       "deliveriesDescription": "Datas futuras de apoio ja registradas para o seu cadastro.",
       "emptyTitle": "Nenhuma entrega futura",
-      "emptyDescription": "Quando uma nova entrega for agendada, ela aparecera aqui."
+      "emptyDescription": "Quando uma nova entrega for agendada, ela aparecera aqui.",
+      "deliveryHistoryTitle": "Entregas antigas",
+      "deliveryHistoryDescription": "Apoios anteriores entregues para o seu cadastro.",
+      "noDeliveryHistoryTitle": "Nenhuma entrega antiga",
+      "noDeliveryHistoryDescription": "Entregas concluidas aparecerao aqui."
     },
     "benefits": {
       "eyebrow": "Beneficios",

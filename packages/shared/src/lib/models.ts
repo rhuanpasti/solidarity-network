@@ -89,15 +89,28 @@ export interface BeneficiaryPortalSummary {
     BeneficiarySummary,
   'id' | 'fullName' | 'document' | 'birthDate' | 'email' | 'phone' | 'status'
   > & {
-    charityPrograms: CharityProgramSummary[];
+    dependents: BeneficiaryDependentSummary[];
   };
-  upcomingDeliveries: Array<{
+  programs: CharityProgramSummary[];
+  beneficiaries: Array<{
+    id: string;
+    fullName: string;
+    document: string | null;
+    birthDate: string | null;
+    relationship: BeneficiaryDependentRelationship | 'primary';
+  }>;
+  upcomingDeliveries: BeneficiaryPortalDeliverySummary[];
+  pastDeliveries: BeneficiaryPortalDeliverySummary[];
+}
+
+export interface BeneficiaryPortalDeliverySummary {
     id: string;
     reference: string;
+    quantity: number;
     deliveryDate: string;
+    notes: string | null;
     benefit: Pick<BenefitSummary, 'id' | 'name' | 'category'>;
     charityProgram: Pick<CharityProgramSummary, 'id' | 'name' | 'status'>;
-  }>;
 }
 
 export interface AuthUserSummary {
