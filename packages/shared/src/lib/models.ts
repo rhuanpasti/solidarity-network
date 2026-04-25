@@ -1,6 +1,7 @@
 import type { Address } from './address';
 import {
   AccountType,
+  BeneficiaryDependentRelationship,
   AdministratorRole,
   BeneficiaryStatus,
   BenefitCategory,
@@ -41,9 +42,18 @@ export interface BeneficiarySummary {
   phone: string;
   address: Address;
   notes: string | null;
+  dependents: BeneficiaryDependentSummary[];
   charityPrograms: CharityProgramSummary[];
   createdAt: string;
   status: BeneficiaryStatus;
+}
+
+export interface BeneficiaryDependentSummary {
+  id: string;
+  fullName: string;
+  relationship: BeneficiaryDependentRelationship;
+  document: string | null;
+  birthDate: string;
 }
 
 export interface CreateBeneficiaryResult {

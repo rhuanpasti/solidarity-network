@@ -1,9 +1,18 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import {
   BRAZIL_COUNTRY,
+  BeneficiaryDependentRelationship,
   BeneficiaryStatus,
   WORLD_COUNTRY,
   formatBrazilianPostalCode,
@@ -60,6 +69,13 @@ export type BeneficiaryFiltersForm = FormGroup<{
   pageSize: FormControl<number>;
 }>;
 
+export type BeneficiaryDependentForm = FormGroup<{
+  fullName: FormControl<string>;
+  relationship: FormControl<BeneficiaryDependentRelationship>;
+  document: FormControl<string>;
+  birthDate: FormControl<string>;
+}>;
+
 export type BeneficiaryForm = FormGroup<{
   fullName: FormControl<string>;
   document: FormControl<string>;
@@ -67,6 +83,7 @@ export type BeneficiaryForm = FormGroup<{
   email: FormControl<string>;
   phone: FormControl<string>;
   notes: FormControl<string>;
+  dependents: FormArray<BeneficiaryDependentForm>;
   charityProgramIds: FormControl<string[]>;
   status: FormControl<BeneficiaryStatus>;
   address: BeneficiaryAddressForm;
@@ -123,6 +140,7 @@ export class BeneficiariesState {
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
     notes: [''],
+    dependents: this.formBuilder.array<BeneficiaryDependentForm>([]),
     charityProgramIds: this.formBuilder.nonNullable.control<string[]>([]),
     status: this.formBuilder.nonNullable.control<BeneficiaryStatus>(
       BeneficiaryStatus.Active,
@@ -150,6 +168,7 @@ export class BeneficiariesState {
   readonly editor = new CrudFormController<BeneficiarySummary>({
     form: this.form,
     onCreate: () => {
+      this.form.controls.dependents.clear();
       this.form.reset({
         fullName: '',
         document: '',
@@ -174,6 +193,7 @@ export class BeneficiariesState {
       this.addressLookupMessageKey.set(null);
     },
     onView: (item) => {
+      this.form.controls.dependents.clear();
       this.form.reset({
         fullName: item.fullName,
         document: item.document,
@@ -194,6 +214,16 @@ export class BeneficiariesState {
           complement: item.address.complement ?? '',
         },
       });
+      item.dependents.forEach((dependent) => {
+        this.form.controls.dependents.push(
+          this.createDependentForm({
+            fullName: dependent.fullName,
+            relationship: dependent.relationship,
+            document: dependent.document ?? '',
+            birthDate: dependent.birthDate.slice(0, 10),
+          }),
+        );
+      });
       this.generatedCredential.set(null);
       this.addressLookupMessageKey.set(null);
     },
@@ -202,6 +232,20 @@ export class BeneficiariesState {
   readonly selected = this.editor.selected;
   
   readonly isReadOnly = this.editor.isReadOnly;
+  readonly dependentRelationshipOptions = [
+    {
+      value: BeneficiaryDependentRelationship.Child,
+      translationKey: 'enums.dependentRelationships.child',
+    },
+    {
+      value: BeneficiaryDependentRelationship.Grandchild,
+      translationKey: 'enums.dependentRelationships.grandchild',
+    },
+    {
+      value: BeneficiaryDependentRelationship.Other,
+      translationKey: 'enums.dependentRelationships.other',
+    },
+  ];
 
   initialize() {
     this.watchCountrySelection();
@@ -285,6 +329,10 @@ export class BeneficiariesState {
     const payload = {
       ...raw,
       notes: raw.notes || null,
+      dependents: raw.dependents.map((dependent) => ({
+        ...dependent,
+        document: dependent.document.trim() || null,
+      })),
       charityProgramIds: raw.charityProgramIds,
     };
 
@@ -373,6 +421,22 @@ export class BeneficiariesState {
     return country === BRAZIL_COUNTRY ? 'countries.brazil' : 'countries.world';
   }
 
+  addDependent() {
+    if (this.isReadOnly()) {
+      return;
+    }
+
+    this.form.controls.dependents.push(this.createDependentForm());
+  }
+
+  removeDependent(index: number) {
+    if (this.isReadOnly()) {
+      return;
+    }
+
+    this.form.controls.dependents.removeAt(index);
+  }
+
   private watchCountrySelection() {
     this.form.controls.address.controls.country.valueChanges
       .pipe(
@@ -404,4 +468,47 @@ export class BeneficiariesState {
       emitEvent: false,
     });
   }
+
+  private createDependentForm(value?: {
+    fullName: string;
+    relationship: BeneficiaryDependentRelationship;
+    document: string;
+    birthDate: string;
+  }) {
+    return this.formBuilder.nonNullable.group({
+      fullName: [
+        value?.fullName ?? '',
+        [Validators.required, Validators.maxLength(160)],
+      ],
+      relationship: this.formBuilder.nonNullable.control(
+        value?.relationship ?? BeneficiaryDependentRelationship.Child,
+        { validators: [Validators.required] },
+      ),
+      document: [value?.document ?? '', Validators.maxLength(40)],
+      birthDate: [
+        value?.birthDate ?? '',
+        [Validators.required, dependentUnder18Validator()],
+      ],
+    });
+  }
+}
+
+function dependentUnder18Validator() {
+  return (control: AbstractControl<string>): ValidationErrors | null => {
+    if (!control.value) {
+      return null;
+    }
+
+    const birthDate = new Date(control.value);
+    const now = new Date();
+
+    if (Number.isNaN(birthDate.getTime()) || birthDate > now) {
+      return { dependentUnder18: true };
+    }
+
+    const eighteenthBirthday = new Date(birthDate);
+    eighteenthBirthday.setUTCFullYear(eighteenthBirthday.getUTCFullYear() + 18);
+
+    return eighteenthBirthday > now ? null : { dependentUnder18: true };
+  };
 }

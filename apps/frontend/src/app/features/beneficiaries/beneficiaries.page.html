@@ -31,12 +31,15 @@
       [isReadOnly]="beneficiariesState.isReadOnly()"
       [submitPending]="beneficiariesState.submitPending()"
       [programOptions]="programOptions()"
+      [dependentRelationshipOptions]="beneficiariesState.dependentRelationshipOptions"
       [countryOptions]="countryOptions()"
       [documentLabelKey]="beneficiariesState.documentLabelKey"
       [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
       (save)="beneficiariesState.submit()"
       (cancel)="beneficiariesState.editor.cancel()"
       (edit)="beneficiariesState.editor.startEditing()"
+      (addDependent)="beneficiariesState.addDependent()"
+      (removeDependent)="beneficiariesState.removeDependent($event)"
       (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
     />
   </div>

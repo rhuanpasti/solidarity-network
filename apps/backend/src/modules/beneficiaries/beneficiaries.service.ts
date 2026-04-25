@@ -23,6 +23,11 @@ import {
   getBeneficiaryValidationErrors,
   normalizeBeneficiaryInput,
 } from './beneficiary-validation';
+import {
+  getBeneficiaryDependentsValidationErrors,
+  normalizeBeneficiaryDependents,
+  type NormalizedBeneficiaryDependent,
+} from './beneficiary-dependents.validation';
 import { toBeneficiarySummary } from './beneficiaries.mapper';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
@@ -61,6 +66,8 @@ export class BeneficiariesService {
       address: dto.address,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+    const normalizedDependents = normalizeBeneficiaryDependents(dto.dependents);
+    this.assertValidBeneficiaryDependents(normalizedDependents);
     await this.assertDocumentAvailable(normalizedInput.document);
     const generatedPasskey = generateNumericPasskey(16);
     let beneficiary;
@@ -75,6 +82,16 @@ export class BeneficiariesService {
         mustChangePassword: true,
         address: normalizedInput.address as unknown as Prisma.InputJsonValue,
         notes: dto.notes,
+        dependents: normalizedDependents.length
+          ? {
+              create: normalizedDependents.map((dependent) => ({
+                fullName: dependent.fullName,
+                relationship: dependent.relationship,
+                document: dependent.document,
+                birthDate: dependent.birthDate,
+              })),
+            }
+          : undefined,
         charityPrograms: dto.charityProgramIds?.length
           ? {
               create: dto.charityProgramIds.map((charityProgramId) => ({
@@ -199,6 +216,11 @@ export class BeneficiariesService {
       address: mergedAddress,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
+    const normalizedDependents =
+      dto.dependents === undefined
+        ? undefined
+        : normalizeBeneficiaryDependents(dto.dependents);
+    this.assertValidBeneficiaryDependents(normalizedDependents ?? []);
     await this.assertDocumentAvailable(normalizedInput.document, id);
 
     this.authorizationService.assertCanEditBeneficiary(
@@ -224,6 +246,18 @@ export class BeneficiariesService {
           : undefined,
         notes: dto.notes,
         status: dto.status,
+        dependents:
+          normalizedDependents === undefined
+            ? undefined
+            : {
+                deleteMany: {},
+                create: normalizedDependents.map((dependent) => ({
+                  fullName: dependent.fullName,
+                  relationship: dependent.relationship,
+                  document: dependent.document,
+                  birthDate: dependent.birthDate,
+                })),
+              },
       }, dto.charityProgramIds);
     } catch (error) {
       this.rethrowUniqueDocumentError(error);
@@ -299,6 +333,22 @@ export class BeneficiariesService {
     });
   }
 
+  private assertValidBeneficiaryDependents(
+    dependents: NormalizedBeneficiaryDependent[],
+  ) {
+    const errors = getBeneficiaryDependentsValidationErrors(dependents);
+
+    if (!errors.length) {
+      return;
+    }
+
+    throw new BadRequestException({
+      code: 'INVALID_BENEFICIARY_DEPENDENTS',
+      message: errors[0],
+      details: errors,
+    });
+  }
+
   private async assertDocumentAvailable(document: string, currentBeneficiaryId?: string) {
     const existingBeneficiary = await this.repository.findByDocument(document);
 
@@ -349,6 +399,12 @@ export class BeneficiariesService {
     address: unknown;
     notes: string | null;
     status: string;
+    dependents: Array<{
+      fullName: string;
+      relationship: string;
+      document: string | null;
+      birthDate: Date;
+    }>;
     charityPrograms: Array<{ charityProgramId: string }>;
   }) {
     return {
@@ -360,6 +416,14 @@ export class BeneficiariesService {
       address: beneficiary.address,
       notes: beneficiary.notes,
       status: beneficiary.status,
+      dependents: beneficiary.dependents
+        .map((dependent) => ({
+          fullName: dependent.fullName,
+          relationship: dependent.relationship,
+          document: dependent.document,
+          birthDate: dependent.birthDate.toISOString(),
+        }))
+        .sort((left, right) => left.fullName.localeCompare(right.fullName)),
       charityProgramIds: beneficiary.charityPrograms
         .map((link) => link.charityProgramId)
         .sort(),

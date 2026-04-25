@@ -71,7 +71,8 @@
     "administrator": "Administrador",
     "quantity": "Quantidade",
     "deliveryDate": "Data da entrega",
-    "reference": "Referencia"
+    "reference": "Referencia",
+    "relationship": "Parentesco"
   },
   "enums": {
     "roles": {
@@ -83,6 +84,11 @@
       "active": "Ativo",
       "inactive": "Inativo",
       "archived": "Arquivado"
+    },
+    "dependentRelationships": {
+      "child": "Filho",
+      "grandchild": "Neto",
+      "other": "Outro"
     },
     "categories": {
       "food": "Apoio alimentar",
@@ -106,6 +112,7 @@
     "invalidPhone": "Informe um telefone valido.",
     "invalidBrazilianPhone": "Informe um telefone brasileiro valido.",
     "invalidCpf": "Informe um CPF valido.",
+    "dependentUnder18": "Dependentes precisam ter menos de 18 anos.",
     "invalidPostalCode": "Informe um CEP valido.",
     "reviewHighlightedFields": "Revise os campos destacados e tente novamente.",
     "searchingPostalCode": "Buscando endereco pelo CEP...",
@@ -178,7 +185,12 @@
       "editTitle": "Detalhes do beneficiado",
       "formDescription": "Registre identidade, endereco, observacoes e o programa associado.",
       "generatedPasskeyEyebrow": "Senha inicial de acesso",
-      "generatedPasskeyLabel": "Passkey gerada"
+      "generatedPasskeyLabel": "Passkey gerada",
+      "dependentsTitle": "Dependentes",
+      "dependentsDescription": "Cadastre filhos, netos ou outros dependentes menores de 18 anos.",
+      "addDependent": "Adicionar dependente",
+      "removeDependent": "Remover",
+      "dependentLabel": "Dependente {{number}}"
     },
     "beneficiaryPortal": {
       "eyebrow": "Minha area",

@@ -32,6 +32,15 @@ export const BeneficiaryStatus = {
 export type BeneficiaryStatus =
   (typeof BeneficiaryStatus)[keyof typeof BeneficiaryStatus];
 
+export const BeneficiaryDependentRelationship = {
+  Child: 'child',
+  Grandchild: 'grandchild',
+  Other: 'other',
+} as const;
+
+export type BeneficiaryDependentRelationship =
+  (typeof BeneficiaryDependentRelationship)[keyof typeof BeneficiaryDependentRelationship];
+
 export const BenefitCategory = {
   Food: 'food',
   Hygiene: 'hygiene',

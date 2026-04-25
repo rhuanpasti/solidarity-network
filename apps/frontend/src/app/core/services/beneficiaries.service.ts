@@ -2,6 +2,7 @@ import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type {
   Address,
+  BeneficiaryDependentRelationship,
   BeneficiaryListQuery,
   BeneficiarySummary,
   CreateBeneficiaryResult,
@@ -19,8 +20,16 @@ export interface BeneficiaryPayload {
   phone: string;
   address: Address;
   notes?: string | null;
+  dependents?: BeneficiaryDependentPayload[];
   charityProgramIds?: string[];
   status: 'active' | 'inactive' | 'archived';
+}
+
+export interface BeneficiaryDependentPayload {
+  fullName: string;
+  relationship: BeneficiaryDependentRelationship;
+  document?: string | null;
+  birthDate: string;
 }
 
 export interface BeneficiaryAddressLookupResponse extends Partial<Address> {}

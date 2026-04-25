@@ -71,7 +71,8 @@
     "administrator": "Administrator",
     "quantity": "Quantity",
     "deliveryDate": "Delivery date",
-    "reference": "Reference"
+    "reference": "Reference",
+    "relationship": "Relationship"
   },
   "enums": {
     "roles": {
@@ -83,6 +84,11 @@
       "active": "Active",
       "inactive": "Inactive",
       "archived": "Archived"
+    },
+    "dependentRelationships": {
+      "child": "Child",
+      "grandchild": "Grandchild",
+      "other": "Other"
     },
     "categories": {
       "food": "Food support",
@@ -106,6 +112,7 @@
     "invalidPhone": "Enter a valid phone number.",
     "invalidBrazilianPhone": "Enter a valid Brazilian phone number.",
     "invalidCpf": "Enter a valid CPF.",
+    "dependentUnder18": "Dependents must be under 18 years old.",
     "invalidPostalCode": "Enter a valid postal code.",
     "reviewHighlightedFields": "Review the highlighted fields and try again.",
     "searchingPostalCode": "Looking up the address by postal code...",
@@ -178,7 +185,12 @@
       "editTitle": "Beneficiary details",
       "formDescription": "Capture identity, address, notes, and charity program assignment.",
       "generatedPasskeyEyebrow": "Initial access password",
-      "generatedPasskeyLabel": "Generated passkey"
+      "generatedPasskeyLabel": "Generated passkey",
+      "dependentsTitle": "Dependents",
+      "dependentsDescription": "Register children, grandchildren, or other dependents under 18.",
+      "addDependent": "Add dependent",
+      "removeDependent": "Remove",
+      "dependentLabel": "Dependent {{number}}"
     },
     "beneficiaryPortal": {
       "eyebrow": "My area",

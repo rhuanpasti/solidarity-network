@@ -20,7 +20,7 @@ The logger emits one JSON object per log line through Nest's logger. Every log e
 | `accountId`, `accountType`, `role` | Authenticated actor context when available. |
 | Domain details | Event-specific structured fields such as `entityType`, `entityId`, `statusCode`, or `durationMs`. |
 
-Sensitive fields are sanitized before output. Keys containing values like `password`, `token`, `secret`, `authorization`, or `cookie` are replaced with `[REDACTED]`.
+Sensitive fields are sanitized before output. Keys containing values like `password`, `token`, `secret`, `authorization`, or `cookie` are replaced with `[REDACTED]`. Beneficiary audit snapshots can include dependent names, birth dates, relationship, and nullable documents, so log access should be treated as access to personal data.
 
 ### Event Naming
 
@@ -134,6 +134,8 @@ Unhandled exceptions become HTTP 500 responses. They are logged at `error` level
 | Request pipeline failure | HTTP status available from response | `warn` from interceptor, plus exception log from filter | `request.failed` and `request.exception` |
 
 Do not expose stack traces, database errors, tokens, cookies, or raw exception objects in HTTP responses.
+
+Beneficiary dependent validation failures use `INVALID_BENEFICIARY_DEPENDENTS` with user-safe messages such as "Dependent 1 must be under 18 years old." The dependent document field is nullable; blank documents are normalized to `null` before persistence and audit snapshots.
 
 ## Example Logs
 

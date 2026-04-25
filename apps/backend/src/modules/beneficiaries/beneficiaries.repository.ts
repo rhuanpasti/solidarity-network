@@ -6,6 +6,7 @@ import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
 import type { BeneficiaryWithPrograms } from './beneficiaries.mapper';
 
 const beneficiaryInclude = {
+  dependents: true,
   charityPrograms: {
     include: {
       charityProgram: true,

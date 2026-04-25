@@ -11,8 +11,34 @@ import {
   MaxLength,
   ValidateNested,
 } from 'class-validator';
-import { BeneficiaryStatus } from '@solidarity-network/shared';
+import {
+  BeneficiaryDependentRelationship,
+  BeneficiaryStatus,
+} from '@solidarity-network/shared';
 import { AddressDto } from './address.dto';
+
+export class BeneficiaryDependentDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(160)
+  fullName!: string;
+
+  @ApiProperty({ enum: BeneficiaryDependentRelationship })
+  @IsEnum(BeneficiaryDependentRelationship)
+  relationship!: BeneficiaryDependentRelationship;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  document?: string | null;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @IsNotEmpty()
+  @IsDateString()
+  birthDate!: string;
+}
 
 export class CreateBeneficiaryDto {
   @ApiProperty()
@@ -60,6 +86,13 @@ export class CreateBeneficiaryDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   charityProgramIds?: string[];
+
+  @ApiPropertyOptional({ type: () => [BeneficiaryDependentDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BeneficiaryDependentDto)
+  dependents?: BeneficiaryDependentDto[];
 
   @ApiPropertyOptional({ enum: BeneficiaryStatus })
   @IsOptional()

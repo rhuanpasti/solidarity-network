@@ -24,6 +24,12 @@ enum BeneficiaryStatus {
   archived
 }
 
+enum BeneficiaryDependentRelationship {
+  child
+  grandchild
+  other
+}
+
 enum BenefitCategory {
   food
   hygiene
@@ -102,9 +108,25 @@ model Beneficiary {
 
   charityPrograms  BeneficiaryProgramLink[]
   benefitDeliveries BenefitDelivery[]
+  dependents       BeneficiaryDependent[]
 
   @@index([status])
   @@index([fullName])
+}
+
+model BeneficiaryDependent {
+  id             String                           @id @default(cuid())
+  beneficiaryId  String
+  fullName       String
+  relationship   BeneficiaryDependentRelationship
+  document       String?
+  birthDate      DateTime
+  createdAt      DateTime                         @default(now())
+  updatedAt      DateTime                         @updatedAt
+
+  beneficiary    Beneficiary                      @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+
+  @@index([beneficiaryId])
 }
 
 model BeneficiaryProgramLink {
