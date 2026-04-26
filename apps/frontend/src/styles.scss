@@ -261,12 +261,17 @@ select:disabled {
 }
 
 .checkbox-field {
-  align-content: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  line-height: 1.4;
 }
 
 .checkbox-field input {
+  flex: 0 0 auto;
   width: 1.2rem;
   height: 1.2rem;
+  margin: 0;
 }
 
 .actions {
