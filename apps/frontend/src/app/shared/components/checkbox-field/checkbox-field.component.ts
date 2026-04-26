@@ -8,8 +8,8 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [ReactiveFormsModule, TranslateModule],
   template: `
     <label class="field checkbox-field">
-      <span>{{ label() | translate }}</span>
       <input type="checkbox" [formControl]="control()" [disabled]="readonly()" />
+      <span>{{ label() | translate }}</span>
     </label>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
