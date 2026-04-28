@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { createHash } from 'node:crypto';
 import type {
   Address,
   BeneficiarySummary,
@@ -18,6 +19,7 @@ import { AuditTrailService } from '../observability/audit-trail.service';
 import { EntityVersioningService } from '../observability/entity-versioning.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
+import { EmailService } from '../email/email.service';
 import { BeneficiariesRepository } from './beneficiaries.repository';
 import {
   getBeneficiaryValidationErrors,
@@ -46,6 +48,8 @@ export class BeneficiariesService {
     private readonly repository: BeneficiariesRepository,
     @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
+    @Inject(EmailService)
+    private readonly emailService: EmailService,
   ) {}
 
   async create(
@@ -134,6 +138,12 @@ export class BeneficiariesService {
         previousValues: null,
         newValues: newSnapshot,
       },
+    });
+
+    await this.sendTemporaryPasswordEmail({
+      email: beneficiary.email,
+      name: beneficiary.fullName,
+      temporaryPassword: generatedPasskey,
     });
 
     return {
@@ -448,5 +458,46 @@ export class BeneficiariesService {
         changedFields.map((field) => [field, newSnapshot[field]]),
       ),
     };
+  }
+
+  private async sendTemporaryPasswordEmail(payload: {
+    email: string | null;
+    name: string;
+    temporaryPassword: string;
+  }) {
+    if (!payload.email) {
+      return;
+    }
+
+    try {
+      await this.emailService.send({
+        to: {
+          email: payload.email,
+          name: payload.name,
+        },
+        template: 'temporary-password',
+        variables: {
+          userName: payload.name,
+          email: payload.email,
+          temporaryPassword: payload.temporaryPassword,
+          organizationName: 'Solidarity Network',
+        },
+      });
+    } catch {
+      await this.auditTrailService.record({
+        action: 'beneficiary.temporary_password_email.failed',
+        status: 'failure',
+        metadata: {
+          emailFingerprint: this.buildEmailFingerprint(payload.email),
+        },
+      });
+    }
+  }
+
+  private buildEmailFingerprint(email: string) {
+    return createHash('sha256')
+      .update(email.trim().toLowerCase())
+      .digest('hex')
+      .slice(0, 16);
   }
 }

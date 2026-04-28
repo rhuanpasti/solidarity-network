@@ -25,12 +25,6 @@ async function main() {
     );
   }
 
-  if (seedAdminPassword && seedAdminPassword.length < 12) {
-    throw new Error(
-      'SEED_ADMIN_PASSWORD must contain at least 12 characters.',
-    );
-  }
-
   const administrator = await prisma.administrator.upsert({
     where: { email: seedAdminEmail },
     update: {

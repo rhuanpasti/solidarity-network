@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { AdministratorProgramLink } from '@prisma/client';
+import { createHash } from 'node:crypto';
 import type {
   BenefitDeliverySummary,
   PaginatedResponse,
@@ -15,6 +16,7 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { BeneficiariesRepository } from '../beneficiaries/beneficiaries.repository';
 import { BenefitsRepository } from '../benefits/benefits.repository';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
+import { EmailService } from '../email/email.service';
 import { BenefitDeliveriesRepository } from './benefit-deliveries.repository';
 import { toBenefitDeliverySummary } from './benefit-deliveries.mapper';
 import { CreateBenefitDeliveryDto } from './dto/create-benefit-delivery.dto';
@@ -39,6 +41,8 @@ export class BenefitDeliveriesService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
     @Inject(AdministratorsRepository)
     private readonly administratorsRepository: AdministratorsRepository,
+    @Inject(EmailService)
+    private readonly emailService: EmailService,
   ) {}
 
   async create(
@@ -141,6 +145,8 @@ export class BenefitDeliveriesService {
       },
     });
 
+    await this.sendNewDeliveryEmail(delivery);
+
     return toBenefitDeliverySummary(delivery);
   }
 
@@ -202,5 +208,53 @@ export class BenefitDeliveriesService {
       administratorId: delivery.administratorId,
       reference: delivery.reference,
     };
+  }
+
+  private async sendNewDeliveryEmail(delivery: {
+    beneficiary: { email?: string | null; fullName: string };
+    benefit: { name: string; category: string };
+    charityProgram: { name: string };
+    deliveryDate: Date;
+  }) {
+    if (!delivery.beneficiary.email) {
+      return;
+    }
+
+    try {
+      await this.emailService.send({
+        to: {
+          email: delivery.beneficiary.email,
+          name: delivery.beneficiary.fullName,
+        },
+        template: 'new-delivery-notification',
+        variables: {
+          userName: delivery.beneficiary.fullName,
+          deliveryTitle: delivery.benefit.name,
+          deliveryType: delivery.benefit.category,
+          deliveryDate: delivery.deliveryDate.toISOString(),
+          programName: delivery.charityProgram.name,
+          organizationName: 'Solidarity Network',
+        },
+      });
+    } catch {
+      await this.auditTrailService.record({
+        action: 'benefit_delivery.notification_email.failed',
+        status: 'failure',
+        metadata: {
+          beneficiaryEmailFingerprint: this.buildEmailFingerprint(
+            delivery.beneficiary.email,
+          ),
+          benefitName: delivery.benefit.name,
+          programName: delivery.charityProgram.name,
+        },
+      });
+    }
+  }
+
+  private buildEmailFingerprint(email: string) {
+    return createHash('sha256')
+      .update(email.trim().toLowerCase())
+      .digest('hex')
+      .slice(0, 16);
   }
 }

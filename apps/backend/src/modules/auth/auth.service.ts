@@ -10,13 +10,17 @@ import type { Request } from 'express';
 import type { AuthUserSummary } from '@solidarity-network/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { AuditTrailService } from '../observability/audit-trail.service';
+import { EmailService } from '../email/email.service';
 import { AuthRateLimitService } from './auth-rate-limit.service';
 import { AuthTokenService } from './auth-token.service';
+import { PasswordResetTokenService } from './password-reset-token.service';
 import { AuthRepository } from './auth.repository';
 import { hashPassword, verifyPassword } from './password.util';
 import type { AuthResponse, AuthenticatedUser } from './auth.types';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +33,10 @@ export class AuthService {
     private readonly repository: AuthRepository,
     @Inject(AuthTokenService)
     private readonly authTokenService: AuthTokenService,
+    @Inject(EmailService)
+    private readonly emailService: EmailService,
+    @Inject(PasswordResetTokenService)
+    private readonly passwordResetTokenService: PasswordResetTokenService,
   ) {}
 
   async login(dto: LoginDto, request: Request): Promise<AuthResponse> {
@@ -189,6 +197,92 @@ export class AuthService {
       iat: 0,
       exp: 0,
     });
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const recipient =
+      await this.repository.findPasswordRecoveryRecipient(normalizedEmail);
+
+    if (!recipient) {
+      await this.auditTrailService.record({
+        action: 'auth.password_recovery.requested',
+        status: 'success',
+        metadata: {
+          emailFingerprint: this.buildIdentifierFingerprint(normalizedEmail),
+          recipientFound: false,
+        },
+      });
+      return { success: true };
+    }
+
+    const resetToken = this.passwordResetTokenService.createToken({
+      accountId: recipient.id,
+      accountType: recipient.accountType,
+      email: recipient.email,
+    });
+
+    await this.emailService.send({
+      to: {
+        email: recipient.email,
+        name: recipient.name,
+      },
+      template: 'forgot-password',
+      variables: {
+        userName: recipient.name,
+        email: recipient.email,
+        resetPasswordLink: this.passwordResetTokenService.buildResetLink(resetToken),
+        expiresIn: this.passwordResetTokenService.getExpiresInLabel(),
+      },
+    });
+
+    await this.auditTrailService.record({
+      action: 'auth.password_recovery.requested',
+      status: 'success',
+      actor: {
+        sub: recipient.id,
+        role: recipient.role,
+        accountType: recipient.accountType,
+      },
+      metadata: {
+        emailFingerprint: this.buildIdentifierFingerprint(normalizedEmail),
+        recipientFound: true,
+      },
+    });
+
+    return { success: true };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const tokenPayload = this.passwordResetTokenService.verifyToken(dto.token);
+
+    if (!tokenPayload) {
+      throw new BadRequestException({
+        code: 'PASSWORD_RESET_TOKEN_INVALID',
+        message: 'Password reset link is invalid or expired.',
+      });
+    }
+
+    const updatedCredential = await this.repository.updatePassword(
+      tokenPayload.accountType,
+      tokenPayload.accountId,
+      await hashPassword(dto.newPassword),
+    );
+
+    await this.auditTrailService.record({
+      action: 'auth.password_reset.completed',
+      status: 'success',
+      actor: {
+        sub: updatedCredential.id,
+        role: updatedCredential.role,
+        accountType: updatedCredential.accountType,
+      },
+      metadata: {
+        emailFingerprint: this.buildIdentifierFingerprint(tokenPayload.email),
+      },
+    });
+
+    return { success: true };
   }
 
   getSession(user: AuthenticatedUser) {

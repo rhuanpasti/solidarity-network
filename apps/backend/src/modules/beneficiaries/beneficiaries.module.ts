@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CharityProgramsModule } from '../charity-programs/charity-programs.module';
+import { EmailModule } from '../email/email.module';
 import { BeneficiaryPortalController } from './beneficiary-portal.controller';
 import { BeneficiaryPortalService } from './beneficiary-portal.service';
 import { BeneficiariesController } from './beneficiaries.controller';
@@ -8,7 +9,7 @@ import { BeneficiariesService } from './beneficiaries.service';
 import { PostalCodeLookupService } from './postal-code-lookup.service';
 
 @Module({
-  imports: [CharityProgramsModule],
+  imports: [CharityProgramsModule, EmailModule],
   controllers: [BeneficiariesController, BeneficiaryPortalController],
   providers: [
     BeneficiariesService,

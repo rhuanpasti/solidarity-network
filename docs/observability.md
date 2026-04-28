@@ -22,6 +22,10 @@ The logger emits one JSON object per log line through Nest's logger. Every log e
 
 Sensitive fields are sanitized before output. Keys containing values like `password`, `token`, `secret`, `authorization`, or `cookie` are replaced with `[REDACTED]`. Beneficiary audit snapshots can include dependent names, birth dates, relationship, and nullable documents, so log access should be treated as access to personal data.
 
+Transactional email logs must not include reset tokens, temporary passwords, API
+keys, or raw recipient addresses. Email events use a short recipient fingerprint
+for correlation.
+
 ### Event Naming
 
 Use stable dot-separated event names:
@@ -35,6 +39,10 @@ authorization.denied
 audit.record.created
 audit.record.failed
 entity.version.failed
+email.send.succeeded
+email.send.failed
+email.send.skipped
+email.send.configuration_missing
 ```
 
 Prefer names that describe what happened, not where it happened. Put module-specific data in fields.
@@ -130,6 +138,8 @@ Unhandled exceptions become HTTP 500 responses. They are logged at `error` level
 | --- | --- | --- | --- |
 | Validation or known client error | 4xx with stable `code` and safe `message` | `warn` | `request.exception` |
 | Authentication or authorization denial | 401/403 with safe `message` | `warn` | `auth.request.denied` or `authorization.denied` |
+| Email provider configuration missing | 503 with safe `message` | `warn` | `email.send.configuration_missing` |
+| Email provider send failure | 503 with safe `message` | `error` | `email.send.failed` |
 | Unexpected application error | 500 with generic message | `error` | `request.exception` |
 | Request pipeline failure | HTTP status available from response | `warn` from interceptor, plus exception log from filter | `request.failed` and `request.exception` |
 
@@ -227,6 +237,23 @@ Sanitized sensitive fields:
 }
 ```
 
+Email provider failure:
+
+```json
+{
+  "timestamp": "2026-04-26T14:33:22.100Z",
+  "level": "error",
+  "message": "email.send.failed",
+  "service": "solidarity-network-backend",
+  "requestId": "req_01HXEMAIL",
+  "provider": "sendpulse",
+  "status": 500,
+  "statusText": "Internal Server Error",
+  "recipientFingerprint": "a6b8c9d0e1f20304",
+  "responseBody": "provider failed"
+}
+```
+
 ## Basic Monitoring Suggestion
 
 Start with log-based monitoring before adding full metrics or tracing.
@@ -247,6 +274,7 @@ Minimum dashboard panels:
 3. p95 and p99 latency from `durationMs` on `request.completed` and `request.failed`.
 4. Top failing routes grouped by `path` or `route`.
 5. Authorization denials from `authorization.denied` and `auth.request.denied`.
+6. Transactional email failures from `email.send.failed` and configuration gaps from `email.send.configuration_missing`.
 
 Minimum alerts:
 
@@ -254,5 +282,6 @@ Minimum alerts:
 2. p95 API latency above 1 second for 10 minutes.
 3. No `request.completed` logs for 5 minutes during expected traffic.
 4. Spike in `auth.request.denied` or `authorization.denied` above normal baseline.
+5. Any sustained `email.send.failed` events for 5 minutes, or any `email.send.configuration_missing` event in production.
 
 Next step after log-based monitoring is OpenTelemetry tracing. Keep `traceId` aligned with `requestId` until a real distributed trace ID is introduced, then propagate W3C `traceparent` while preserving `X-Request-Id` for support workflows.

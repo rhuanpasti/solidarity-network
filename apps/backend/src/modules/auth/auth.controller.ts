@@ -21,7 +21,9 @@ import {
   SessionResponseDto,
 } from './dto/auth-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -71,6 +73,24 @@ export class AuthController {
       status: 'success',
     });
     return { success: true };
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request a password reset email' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiOkResponse({ schema: { properties: { success: { type: 'boolean' } } } })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset a password with a recovery token' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiOkResponse({ schema: { properties: { success: { type: 'boolean' } } } })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @AllowPasswordChangeWhenRequired()

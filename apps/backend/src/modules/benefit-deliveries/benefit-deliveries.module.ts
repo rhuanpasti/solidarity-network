@@ -3,6 +3,7 @@ import { AdministratorsModule } from '../administrators/administrators.module';
 import { BeneficiariesModule } from '../beneficiaries/beneficiaries.module';
 import { BenefitsModule } from '../benefits/benefits.module';
 import { CharityProgramsModule } from '../charity-programs/charity-programs.module';
+import { EmailModule } from '../email/email.module';
 import { BenefitDeliveriesController } from './benefit-deliveries.controller';
 import { BenefitDeliveriesRepository } from './benefit-deliveries.repository';
 import { BenefitDeliveriesService } from './benefit-deliveries.service';
@@ -13,6 +14,7 @@ import { BenefitDeliveriesService } from './benefit-deliveries.service';
     BeneficiariesModule,
     BenefitsModule,
     CharityProgramsModule,
+    EmailModule,
   ],
   controllers: [BenefitDeliveriesController],
   providers: [BenefitDeliveriesService, BenefitDeliveriesRepository],

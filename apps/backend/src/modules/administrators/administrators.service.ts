@@ -1,5 +1,6 @@
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { Administrator, CharityProgram } from '@prisma/client';
+import { createHash } from 'node:crypto';
 import type {
   AdministratorSummary,
   CreateAdministratorResult,
@@ -14,6 +15,7 @@ import { DomainNotFoundException } from '../../common/exceptions/domain-not-foun
 import { AuditTrailService } from '../observability/audit-trail.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CharityProgramsRepository } from '../charity-programs/charity-programs.repository';
+import { EmailService } from '../email/email.service';
 import {
   generateNumericPasskey,
   hashPassword,
@@ -35,6 +37,8 @@ export class AdministratorsService {
     private readonly repository: AdministratorsRepository,
     @Inject(CharityProgramsRepository)
     private readonly charityProgramsRepository: CharityProgramsRepository,
+    @Inject(EmailService)
+    private readonly emailService: EmailService,
   ) {}
 
   async create(
@@ -79,6 +83,12 @@ export class AdministratorsService {
         assignedProgramIds: dto.charityProgramIds ?? [],
         role: administrator.role,
       },
+    });
+
+    await this.sendTemporaryPasswordEmail({
+      email: administrator.email,
+      name: administrator.name,
+      temporaryPassword: generatedPasskey,
     });
 
     return {
@@ -242,5 +252,42 @@ export class AdministratorsService {
         charityProgramIds[missingProgramId]!,
       );
     }
+  }
+
+  private async sendTemporaryPasswordEmail(payload: {
+    email: string;
+    name: string;
+    temporaryPassword: string;
+  }) {
+    try {
+      await this.emailService.send({
+        to: {
+          email: payload.email,
+          name: payload.name,
+        },
+        template: 'temporary-password',
+        variables: {
+          userName: payload.name,
+          email: payload.email,
+          temporaryPassword: payload.temporaryPassword,
+          organizationName: 'Solidarity Network',
+        },
+      });
+    } catch {
+      await this.auditTrailService.record({
+        action: 'administrator.temporary_password_email.failed',
+        status: 'failure',
+        metadata: {
+          emailFingerprint: this.buildEmailFingerprint(payload.email),
+        },
+      });
+    }
+  }
+
+  private buildEmailFingerprint(email: string) {
+    return createHash('sha256')
+      .update(email.trim().toLowerCase())
+      .digest('hex')
+      .slice(0, 16);
   }
 }

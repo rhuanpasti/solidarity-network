@@ -91,7 +91,19 @@
           [(visible)]="passwordVisible"
         />
 
-        <app-checkbox-field [control]="form.controls.rememberMe" label="auth.rememberMe" />
+        <div class="login-options">
+          <app-checkbox-field [control]="form.controls.rememberMe" label="auth.rememberMe" />
+
+          <button
+            type="button"
+            class="forgot-password-button"
+            [disabled]="isRequestingPasswordReset()"
+            [attr.aria-busy]="isRequestingPasswordReset()"
+            (click)="requestPasswordReset()"
+          >
+            {{ 'auth.forgotPassword' | translate }}
+          </button>
+        </div>
 
         @if (authError(); as errorKey) {
           <p class="auth-error" aria-live="polite">{{ errorKey | translate }}</p>

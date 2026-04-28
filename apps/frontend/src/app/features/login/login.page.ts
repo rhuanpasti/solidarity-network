@@ -53,6 +53,7 @@ export class LoginPage {
   readonly passwordVisible = signal(false);
   readonly authError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
+  readonly isRequestingPasswordReset = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     identifier: ['', [Validators.required, Validators.maxLength(120)]],
@@ -137,5 +138,39 @@ export class LoginPage {
         this.route.snapshot.queryParamMap.get('returnUrl'),
       ),
     );
+  }
+
+  async requestPasswordReset() {
+    if (this.isRequestingPasswordReset()) {
+      return;
+    }
+
+    const email = this.form.controls.identifier.value.trim();
+
+    if (!email) {
+      this.form.controls.identifier.markAsTouched();
+      this.toastService.show({
+        type: 'error',
+        translationKey: 'auth.forgotPasswordEmailRequired',
+      });
+      return;
+    }
+
+    this.isRequestingPasswordReset.set(true);
+    const result = await this.authService.forgotPassword({ email });
+    this.isRequestingPasswordReset.set(false);
+
+    if (!result.success) {
+      this.toastService.show({
+        type: 'error',
+        translationKey: result.message ?? 'errors.requestFailed',
+      });
+      return;
+    }
+
+    this.toastService.show({
+      type: 'success',
+      translationKey: 'auth.forgotPasswordSent',
+    });
   }
 }

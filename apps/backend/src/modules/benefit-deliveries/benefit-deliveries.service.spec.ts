@@ -45,6 +45,7 @@ function makeDelivery(overrides: Record<string, unknown> = {}) {
       id: dto.beneficiaryId,
       fullName: 'Maria Silva',
       document: '52998224725',
+      email: 'maria@example.org',
     },
     benefit: {
       id: dto.benefitId,
@@ -106,6 +107,7 @@ function makeService(overrides: {
       charityPrograms: [{ charityProgramId: dto.charityProgramId }],
     })),
   };
+  const emailService = { send: mock.fn() };
 
   return {
     service: new BenefitDeliveriesService(
@@ -117,11 +119,13 @@ function makeService(overrides: {
       benefitsRepository as never,
       charityProgramsRepository as never,
       administratorsRepository as never,
+      emailService as never,
     ),
     auditTrailService,
     entityVersioningService,
     authorizationService,
     repository,
+    emailService,
   };
 }
 
@@ -157,6 +161,29 @@ describe('BenefitDeliveriesService', () => {
     assert.equal(result.id, 'delivery-1');
     assert.equal(result.beneficiary.fullName, 'Maria Silva');
     assert.equal(result.createdAt, '2026-04-23T12:30:00.000Z');
+  });
+
+  it('sends a new delivery notification email with the expected template variables', async () => {
+    const { service, emailService } = makeService();
+
+    await service.create(dto, actor);
+
+    assert.equal(emailService.send.mock.callCount(), 1);
+    assert.deepEqual(emailService.send.mock.calls[0]?.arguments[0], {
+      to: {
+        email: 'maria@example.org',
+        name: 'Maria Silva',
+      },
+      template: 'new-delivery-notification',
+      variables: {
+        userName: 'Maria Silva',
+        deliveryTitle: 'Food Basket',
+        deliveryType: 'food',
+        deliveryDate: '2026-04-23T12:00:00.000Z',
+        programName: 'Food Security',
+        organizationName: 'Solidarity Network',
+      },
+    });
   });
 
   it('rejects inactive benefits before creating a delivery', async () => {

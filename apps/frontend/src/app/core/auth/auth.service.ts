@@ -1,8 +1,9 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { AccountType, AuthUserSummary } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
+import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
 import {
   clearStoredAuthSession,
   isSessionStoredInLocalStorage,
@@ -26,6 +27,10 @@ export interface LoginResult {
 export interface ChangePasswordPayload {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
 }
 
 interface AuthApiResponse {
@@ -97,6 +102,28 @@ export class AuthService {
       };
     }
   }
+
+  async forgotPassword(payload: ForgotPasswordPayload): Promise<LoginResult> {
+    try {
+      await firstValueFrom(
+        this.httpClient.post(
+          `${this.baseUrl}/forgot-password`,
+          { email: payload.email.trim() },
+          {
+            context: new HttpContext().set(SKIP_GLOBAL_ERROR_TOAST, true),
+          },
+        ),
+      );
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: this.resolveAuthErrorKey(error, 'errors.requestFailed'),
+      };
+    }
+  }
+
 
   async validateSession(force = false): Promise<AuthSession | null> {
     const session = this.sessionState();

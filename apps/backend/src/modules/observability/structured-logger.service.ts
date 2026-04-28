@@ -53,15 +53,21 @@ export class StructuredLoggerService {
     this.logger[level](JSON.stringify(payload));
   }
 
-  private normalizeError(error: unknown) {
+  private normalizeError(error: unknown): unknown {
     if (!(error instanceof Error)) {
       return error;
     }
+
+    const normalizedCause: unknown =
+      'cause' in error && error.cause !== undefined
+        ? this.normalizeError(error.cause)
+        : undefined;
 
     return {
       name: error.name,
       message: error.message,
       stack: error.stack,
+      cause: normalizedCause,
     };
   }
 }

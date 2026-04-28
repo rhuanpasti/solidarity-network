@@ -16,6 +16,8 @@ export interface AuthAccountRecord {
   mustChangePassword: boolean;
 }
 
+export type PasswordRecoveryRecipient = Omit<AuthAccountRecord, 'passwordHash'>;
+
 @Injectable()
 export class AuthRepository {
   constructor(
@@ -83,6 +85,68 @@ export class AuthRepository {
     }
 
     return credentials;
+  }
+
+  async findPasswordRecoveryRecipient(
+    email: string,
+  ): Promise<PasswordRecoveryRecipient | null> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const [credential, beneficiary] = await Promise.all([
+      this.prisma.authCredential.findFirst({
+        where: {
+          administrator: {
+            email: { equals: normalizedEmail, mode: 'insensitive' },
+          },
+        },
+        include: {
+          administrator: {
+            include: {
+              charityPrograms: true,
+            },
+          },
+        },
+      }),
+      this.prisma.beneficiary.findFirst({
+        where: {
+          email: { equals: normalizedEmail, mode: 'insensitive' },
+          passwordHash: { not: null },
+          status: 'active',
+        },
+        include: {
+          charityPrograms: true,
+        },
+      }),
+    ]);
+
+    if (credential) {
+      return {
+        id: credential.administrator.id,
+        username: credential.username,
+        name: credential.administrator.name,
+        email: credential.administrator.email,
+        role: credential.administrator.role,
+        accountType: 'administrator',
+        programIds: credential.administrator.charityPrograms.map(
+          (link) => link.charityProgramId,
+        ),
+        mustChangePassword: credential.mustChangePassword,
+      };
+    }
+
+    if (beneficiary?.email) {
+      return {
+        id: beneficiary.id,
+        username: beneficiary.email,
+        name: beneficiary.fullName,
+        email: beneficiary.email,
+        role: null,
+        accountType: 'beneficiary',
+        programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
+        mustChangePassword: beneficiary.mustChangePassword,
+      };
+    }
+
+    return null;
   }
 
   async findAuthenticatedUser(
