@@ -246,7 +246,7 @@ Email provider failure:
   "message": "email.send.failed",
   "service": "solidarity-network-backend",
   "requestId": "req_01HXEMAIL",
-  "provider": "sendpulse",
+  "provider": "brevo",
   "status": 500,
   "statusText": "Internal Server Error",
   "recipientFingerprint": "a6b8c9d0e1f20304",

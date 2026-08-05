@@ -6,7 +6,7 @@ import { validateEnv, type AppEnvironment } from '../src/config/env.schema';
 import { EmailService } from '../src/modules/email/email.service';
 import { EmailTemplateService } from '../src/modules/email/email-template.service';
 import { StructuredLoggerService } from '../src/modules/observability/structured-logger.service';
-import { SendPulseEmailSender } from '../src/modules/email/sendpulse-email.sender';
+import { BrevoEmailSender } from '../src/modules/email/brevo-email.sender';
 
 function findRepositoryRoot() {
   const candidates = [
@@ -40,7 +40,7 @@ function serializeError(error: unknown): unknown {
 }
 
 async function main() {
-  const recipientEmail = process.argv[2] ?? process.env.SENDPULSE_TEST_RECIPIENT;
+  const recipientEmail = process.argv[2] ?? process.env.BREVO_TEST_RECIPIENT;
   const recipientName = process.argv[3] ?? 'Solidarity Network test recipient';
 
   if (!recipientEmail) {
@@ -64,27 +64,25 @@ async function main() {
 
   try {
     const config = app.get(ConfigService<AppEnvironment>);
-    const enabled = config.get('SENDPULSE_ENABLED', { infer: true });
-    const apiUserId = config.get('SENDPULSE_API_USER_ID', { infer: true });
-    const apiSecret = config.get('SENDPULSE_API_SECRET', { infer: true });
-    const fromEmail = config.get('SENDPULSE_FROM_EMAIL', { infer: true });
-    const tokenStorage = config.get('SENDPULSE_TOKEN_STORAGE', { infer: true });
+    const enabled = config.get('BREVO_ENABLED', { infer: true });
+    const apiKey = config.get('BREVO_API_KEY', { infer: true });
+    const fromEmail = config.get('BREVO_FROM_EMAIL', { infer: true });
+    const fromName = config.get('BREVO_FROM_NAME', { infer: true });
 
     console.log('[email-test] configuration', {
       enabled,
       nodeEnv: config.get('NODE_ENV', { infer: true }),
-      apiUserIdConfigured: Boolean(apiUserId),
-      apiSecretConfigured: Boolean(apiSecret),
+      apiKeyConfigured: Boolean(apiKey),
       fromEmail,
-      tokenStorage,
+      fromName,
       recipient: recipientEmail,
     });
 
     if (!enabled) {
-      throw new Error('SENDPULSE_ENABLED is not true in the loaded environment.');
+      throw new Error('BREVO_ENABLED is not true in the loaded environment.');
     }
 
-    const sender = new SendPulseEmailSender(
+    const sender = new BrevoEmailSender(
       config,
       new StructuredLoggerService(),
     );
@@ -102,7 +100,7 @@ async function main() {
       template: 'new-delivery-notification',
       variables: {
         userName: recipientName,
-        deliveryTitle: 'SendPulse integration test',
+        deliveryTitle: 'Brevo integration test',
         deliveryType: 'Email delivery test',
         deliveryDate: new Date(),
         programName: 'Solidarity Network',
@@ -110,7 +108,7 @@ async function main() {
       },
     });
 
-    console.log('[email-test] SendPulse accepted the message.');
+    console.log('[email-test] Brevo accepted the message.');
   } catch (error) {
     console.error('[email-test] failed', serializeError(error));
     process.exitCode = 1;

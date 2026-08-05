@@ -6,8 +6,6 @@ coverage/
 .env
 .env.local
 .env.production
-.sendpulse-tokens/
-.sendpulse-tests/
 **/.env
 **/.env.local
 **/.env.production

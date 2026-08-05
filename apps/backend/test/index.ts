@@ -7,6 +7,6 @@ import '../src/modules/beneficiaries/beneficiary-validation.spec';
 import '../src/modules/benefit-deliveries/benefit-deliveries.service.spec';
 import '../src/modules/email/email-template.service.spec';
 import '../src/modules/email/email.service.spec';
-import '../src/modules/email/sendpulse-email.sender.spec';
+import '../src/modules/email/brevo-email.sender.spec';
 import '../src/modules/observability/log-sanitizer.util.spec';
 import '../prisma/demo-seed-data.spec';

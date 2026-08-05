@@ -191,33 +191,33 @@ For production-like environments:
 
 - do not use hardcoded secrets from source control
 - set `JWT_SECRET` to a unique value with at least 32 characters
-- set `SENDPULSE_API_USER_ID` and `SENDPULSE_API_SECRET` only through
-  environment configuration when email sending is enabled
+- set `BREVO_API_KEY` only through environment configuration when email
+  sending is enabled
 - keep Swagger disabled in production
 - create bootstrap administrator credentials explicitly through seed environment variables
 
 ## Transactional Email
 
-The backend supports SendPulse SMTP API delivery for password recovery,
+The backend supports Brevo transactional API delivery for password recovery,
 temporary passwords, and delivery notifications. Email sending is disabled by
 default for development and tests.
 
 Required production variables:
 
-- `SENDPULSE_ENABLED=true`
-- `SENDPULSE_API_USER_ID=<sendpulse-api-user-id>`
-- `SENDPULSE_API_SECRET=<rotated-sendpulse-api-secret>`
-- `SENDPULSE_FROM_EMAIL=<verified-sender-email>`
-- `SENDPULSE_FROM_NAME=<sender-name>`
+- `BREVO_ENABLED=true`
+- `BREVO_API_KEY=<brevo-api-key>`
+- `BREVO_FROM_EMAIL=<verified-sender-email>`
+- `BREVO_FROM_NAME=<sender-name>`
 - `APP_PUBLIC_URL=<frontend-origin>`
 
 Optional variables:
 
-- `SENDPULSE_TOKEN_STORAGE=.sendpulse-tokens`
 - `PASSWORD_RESET_PATH=/reset-password`
 
-Never commit SendPulse credentials. Any credential shared in chat, tickets, or
-logs should be treated as compromised and rotated before production use.
+Never commit Brevo credentials. Any credential shared in chat, tickets, or logs
+should be treated as compromised and rotated before production use. The
+`BREVO_FROM_EMAIL` address must be verified in Brevo; domain authentication is
+recommended for production deliverability.
 
 ## Local Development
 
