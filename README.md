@@ -87,6 +87,12 @@ solidarity-network/
 - Angular Signals for local UI state and loading feedback
 - reactive forms with strong typing
 
+#### Frontend UI Styling Rule
+
+- Use Tailwind utility classes for new components and UI changes.
+- Do not add component-specific CSS or SCSS for layout and visual styling unless Tailwind cannot express the requirement; document that exception in the component or pull request.
+- Prefer shared Tailwind patterns and reusable components over repeating custom styles.
+
 ### Shared Package
 
 - shared enums

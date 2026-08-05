@@ -11,4 +11,5 @@ import '../src/app/shared/utils/http.utils.spec';
 import '../src/app/shared/utils/list-query.utils.spec';
 import '../src/app/shared/components/modal/modal.config.spec';
 import '../src/app/shared/components/form-select/form-select.component.spec';
+import '../src/app/shared/components/pagination-controls/pagination-controls.component.spec';
 import '../src/app/shared/components/list-panel/list-panel.component.spec';
