@@ -1,7 +1,10 @@
 import '@angular/compiler';
 import '../src/app/core/auth/auth.service.spec';
 import '../src/app/core/auth/auth.storage.spec';
+import '../src/app/core/interceptors/error.interceptor.spec';
+import '../src/app/core/interceptors/loading.interceptor.spec';
 import '../src/app/core/services/loading.service.spec';
+import '../src/app/features/benefit-deliveries/benefit-deliveries.page.spec';
 import '../src/app/shared/utils/http.utils.spec';
 import '../src/app/shared/utils/list-query.utils.spec';
 import '../src/app/shared/components/modal/modal.config.spec';

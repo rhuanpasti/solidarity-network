@@ -110,6 +110,14 @@ Example response header:
 X-Request-Id: req_01HXEXAMPLE
 ```
 
+## Frontend Request Lifecycle
+
+The Angular frontend registers a global `loadingInterceptor` with `provideHttpClient`. It increments a reference count before every `HttpClient` request and decrements it in `finalize`, so the global loading surface is also released when a request fails. The loading service delays showing the overlay for 180 ms and keeps it visible for at least 320 ms to avoid flicker on short requests. This is a presentation concern and does not emit an application log event.
+
+Session validation is reused for 30 seconds across protected route navigations; callers can pass `force = true` to revalidate immediately. Beneficiary option requests on the benefit-deliveries screen are shared while in flight and are discarded after completion, preventing duplicate concurrent API calls without introducing a long-lived data cache.
+
+When investigating a request-count increase, exclude Angular/Vite development module requests such as `/@ng/component` and inspect API `GET` requests separately from CORS `OPTIONS` preflight requests. The latter are expected when the development frontend at port 4200 calls the API at port 3000 with credentials and a CSRF header.
+
 ## Error Handling Strategy
 
 Use the global exception filter as the single HTTP error boundary.

@@ -13,7 +13,14 @@ import {
   CharityProgramSummary,
   PaginationMeta,
 } from '@solidarity-network/shared';
-import { distinctUntilChanged, startWith } from 'rxjs';
+import {
+  Observable,
+  distinctUntilChanged,
+  finalize,
+  map,
+  shareReplay,
+  startWith,
+} from 'rxjs';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
 import { BenefitsService } from '../../core/services/benefits.service';
@@ -115,6 +122,10 @@ export class BenefitDeliveriesPage implements OnInit {
   readonly formBeneficiaryOptions = signal<SelectOption[]>([]);
   readonly benefitOptions = signal<SelectOption[]>([]);
   readonly selectedDeliveryDetails = signal<DetailGridItem[]>([]);
+  private readonly beneficiaryOptionsRequests = new Map<
+    string,
+    Observable<BeneficiarySummary[]>
+  >();
 
   ngOnInit() {
     this.charityProgramsService
@@ -301,22 +312,34 @@ export class BenefitDeliveriesPage implements OnInit {
     charityProgramId: string,
     target: 'filter' | 'form',
   ) {
-    this.beneficiariesService
-      .list({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
-      .subscribe((response) => {
-        const options = response.items.map((beneficiary) => ({
-          value: beneficiary.id,
-          label: beneficiary.fullName,
-        }));
+    const requestKey = charityProgramId || '__all__';
+    let request$ = this.beneficiaryOptionsRequests.get(requestKey);
 
-        if (target === 'filter') {
-          this.filterBeneficiaries.set(response.items);
-          this.filterBeneficiaryOptions.set(options);
-          return;
-        }
+    if (!request$) {
+      request$ = this.beneficiariesService
+        .list({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
+        .pipe(
+          map((response) => response.items),
+          finalize(() => this.beneficiaryOptionsRequests.delete(requestKey)),
+          shareReplay({ bufferSize: 1, refCount: true }),
+        );
+      this.beneficiaryOptionsRequests.set(requestKey, request$);
+    }
 
-        this.formBeneficiaries.set(response.items);
-        this.formBeneficiaryOptions.set(options);
-      });
+    request$.subscribe((beneficiaries) => {
+      const options = beneficiaries.map((beneficiary) => ({
+        value: beneficiary.id,
+        label: beneficiary.fullName,
+      }));
+
+      if (target === 'filter') {
+        this.filterBeneficiaries.set(beneficiaries);
+        this.filterBeneficiaryOptions.set(options);
+        return;
+      }
+
+      this.formBeneficiaries.set(beneficiaries);
+      this.formBeneficiaryOptions.set(options);
+    });
   }
 }

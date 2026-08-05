@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { of, throwError } from 'rxjs';
 import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
+import { persistAuthSession, type AuthSession } from './auth.storage';
 import { AuthService } from './auth.service';
 
 class MemoryStorage {
@@ -160,5 +161,55 @@ describe('AuthService', () => {
       success: false,
       message: 'auth.resetPasswordTokenInvalid',
     });
+  });
+
+  it('reuses a recently validated session across protected route navigations', async () => {
+    const storedSession: AuthSession = {
+      id: 'admin-1',
+      username: 'admin',
+      email: 'admin@example.org',
+      displayName: 'Admin',
+      role: 'super_admin',
+      accountType: 'administrator',
+      mustChangePassword: false,
+      csrfToken: 'stored-csrf',
+    };
+    persistAuthSession(storedSession, false);
+
+    const get = mock.fn(() =>
+      of({
+        csrfToken: 'fresh-csrf',
+        user: {
+          id: storedSession.id,
+          username: storedSession.username,
+          email: storedSession.email,
+          name: storedSession.displayName,
+          role: storedSession.role,
+          accountType: storedSession.accountType,
+          mustChangePassword: storedSession.mustChangePassword,
+        },
+      }),
+    );
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        {
+          provide: HttpClient,
+          useValue: { get },
+        },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    const firstValidation = await service.validateSession();
+    const secondValidation = await service.validateSession();
+
+    assert.equal(get.mock.callCount(), 1);
+    assert.deepEqual(secondValidation, firstValidation);
+    assert.equal(secondValidation?.csrfToken, 'fresh-csrf');
+
+    await service.validateSession(true);
+
+    assert.equal(get.mock.callCount(), 2);
   });
 });

@@ -44,17 +44,12 @@ interface AuthApiResponse {
   user: AuthUserSummary;
 }
 
-interface AuthSessionApiResponse {
-  csrfToken: string;
-  user: AuthUserSummary;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/auth`;
   private readonly sessionState = signal<AuthSession | null>(readStoredAuthSession());
-  private sessionValidationPromise: Promise<AuthSession | null> | null = null;
+  private sessionExpiryHandled = false;
 
   readonly session = computed(() => this.sessionState());
   readonly currentUser = computed(() => this.sessionState());
@@ -154,36 +149,6 @@ export class AuthService {
   }
 
 
-  async validateSession(force = false): Promise<AuthSession | null> {
-    const session = this.sessionState();
-
-    if (!session) {
-      return null;
-    }
-
-    if (!force && this.sessionValidationPromise) {
-      return this.sessionValidationPromise;
-    }
-
-    this.sessionValidationPromise = firstValueFrom(
-      this.httpClient.get<AuthSessionApiResponse>(`${this.baseUrl}/session`),
-    )
-      .then((response) => {
-        const nextSession = this.toAuthSession(response.user, response.csrfToken);
-        this.persistSession(nextSession, isSessionStoredInLocalStorage());
-        return nextSession;
-      })
-      .catch(() => {
-        this.clearSessionState();
-        return null;
-      })
-      .finally(() => {
-        this.sessionValidationPromise = null;
-      });
-
-    return this.sessionValidationPromise;
-  }
-
   async logout(options?: { remote?: boolean }) {
     const remote = options?.remote ?? true;
 
@@ -194,8 +159,19 @@ export class AuthService {
     } catch {
       console.error('Logout request failed, clearing local session state anyway.');
     } finally {
+      this.sessionExpiryHandled = false;
       this.clearSessionState();
     }
+  }
+
+  expireSession() {
+    if (this.sessionExpiryHandled) {
+      return false;
+    }
+
+    this.sessionExpiryHandled = true;
+    this.clearSessionState();
+    return true;
   }
 
   markPasswordChangeRequired() {
@@ -266,6 +242,7 @@ export class AuthService {
   private persistSession(session: AuthSession, rememberMe: boolean) {
     persistAuthSession(session, rememberMe);
     this.sessionState.set(session);
+    this.sessionExpiryHandled = false;
   }
 
   private clearSessionState() {
