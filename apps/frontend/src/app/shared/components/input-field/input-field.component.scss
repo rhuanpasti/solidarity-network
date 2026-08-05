@@ -1,52 +1,33 @@
+@reference '../../../../styles.scss';
+
 :host {
-  display: contents;
+  @apply contents;
 }
 
 .field-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
+  @apply inline-flex items-center gap-[0.3rem];
 }
 
 .field-required {
-  color: var(--danger);
+  @apply text-danger;
 }
 
 .field-control {
-  position: relative;
-  display: flex;
-  align-items: center;
+  @apply relative flex items-center;
 }
 
 .field-control.has-action .input {
-  padding-right: calc(1.7rem + 2.6rem + 0.4rem);
+  @apply pr-[calc(1.7rem+2.6rem+0.4rem)];
 }
 
 .field-action-slot {
-  position: absolute;
-  top: 50%;
-  right: 1.2rem;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(-50%);
+  @apply absolute right-[1.2rem] top-1/2 z-[1] inline-flex -translate-y-1/2 items-center justify-center;
 }
 
 .field-action-slot :is(button, [appFieldAction]) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  padding: 0;
-  border: 0;
-  border-radius: 0.9rem;
-  background: transparent;
-  color: #6b7280;
-  cursor: pointer;
+  @apply inline-flex h-[2.6rem] w-[2.6rem] cursor-pointer items-center justify-center rounded-[0.9rem] border-0 bg-transparent p-0 text-text-muted;
 }
 
 .field-action-slot .material-symbols-rounded {
-  font-size: 1.25rem;
+  @apply text-[1.25rem];
 }

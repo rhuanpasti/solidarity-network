@@ -1,21 +1,19 @@
+@reference '../../../../styles.scss';
+
 .detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  @apply grid grid-cols-2 gap-4;
 }
 
 .detail-grid-full {
-  grid-column: 1 / -1;
+  @apply col-span-full;
 }
 
 .detail-value {
-  display: flex;
-  align-items: center;
-  cursor: default;
+  @apply flex cursor-default items-center;
 }
 
 @media (max-width: 720px) {
   .detail-grid {
-    grid-template-columns: 1fr;
+    @apply grid-cols-1;
   }
 }

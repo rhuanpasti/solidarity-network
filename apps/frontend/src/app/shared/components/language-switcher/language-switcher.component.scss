@@ -1,55 +1,31 @@
+@reference '../../../../styles.scss';
+
 :host {
-  display: block;
-  min-width: 0;
+  @apply block min-w-0;
 }
 
 .language-switcher {
-  display: flex;
-  gap: 0.6rem;
-  width: 100%;
-  min-width: 0;
-  padding: 0.25rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  background: #f9fafb;
+  @apply flex w-full min-w-0 gap-[0.6rem] rounded-2xl border border-surface-border bg-surface-alt p-1;
 }
 
 .language-button {
-  flex: 1;
-  text-wrap: nowrap;
-  min-width: fit-content;
-  min-height: 2.75rem;
-  padding: 0 1rem;
-  border: 0;
-  border-radius: 0.8rem;
-  background: transparent;
-  color: #4b5563;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    box-shadow 160ms ease;
+  @apply min-h-11 min-w-fit flex-1 cursor-pointer whitespace-nowrap rounded-[0.8rem] border-0 bg-transparent px-4 font-bold text-gray-600 transition-[background-color,color,box-shadow] duration-[160ms] ease-in-out;
 }
 
 .language-button:hover {
-  background: rgba(255, 255, 255, 0.78);
-  color: #111827;
+  @apply bg-white/78 text-gray-900;
 }
 
 .language-button:focus-visible {
-  outline: 2px solid #16a34a;
-  outline-offset: 2px;
+  @apply outline-2 outline-brand outline-offset-2;
 }
 
 .language-button.active {
-  background: #ffffff;
-  color: #15803d;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  @apply bg-white text-brand-strong shadow-[0_1px_2px_rgba(15,23,42,0.08)];
 }
 
 @media (max-width: 640px) {
   .language-button {
-    min-height: 2.6rem;
+    @apply min-h-[2.6rem];
   }
 }

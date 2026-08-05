@@ -1,180 +1,114 @@
+@reference '../../../styles.scss';
+
 :host {
-  display: block;
-  min-height: 100vh;
+  @apply block min-h-screen;
 }
 
 .first-access-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 28%),
-    #f3f4f6;
+  @apply flex min-h-screen items-center justify-center p-8;
+  background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 28%), #f3f4f6;
 }
 
 .first-access-card {
-  width: min(100%, 32rem);
-  display: grid;
-  gap: 1.5rem;
-  padding: 2rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.6rem;
-  background: #ffffff;
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  @apply grid w-full max-w-lg gap-6 rounded-[1.6rem] border border-surface-border bg-white p-8 shadow-[0_18px_36px_rgba(15,23,42,0.08)];
 }
 
 .first-access-header {
-  display: grid;
-  gap: 0.6rem;
+  @apply grid gap-[0.6rem];
 }
 
 .first-access-header p {
-  margin: 0;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #16a34a;
+  @apply mb-0 mt-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-brand;
 }
 
 .first-access-header h1 {
-  margin: 0;
-  color: #111827;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  @apply mb-0 mt-0 text-[clamp(1.8rem,3vw,2.4rem)] text-gray-900;
 }
 
 .first-access-header span,
 .first-access-user span {
-  color: #6b7280;
-  line-height: 1.6;
+  @apply leading-[1.6] text-text-muted;
 }
 
 .first-access-user {
-  padding: 1rem 1.1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.2rem;
-  background: #f9fafb;
+  @apply rounded-[1.2rem] border border-surface-border bg-surface-alt px-[1.1rem] py-4;
 }
 
 .first-access-user strong,
 .first-access-user span {
-  display: block;
+  @apply block;
 }
 
 .first-access-form {
-  display: grid;
-  gap: 1rem;
+  @apply grid gap-4;
 }
 
 .password-feedback {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: -0.25rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  background: #f9fafb;
+  @apply -mt-1 grid gap-3 rounded-2xl border border-surface-border bg-surface-alt px-4 py-[0.9rem];
 }
 
 .password-strength {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  @apply flex items-center gap-3;
 }
 
 .password-strength-bar {
-  flex: 1;
-  height: 0.45rem;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
+  @apply h-[0.45rem] flex-1 overflow-hidden rounded-full bg-surface-border;
 }
 
 .password-strength-bar span {
-  display: block;
-  height: 100%;
-  width: 0;
-  border-radius: inherit;
-  transition:
-    width 160ms ease,
-    background-color 160ms ease;
+  @apply block h-full w-0 rounded-[inherit] transition-[width,background-color] duration-[160ms] ease-in-out;
 }
 
 .password-strength-bar[data-strength='weak'] span {
-  width: 33%;
-  background: #dc2626;
+  @apply w-1/3 bg-red-600;
 }
 
 .password-strength-bar[data-strength='medium'] span {
-  width: 66%;
-  background: #d97706;
+  @apply w-2/3 bg-amber-600;
 }
 
 .password-strength-bar[data-strength='strong'] span {
-  width: 100%;
-  background: #16a34a;
+  @apply w-full bg-brand;
 }
 
 .password-strength-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #374151;
+  @apply text-[0.9rem] font-semibold text-gray-700;
 }
 
 .password-requirements {
-  display: grid;
-  gap: 0.45rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @apply m-0 grid list-none gap-[0.45rem] p-0;
 }
 
 .password-requirements li {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: #6b7280;
-  font-size: 0.92rem;
+  @apply flex items-center gap-[0.55rem] text-[0.92rem] text-text-muted;
 }
 
 .password-requirements li.is-met {
-  color: #166534;
+  @apply text-green-800;
 }
 
 .password-requirement-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  font-weight: 700;
+  @apply inline-flex w-4 items-center justify-center font-bold;
 }
 
 .auth-error {
-  margin: 0;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  background: #fef2f2;
-  color: #b91c1c;
+  @apply m-0 rounded-2xl bg-red-50 px-4 py-[0.9rem] text-danger;
 }
 
 .first-access-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  @apply flex flex-wrap gap-3;
 }
 
 @media (max-width: 640px) {
   .first-access-page {
-    padding: 1rem;
+    @apply p-4;
   }
 
   .first-access-card {
-    padding: 1.25rem;
+    @apply p-5;
   }
 
   .first-access-actions {
-    flex-direction: column;
+    @apply flex-col;
   }
 }

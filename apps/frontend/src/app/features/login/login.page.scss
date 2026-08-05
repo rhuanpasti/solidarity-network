@@ -1,298 +1,197 @@
+@reference '../../../styles.scss';
+
 :host {
-  display: block;
-  min-height: 100vh;
+  @apply block min-h-screen;
 }
 
 .login-page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
-  background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.14), transparent 32%),
-    linear-gradient(135deg, #0f172a 0%, #111827 42%, #1f2937 100%);
+  @apply grid min-h-screen grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)];
+  background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.14), transparent 32%), linear-gradient(135deg, #0f172a 0%, #111827 42%, #1f2937 100%);
 }
 
 .login-hero {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 2.5rem;
-  padding: 2.5rem;
-  color: #f8fafc;
+  @apply flex flex-col justify-between gap-10 p-10 text-slate-50;
 }
 
 .brand-lockup,
 .mobile-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.95rem;
+  @apply flex items-center gap-[0.95rem];
 }
 
 .brand-lockup p,
 .mobile-brand p {
-  margin: 0 0 0.15rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.7);
+  @apply mb-[0.15rem] mt-0 text-[0.82rem] uppercase tracking-[0.16em] text-slate-200/70;
 }
 
 .brand-lockup strong,
 .mobile-brand strong {
-  font-size: 1.3rem;
+  @apply text-[1.3rem];
 }
 
 .brand-mark {
-  width: 3rem;
-  height: 3rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-  box-shadow: 0 22px 36px rgba(22, 163, 74, 0.32);
+  @apply inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-green-400 to-green-600 text-white shadow-[0_22px_36px_rgba(22,163,74,0.32)];
 }
 
 .hero-copy {
-  max-width: 34rem;
+  @apply max-w-xl;
 }
 
 .hero-pill {
-  display: inline-flex;
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #86efac;
-  font-size: 0.82rem;
-  font-weight: 600;
+  @apply inline-flex rounded-full bg-white/8 px-[0.9rem] py-[0.45rem] text-[0.82rem] font-semibold text-green-300;
 }
 
 .hero-copy h1 {
-  margin: 1.25rem 0 1rem;
-  font-size: clamp(2.8rem, 4vw, 4.6rem);
-  line-height: 1.02;
+  @apply mb-4 mt-5 text-[clamp(2.8rem,4vw,4.6rem)] leading-[1.02];
 }
 
 .hero-copy p {
-  margin: 0;
-  max-width: 30rem;
-  color: rgba(226, 232, 240, 0.78);
-  font-size: 1.02rem;
-  line-height: 1.7;
+  @apply m-0 max-w-lg text-[1.02rem] leading-[1.7] text-slate-200/78;
 }
 
 .hero-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  @apply grid grid-cols-3 gap-4;
 }
 
 .metric-card {
-  padding: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1.4rem;
-  background: rgba(15, 23, 42, 0.42);
-  backdrop-filter: blur(14px);
+  @apply rounded-[1.4rem] border border-white/10 bg-slate-900/42 p-5 backdrop-blur-[14px];
 }
 
 .metric-card span,
 .metric-card strong {
-  display: block;
+  @apply block;
 }
 
 .metric-card span {
-  color: rgba(226, 232, 240, 0.72);
-  font-size: 0.86rem;
+  @apply text-[0.86rem] text-slate-200/72;
 }
 
 .metric-card strong {
-  margin-top: 0.7rem;
-  font-size: 2rem;
+  @apply mt-[0.7rem] text-[2rem];
 }
 
 .login-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2.5rem;
-  background: #ffffff;
+  @apply flex min-h-screen flex-col items-center justify-center bg-white p-10;
 }
 
 .mobile-brand {
-  display: none;
+  @apply hidden;
+}
+
+.login-panel-topbar,
+.login-panel-content {
+  @apply w-full max-w-[29rem];
 }
 
 .login-panel-topbar {
-  width: min(100%, 29rem);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2.25rem;
+  @apply mb-9 flex items-center justify-between gap-4;
 }
 
 .login-panel-content {
-  width: min(100%, 29rem);
-  display: grid;
-  gap: 1.5rem;
+  @apply grid gap-6;
 }
 
 .login-header {
-  display: grid;
-  gap: 0.65rem;
+  @apply grid gap-[0.65rem];
 }
 
 .login-header p,
 .session-card p {
-  margin: 0 0 0.4rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #16a34a;
+  @apply mb-[0.4rem] mt-0 text-[0.82rem] font-bold uppercase tracking-[0.12em] text-brand;
 }
 
 .login-header h2 {
-  margin: 0;
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  color: #111827;
+  @apply m-0 text-[clamp(2rem,3vw,2.6rem)] text-gray-900;
 }
 
 .login-header span,
 .session-card span {
-  display: block;
-  color: #6b7280;
-  line-height: 1.6;
+  @apply block leading-[1.6] text-text-muted;
 }
 
 .session-card {
-  padding: 1.35rem 1.4rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.4rem;
-  background: #f9fafb;
+  @apply rounded-[1.4rem] border border-surface-border bg-surface-alt px-[1.4rem] py-[1.35rem];
 }
 
 .session-card strong {
-  display: block;
-  color: #111827;
+  @apply block text-gray-900;
 }
 
 .session-card-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.15rem;
+  @apply mt-[1.15rem] flex gap-3;
 }
 
 .login-form {
-  display: grid;
-  gap: 1.2rem;
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
+  @apply grid gap-[1.2rem] rounded-3xl border border-surface-border bg-linear-to-b from-white to-gray-50 p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)];
 }
 
 .field {
-  gap: 0.55rem;
+  @apply gap-[0.55rem];
 }
 
 .login-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  @apply flex items-center justify-between gap-4;
 }
 
 .forgot-password-button {
-  min-height: 2.75rem;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: #15803d;
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 700;
-  cursor: pointer;
+  @apply min-h-11 cursor-pointer rounded-[0.35rem] border-0 bg-transparent p-0 text-[0.92rem] font-bold text-green-700;
 }
 
 .forgot-password-button:hover {
-  color: #166534;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  @apply text-green-800 underline decoration-1 underline-offset-[0.2em];
 }
 
 .forgot-password-button:focus-visible {
-  outline: 3px solid rgba(22, 163, 74, 0.28);
-  outline-offset: 4px;
-  border-radius: 0.35rem;
+  @apply outline-3 outline-green-600/28 outline-offset-1;
 }
 
 .forgot-password-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
+  @apply cursor-not-allowed opacity-[0.65];
 }
 
 .auth-error {
-  margin: 0;
-  padding: 0.95rem 1rem;
-  border-radius: 1rem;
-  background: #fef2f2;
-  color: #b91c1c;
-  font-size: 0.92rem;
+  @apply m-0 rounded-2xl bg-red-50 px-4 py-[0.95rem] text-[0.92rem] text-danger;
 }
 
 .login-submit {
-  width: 100%;
-  justify-content: center;
+  @apply w-full justify-center;
 }
 
 @media (max-width: 1080px) {
   .login-page {
-    grid-template-columns: 1fr;
-    background: #ffffff;
+    @apply grid-cols-1 bg-white;
   }
 
   .login-hero {
-    display: none;
+    @apply hidden;
   }
 
   .login-panel {
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding-top: 2.5rem;
+    @apply items-start justify-start pt-10;
   }
 
   .mobile-brand {
-    display: flex;
+    @apply flex;
   }
 }
 
 @media (max-width: 640px) {
   .login-panel {
-    padding: 1.25rem;
+    @apply p-5;
   }
 
   .login-panel-topbar {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
+    @apply w-full flex-col items-start;
   }
 
   .session-card-actions {
-    flex-direction: column;
+    @apply flex-col;
   }
 
   .login-options {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.75rem;
+    @apply flex-col items-start gap-3;
   }
 
   .login-form {
-    padding: 1.1rem;
+    @apply p-[1.1rem];
   }
 }

@@ -1,62 +1,51 @@
+@reference '../../../styles.scss';
+
 :host {
-  display: block;
+  @apply block;
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  @apply grid grid-cols-4 gap-4;
 }
 
 .stat-card {
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fee7 100%);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
-  color: #111827;
+  @apply rounded-3xl border border-surface-border bg-linear-to-b from-white to-lime-50 p-6 text-gray-900 shadow-[0_12px_28px_rgba(15,23,42,0.05)];
 }
 
 .stat-card p {
-  margin: 0 0 0.45rem;
-  color: #6b7280;
+  @apply mb-[0.45rem] mt-0 text-text-muted;
 }
 
 .portal-grid {
-  align-items: start;
+  @apply items-start;
 }
 
 .program-card {
-  padding: 1.25rem;
-  border: 1px solid #dcfce7;
-  border-radius: 1.25rem;
-  background: #f0fdf4;
+  @apply rounded-2xl border border-green-100 bg-brand-soft p-5;
 }
 
 .program-card strong,
 .program-card p,
 .program-card small {
-  display: block;
+  @apply block;
 }
 
 .program-card p {
-  margin: 0.6rem 0;
-  color: #4b5563;
+  @apply my-[0.6rem] text-gray-600;
 }
 
 .program-card small {
-  color: #15803d;
-  font-weight: 600;
+  @apply font-semibold text-brand-strong;
 }
 
 @media (max-width: 1080px) {
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    @apply grid-cols-2;
   }
 }
 
 @media (max-width: 720px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    @apply grid-cols-1;
   }
 }

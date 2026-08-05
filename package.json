@@ -22,5 +22,10 @@
     "test:backend": "npm --prefix apps/backend run test",
     "test": "npm run test:backend && npm run test:frontend",
     "deploy:frontend:workers": "npx wrangler deploy --config apps/frontend/wrangler.jsonc"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "postcss": "^8.5.25",
+    "tailwindcss": "^4.3.3"
   }
 }

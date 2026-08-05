@@ -1,70 +1,37 @@
+@reference '../../../../styles.scss';
+
 .global-loading {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 90;
-  pointer-events: auto;
+  @apply pointer-events-auto fixed inset-0 z-[90] grid place-items-center;
 }
 
 .global-loading-scrim {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top, rgba(34, 197, 94, 0.12), transparent 40%),
-    rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(6px);
+  @apply absolute inset-0 backdrop-blur-md;
+  background: radial-gradient(circle at top, rgba(34, 197, 94, 0.12), transparent 40%), rgba(15, 23, 42, 0.28);
 }
 
 .global-loading-bar {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 0.2rem;
-  width: 100%;
-  background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #86efac 100%);
-  animation: global-loading-bar 1s linear infinite;
+  @apply absolute inset-x-0 top-0 h-[0.2rem] w-full animate-[global-loading-bar_1s_linear_infinite] bg-linear-to-r from-green-600 via-green-500 to-green-300 shadow-[0_8px_22px_rgba(22,163,74,0.24)];
   background-size: 200% 100%;
-  box-shadow: 0 8px 22px rgba(22, 163, 74, 0.24);
 }
 
 .global-loading-card {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  min-width: min(28rem, calc(100vw - 2rem));
-  padding: 1rem 1.2rem;
-  border: 1px solid rgba(134, 239, 172, 0.55);
-  border-radius: 1.25rem;
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
+  @apply relative z-[1] inline-flex min-w-[min(28rem,calc(100vw-2rem))] items-center gap-[0.9rem] rounded-2xl border border-green-300/55 bg-slate-900/92 px-[1.2rem] py-4 text-slate-50 shadow-[0_24px_48px_rgba(15,23,42,0.24)];
 }
 
 .global-loading-spinner {
-  flex: 0 0 auto;
-  width: 1.35rem;
-  height: 1.35rem;
-  border: 2px solid rgba(255, 255, 255, 0.28);
-  border-top-color: #ffffff;
-  border-radius: 999px;
-  animation: global-loading-spin 0.8s linear infinite;
+  @apply h-[1.35rem] w-[1.35rem] flex-none animate-[global-loading-spin_0.8s_linear_infinite] rounded-full border-2 border-white/28 border-t-white;
 }
 
 .global-loading-copy {
-  display: grid;
-  gap: 0.15rem;
+  @apply grid gap-[0.15rem];
 }
 
 .global-loading-copy strong {
-  font-size: 0.98rem;
-  font-weight: 700;
+  @apply text-[0.98rem] font-bold;
 }
 
 .global-loading-copy span {
-  color: rgba(248, 250, 252, 0.78);
-  font-size: 0.9rem;
+  @apply text-[0.9rem] text-slate-50/78;
 }
 
 @keyframes global-loading-spin {
@@ -93,8 +60,6 @@
 
 @media (max-width: 720px) {
   .global-loading-card {
-    min-width: auto;
-    width: calc(100vw - 2rem);
-    align-items: flex-start;
+    @apply w-[calc(100vw-2rem)] min-w-0 items-start;
   }
 }

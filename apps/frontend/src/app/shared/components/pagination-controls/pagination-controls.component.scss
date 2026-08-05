@@ -1,66 +1,51 @@
+@reference '../../../../styles.scss';
+
 :host {
-  display: block;
-  margin-top: 1rem;
+  @apply mt-4 block;
 }
 
 .pagination {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1rem;
-  padding-top: 1rem;
+  @apply grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-surface-border pt-4;
 }
 
 .pagination-summary {
-  display: flex;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 1rem;
+  @apply flex flex-wrap items-end gap-4;
 }
 
 .pagination p {
-  margin: 0;
-  color: #475569;
+  @apply m-0 text-slate-600;
 }
 
 .pagination-page-size {
-  display: grid;
-  gap: 0.35rem;
-  min-width: 9rem;
+  @apply grid min-w-36 gap-[0.35rem];
 }
 
 .pagination-page-size span {
-  color: #475569;
-  font-size: 0.82rem;
-  font-weight: 600;
+  @apply text-[0.82rem] font-semibold text-slate-600;
 }
 
 .pagination-page-size .input {
-  min-height: 2.75rem;
-  padding: 0.7rem 0.8rem;
+  @apply min-h-11 px-[0.8rem] py-[0.7rem];
 }
 
 .pagination-actions {
-  display: inline-flex;
-  gap: 0.75rem;
+  @apply inline-flex gap-3;
 }
 
 @media (max-width: 720px) {
   .pagination {
-    grid-template-columns: 1fr;
+    @apply grid-cols-1;
   }
 
   .pagination-summary {
-    align-items: stretch;
-    flex-direction: column;
+    @apply flex-col items-stretch;
   }
 
   .pagination-page-size {
-    width: 100%;
+    @apply w-full;
   }
 
   .pagination-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    @apply grid grid-cols-2;
   }
 }

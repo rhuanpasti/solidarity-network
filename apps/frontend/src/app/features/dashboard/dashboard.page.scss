@@ -1,88 +1,62 @@
+@reference '../../../styles.scss';
+
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  @apply grid grid-cols-4 gap-4;
 }
 
 .stat-card {
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
-  color: #111827;
+  @apply rounded-3xl border border-surface-border bg-linear-to-b from-white to-surface-alt p-6 text-gray-900 shadow-[0_12px_28px_rgba(15,23,42,0.05)];
 }
 
 .stat-card p {
-  margin: 0 0 0.4rem;
-  color: #6b7280;
+  @apply mb-[0.4rem] mt-0 text-text-muted;
 }
 
 .stat-card strong {
-  font-size: 2rem;
+  @apply text-[2rem];
 }
 
 .dashboard-grid {
-  align-items: start;
+  @apply items-start;
 }
 
 .overview-panel {
-  background:
-    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 28%),
-    #ffffff;
+  background: radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 28%), #ffffff;
 }
 
 .overview-links {
-  display: grid;
-  gap: 0.9rem;
+  @apply grid gap-[0.9rem];
 }
 
 .overview-link {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1.1rem;
-  background: #ffffff;
-  color: inherit;
-  text-decoration: none;
+  @apply flex items-center gap-4 rounded-[1.1rem] border border-surface-border bg-white p-4 text-inherit no-underline;
 }
 
 .overview-link:hover {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+  @apply border-green-200 bg-brand-soft;
 }
 
 .overview-link .material-symbols-rounded {
-  width: 2.8rem;
-  height: 2.8rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.95rem;
-  background: #f0fdf4;
-  color: #16a34a;
+  @apply inline-flex h-[2.8rem] w-[2.8rem] items-center justify-center rounded-[0.95rem] bg-brand-soft text-brand;
 }
 
 .overview-link strong,
 .overview-link p {
-  display: block;
+  @apply block;
 }
 
 .overview-link p {
-  margin: 0.3rem 0 0;
-  color: #6b7280;
+  @apply mb-0 mt-[0.3rem] text-text-muted;
 }
 
 @media (max-width: 960px) {
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    @apply grid-cols-2;
   }
 }
 
 @media (max-width: 640px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    @apply grid-cols-1;
   }
 }
