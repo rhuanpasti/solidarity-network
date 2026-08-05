@@ -1,0 +1,13 @@
+@reference '../../../../styles.scss';
+
+.empty-state {
+  @apply rounded-3xl border border-dashed border-gray-300 bg-surface-alt p-8 text-center;
+}
+
+h3 {
+  @apply m-0 text-gray-900;
+}
+
+p {
+  @apply mb-0 mt-[0.65rem] leading-[1.6] text-text-muted;
+}

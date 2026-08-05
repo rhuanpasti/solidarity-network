@@ -228,60 +228,7 @@ interface GeneratedCredentialInfo {
         </div>
       </form>
   `,
-  styles: `
-    .dependents {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .dependents-header,
-    .dependent-row-header {
-      align-items: center;
-      display: flex;
-      gap: 1rem;
-      justify-content: space-between;
-    }
-
-    .dependents-header h3,
-    .dependents-header p,
-    .dependent-row-header legend {
-      margin: 0;
-    }
-
-    .dependents-header h3,
-    .dependent-row-header legend {
-      color: var(--text);
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    .dependents-header p {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .dependent-list {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .dependent-row {
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
-      display: grid;
-      gap: 1rem;
-      margin: 0;
-      padding: 1rem;
-    }
-
-    @media (max-width: 640px) {
-      .dependents-header,
-      .dependent-row-header {
-        align-items: stretch;
-        flex-direction: column;
-      }
-    }
-  `,
+  styleUrl: './beneficiary-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BeneficiaryFormComponent {

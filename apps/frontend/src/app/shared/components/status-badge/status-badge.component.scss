@@ -1,0 +1,18 @@
+@reference '../../../../styles.scss';
+
+.badge {
+  @apply inline-flex items-center gap-[0.4rem] rounded-full bg-brand-soft px-[0.72rem] py-[0.38rem] text-[0.78rem] font-bold text-brand-strong;
+}
+
+.badge::before {
+  @apply h-[0.45rem] w-[0.45rem] rounded-full bg-current;
+  content: '';
+}
+
+.badge.success {
+  @apply bg-green-100 text-brand-strong;
+}
+
+.badge.warning {
+  @apply bg-amber-100 text-amber-700;
+}

@@ -1,0 +1,47 @@
+@reference '../../../../styles.scss';
+
+.page-header {
+  @apply mb-4 flex items-end justify-between gap-4;
+}
+
+.eyebrow {
+  @apply mb-[0.35rem] mt-0 text-[0.76rem] font-bold uppercase tracking-[0.16em] text-brand;
+}
+
+h2 {
+  @apply m-0 text-[clamp(1.9rem,2vw,2.5rem)] text-gray-900;
+}
+
+.description {
+  @apply m-0 max-w-[30rem] leading-[1.7] text-text-muted;
+}
+
+.header-actions {
+  @apply flex items-end gap-3;
+}
+
+.refresh-button {
+  @apply inline-flex min-h-10 cursor-pointer items-center gap-[0.35rem] rounded-xl border border-gray-300 bg-white px-[0.8rem] py-[0.55rem] text-[0.85rem] font-[inherit] font-bold text-gray-700;
+}
+
+.refresh-button:hover:not(:disabled) {
+  @apply border-brand text-brand-strong;
+}
+
+.refresh-button:disabled {
+  @apply cursor-wait opacity-[0.55];
+}
+
+.refresh-button small {
+  @apply text-[0.72rem] font-medium;
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    @apply flex-col items-start;
+  }
+
+  .header-actions {
+    @apply w-full flex-col items-start;
+  }
+}
