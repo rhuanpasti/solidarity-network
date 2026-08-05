@@ -82,6 +82,13 @@ export class SendPulseEmailSender implements EmailSender {
     const fromName = this.configService.get('SENDPULSE_FROM_NAME', { infer: true });
     const recipientFingerprint = this.fingerprint(payload.to.email);
 
+    this.logger.debug('email.send.started', {
+      provider: 'sendpulse',
+      subject: payload.subject,
+      recipientFingerprint,
+      fromEmail: fromEmail ?? '[not configured]',
+    });
+
     try {
       await this.initializeClient(resolvedApiUserId, resolvedApiSecret);
       await this.sendEmail({
@@ -131,6 +138,12 @@ export class SendPulseEmailSender implements EmailSender {
       return this.initializationPromise;
     }
 
+    this.logger.debug('email.send.initializing', {
+      provider: 'sendpulse',
+      tokenStorage,
+      apiUserIdFingerprint: this.fingerprint(userId),
+    });
+
     this.initializedConfigKey = configKey;
     this.initializationPromise = new Promise<void>((resolve, reject) => {
       this.sendpulseClient.init(userId, secret, tokenStorage, (result) => {
@@ -159,6 +172,13 @@ export class SendPulseEmailSender implements EmailSender {
   ) {
     return new Promise<void>((resolve, reject) => {
       this.sendpulseClient.smtpSendMail((result) => {
+        this.logger.debug('email.send.provider_response', {
+          provider: 'sendpulse',
+          stage: 'send',
+          recipientFingerprint,
+          providerResponse: result,
+        });
+
         if (this.isErrorResult(result)) {
           reject(this.createSendFailure({
             provider: 'sendpulse',

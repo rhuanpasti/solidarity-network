@@ -2,12 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach Backend Nest",
       "type": "node",
-      "request": "attach",
-      "port": 9229,
-      "restart": true,
-      "skipFiles": ["<node_internals>/**"]
+      "request": "launch",
+      "name": "Debug Solidarity Network backend",
+      "program": "${workspaceFolder}/apps/backend/src/main.ts",
+      "cwd": "${workspaceFolder}/apps/backend",
+      "runtimeArgs": [
+        "--inspect-brk=9229",
+        "-r",
+        "ts-node/register"
+      ],
+      "envFile": "${workspaceFolder}/apps/backend/.env",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ]
 }

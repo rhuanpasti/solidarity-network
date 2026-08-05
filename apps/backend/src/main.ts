@@ -7,7 +7,9 @@ import { AppModule } from './app.module';
 import { createValidationException } from './common/validation/validation-exception.factory';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
   const expressApp = app.getHttpAdapter().getInstance();
   const isProduction = process.env.NODE_ENV === 'production';
   const allowedOrigins = (process.env.CORS_ORIGIN ??
