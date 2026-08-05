@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "prestart:dev": "npm --prefix ../../packages/shared run build",
-    "prebuild": "npm --prefix ../../packages/shared run build",
     "prestart": "npm run build",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "build": "nest build",
+    "build": "npm run lint && npm --prefix ../../packages/shared run build && nest build",
+    "lint": "eslint . --cache --max-warnings=0",
+    "lint:fix": "eslint . --cache --fix",
     "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts",
     "email:test": "tsx test/brevo-email.live.ts",
     "start": "node dist/src/main.js",
@@ -32,16 +33,19 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.1",
+    "eslint": "^10.8.0",
     "prisma": "6.19.2",
     "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.66.0"
   }
 }

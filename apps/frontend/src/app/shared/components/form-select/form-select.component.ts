@@ -8,6 +8,8 @@ import {
 } from '../../utils/form.utils';
 import { FormErrorComponent } from '../form-error/form-error.component';
 
+let nextFormSelectLabelId = 0;
+
 export interface SelectOption {
   value: string;
   label?: string;
@@ -39,8 +41,8 @@ export function filterSelectOptions(
   standalone: true,
   imports: [ReactiveFormsModule, TranslateModule, FormErrorComponent],
   template: `
-    <label class="field">
-      <span class="field-label">
+    <div class="field">
+      <span class="field-label" [id]="fieldLabelId">
         {{ label() | translate }}
         @if (isRequired()) {
           <span class="field-required" aria-hidden="true">*</span>
@@ -54,6 +56,7 @@ export function filterSelectOptions(
           [value]="optionSearch()"
           [placeholder]="searchPlaceholder() | translate"
           [attr.aria-label]="searchPlaceholder() | translate"
+          [attr.aria-labelledby]="fieldLabelId"
           (input)="updateOptionSearch($event)"
         />
       }
@@ -64,6 +67,7 @@ export function filterSelectOptions(
           [class.input-invalid]="showError()"
           [formControl]="control()"
           [attr.aria-invalid]="showError()"
+          [attr.aria-labelledby]="fieldLabelId"
           multiple
           [disabled]="readonly()"
         >
@@ -83,6 +87,7 @@ export function filterSelectOptions(
           [class.input-invalid]="showError()"
           [formControl]="control()"
           [attr.aria-invalid]="showError()"
+          [attr.aria-labelledby]="fieldLabelId"
           [disabled]="readonly()"
         >
           @if (placeholder(); as placeholderKey) {
@@ -102,12 +107,13 @@ export function filterSelectOptions(
       }
 
       <app-form-error [control]="control()" [errors]="errors()" [fallbackKey]="fallbackErrorKey()" />
-    </label>
+    </div>
   `,
   styleUrl: '../input-field/input-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormSelectComponent {
+  readonly fieldLabelId = `form-select-label-${nextFormSelectLabelId++}`;
   readonly control = input.required<FormControl>();
   readonly label = input.required<string>();
   readonly options = input<SelectOption[]>([]);

@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "prestart": "npm --prefix ../../packages/shared run build",
-    "prebuild": "npm --prefix ../../packages/shared run build",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "npm run lint && npm --prefix ../../packages/shared run build && ng build",
+    "lint": "eslint . --cache --max-warnings=0",
+    "lint:fix": "eslint . --cache --fix",
     "deploy:firebase": "npm run build && firebase deploy --only hosting",
     "deploy:workers": "npx wrangler deploy",
     "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts"
@@ -32,7 +33,11 @@
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.10.1",
-    "typescript": "5.9.3"
+    "angular-eslint": "^21.4.0",
+    "eslint": "^10.8.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.66.0"
   }
 }

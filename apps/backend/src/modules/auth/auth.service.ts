@@ -222,7 +222,7 @@ export class AuthService {
       email: recipient.email,
     });
 
-    const response = await this.emailService.send({
+    await this.emailService.send({
       to: {
         email: recipient.email,
         name: recipient.name,

@@ -7,11 +7,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   BenefitDeliverySummary,
-  BenefitSummary,
   BeneficiarySummary,
   CharityProgramStatus,
-  CharityProgramSummary,
-  PaginationMeta,
 } from '@solidarity-network/shared';
 import {
   Observable,

@@ -1,14 +1,16 @@
 <a class="skip-link" href="#content">{{ 'common.skipToContent' | translate }}</a>
 
 <div class="app-layout" [class.mobile-navigation-open]="mobileNavigationOpen()">
-  <div
+  <button
+    type="button"
     class="app-layout-overlay"
     [class.visible]="mobileNavigationOpen()"
+    [attr.aria-label]="'common.close' | translate"
     (click)="closeMobileNavigation()"
-  ></div>
+  ></button>
 
   <aside class="sidebar" [class.open]="mobileNavigationOpen()">
-    <div class="sidebar-header" (click)="goToDashboard()">
+    <button type="button" class="sidebar-header" (click)="goToDashboard()">
       <div class="brand-mark">
         <span class="material-symbols-rounded">volunteer_activism</span>
       </div>
@@ -17,7 +19,7 @@
         <p>{{ 'app.brandSubtitle' | translate }}</p>
         <strong>{{ 'app.brandTitle' | translate }}</strong>
       </div>
-    </div>
+    </button>
 
     <nav class="navigation" [attr.aria-label]="'common.primaryNavigation' | translate">
       <p class="navigation-label">{{ 'common.menu' | translate }}</p>

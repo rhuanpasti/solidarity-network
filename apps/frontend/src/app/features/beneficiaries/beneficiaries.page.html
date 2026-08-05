@@ -35,8 +35,8 @@
         [countryOptions]="countryOptions()"
         [documentLabelKey]="beneficiariesState.documentLabelKey"
         [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
-        (save)="beneficiariesState.submit()"
-        (cancel)="cancelEditor()"
+        (saveRequested)="beneficiariesState.submit()"
+        (cancelRequested)="cancelEditor()"
         (addDependent)="beneficiariesState.addDependent()"
         (removeDependent)="beneficiariesState.removeDependent($event)"
         (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
@@ -59,7 +59,7 @@
       [listLoading]="beneficiariesState.listLoading()"
       [submitPending]="beneficiariesState.submitPending()"
       (create)="openCreate(editorDialog)"
-      (select)="openItem($event, editorDialog)"
+      (itemSelected)="openItem($event, editorDialog)"
       (pageChange)="beneficiariesState.changePage($event)"
     />
 

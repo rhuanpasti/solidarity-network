@@ -16,7 +16,7 @@ export interface DetailGridItem {
   template: `
     <div class="detail-grid">
       @for (item of items(); track item.label) {
-        <label class="field" [class.detail-grid-full]="item.fullWidth">
+        <div class="field" [class.detail-grid-full]="item.fullWidth">
           <span>{{ item.label | translate }}</span>
           <div class="input detail-value">
             @if (item.format === 'date' && item.value) {
@@ -25,7 +25,7 @@ export interface DetailGridItem {
               {{ item.value ?? fallback() }}
             }
           </div>
-        </label>
+        </div>
       }
     </div>
   `,

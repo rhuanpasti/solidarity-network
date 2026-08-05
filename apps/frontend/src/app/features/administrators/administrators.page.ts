@@ -14,9 +14,7 @@ import {
   AdministratorRole,
   CharityProgramStatus,
   type ListQuery,
-  type PaginationMeta,
   type AdministratorSummary,
-  type CharityProgramSummary,
 } from "@solidarity-network/shared";
 import { AuthService } from "../../core/auth/auth.service";
 import { ButtonComponent } from "../../shared/components/button/button.component";

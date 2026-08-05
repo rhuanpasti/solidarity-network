@@ -25,7 +25,7 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
 
       <div panelList class="list">
         @for (item of items(); track item.id) {
-          <button type="button" class="list-item" (click)="select.emit(item)">
+          <button type="button" class="list-item" (click)="itemSelected.emit(item)">
             <div>
               <strong>{{ item.fullName }}</strong>
               <p>{{ item.document }}</p>
@@ -54,7 +54,7 @@ export class BeneficiaryListComponent {
   readonly listLoading = input(false);
   readonly submitPending = input(false);
   readonly create = output<void>();
-  readonly select = output<BeneficiarySummary>();
+  readonly itemSelected = output<BeneficiarySummary>();
   readonly pageChange = output<number>();
 
   charityProgramNames(item: BeneficiarySummary) {

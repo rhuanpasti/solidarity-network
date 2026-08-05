@@ -38,7 +38,7 @@ interface GeneratedCredentialInfo {
         />
       }
 
-      <form class="form" [formGroup]="form()" (ngSubmit)="save.emit()">
+      <form class="form" [formGroup]="form()" (ngSubmit)="saveRequested.emit()">
         <div class="field-grid">
           <app-input-field
             [control]="form().controls.fullName"
@@ -222,7 +222,7 @@ interface GeneratedCredentialInfo {
               {{ 'common.save' | translate }}
             </app-button>
           }
-          <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="cancel.emit()">
+          <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="cancelRequested.emit()">
             {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
@@ -295,8 +295,8 @@ export class BeneficiaryFormComponent {
   readonly countryOptions = input.required<SelectOption[]>();
   readonly documentLabelKey = input.required<string>();
   readonly addressLookupMessageKey = input<string | null>(null);
-  readonly save = output<void>();
-  readonly cancel = output<void>();
+  readonly saveRequested = output<void>();
+  readonly cancelRequested = output<void>();
   readonly addDependent = output<void>();
   readonly removeDependent = output<number>();
   readonly postalCodeBlur = output<void>();

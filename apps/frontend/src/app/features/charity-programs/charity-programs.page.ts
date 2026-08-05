@@ -7,7 +7,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   AdministratorRole,
   CharityProgramStatus,
-  type PaginationMeta,
   type CharityProgramSummary,
   type CharityProgramListQuery,
 } from '@solidarity-network/shared';

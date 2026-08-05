@@ -18,7 +18,6 @@ import {
   formatBrazilianPostalCode,
   isBrazilCountry,
   type BeneficiarySummary,
-  type PaginatedResponse,
   type SupportedCountry,
 } from '@solidarity-network/shared';
 import { distinctUntilChanged, startWith } from 'rxjs';

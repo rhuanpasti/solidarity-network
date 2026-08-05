@@ -36,7 +36,7 @@ export interface BeneficiaryDependentPayload {
   birthDate: string;
 }
 
-export interface BeneficiaryAddressLookupResponse extends Partial<Address> {}
+export type BeneficiaryAddressLookupResponse = Partial<Address>;
 
 @Injectable({ providedIn: 'root' })
 export class BeneficiariesService {

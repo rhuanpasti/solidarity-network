@@ -52,11 +52,9 @@ function removeServerMessageErrors(control: AbstractControl) {
   const currentErrors = control.errors;
 
   if (currentErrors?.['serverMessage'] || currentErrors?.['serverMessageKey']) {
-    const {
-      serverMessage: _serverMessage,
-      serverMessageKey: _serverMessageKey,
-      ...remainingErrors
-    } = currentErrors;
+    const remainingErrors = { ...currentErrors };
+    delete remainingErrors['serverMessage'];
+    delete remainingErrors['serverMessageKey'];
     control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 

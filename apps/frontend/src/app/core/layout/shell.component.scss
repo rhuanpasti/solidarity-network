@@ -22,6 +22,8 @@
 
 .app-layout-overlay {
   display: none;
+  padding: 0;
+  border: 0;
 }
 
 .sidebar {
@@ -44,8 +46,13 @@
   display: flex;
   align-items: center;
   gap: 0.95rem;
+  width: 100%;
   padding: 0.5rem 0.75rem 1.25rem;
   border-bottom: 1px solid #f3f4f6;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: transparent;
   cursor: pointer;
 }
 
