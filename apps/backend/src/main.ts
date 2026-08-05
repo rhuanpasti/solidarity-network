@@ -5,7 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { createValidationException } from './common/validation/validation-exception.factory';
-import { DEFAULT_CORS_ORIGINS } from './config/env.schema';
+import {
+  DEFAULT_CORS_ORIGINS,
+  normalizeCorsOrigins,
+} from './config/env.schema';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -13,10 +16,9 @@ async function bootstrap() {
   });
   const expressApp = app.getHttpAdapter().getInstance();
   const isProduction = process.env.NODE_ENV === 'production';
-  const allowedOrigins = (process.env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS)
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const allowedOrigins = normalizeCorsOrigins(
+    process.env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS,
+  );
 
   app.setGlobalPrefix('api/v1');
   expressApp.disable('x-powered-by');

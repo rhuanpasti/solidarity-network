@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import type { ProgramAccessScope } from '../authorization/authorization.types';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
 import type { BeneficiaryWithPrograms } from './beneficiaries.mapper';
+import { buildBeneficiarySearchFilters } from './beneficiary-search.util';
 
 const beneficiaryInclude = {
   dependents: true,
@@ -128,13 +129,7 @@ export class BeneficiariesRepository {
     }
 
     if (query.search) {
-      filters.push({
-        OR: [
-          { fullName: { contains: query.search, mode: 'insensitive' } },
-          { document: { contains: query.search, mode: 'insensitive' } },
-          { email: { contains: query.search, mode: 'insensitive' } },
-        ],
-      });
+      filters.push({ OR: buildBeneficiarySearchFilters(query.search) });
     }
 
     if (scope && !scope.hasGlobalAccess) {

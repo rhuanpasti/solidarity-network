@@ -5,6 +5,40 @@
     description="features.beneficiaries.description"
   />
 
+  <ng-template #editorDialog>
+    <app-modal
+      [title]="beneficiariesState.selected() ? 'features.beneficiaries.editTitle' : 'features.beneficiaries.createTitle'"
+      description="features.beneficiaries.formDescription"
+      [showReadonlyNote]="beneficiariesState.isReadOnly()"
+      (closed)="closeEditorDialog()"
+    >
+      @if (beneficiariesState.selected() && beneficiariesState.isReadOnly()) {
+        <app-button modalAction type="button" variant="ghost" [disabled]="beneficiariesState.submitPending()" (click)="beneficiariesState.editor.startEditing()">
+          <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+          {{ 'common.edit' | translate }}
+        </app-button>
+      }
+
+      <app-beneficiary-form
+        [form]="beneficiariesState.form"
+        [selected]="beneficiariesState.selected()"
+        [generatedCredential]="beneficiariesState.generatedCredential()"
+        [isReadOnly]="beneficiariesState.isReadOnly()"
+        [submitPending]="beneficiariesState.submitPending()"
+        [programOptions]="activeProgramOptions()"
+        [dependentRelationshipOptions]="beneficiariesState.dependentRelationshipOptions"
+        [countryOptions]="countryOptions()"
+        [documentLabelKey]="beneficiariesState.documentLabelKey"
+        [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
+        (save)="beneficiariesState.submit()"
+        (cancel)="cancelEditor()"
+        (addDependent)="beneficiariesState.addDependent()"
+        (removeDependent)="beneficiariesState.removeDependent($event)"
+        (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
+      />
+    </app-modal>
+  </ng-template>
+
   <app-beneficiary-filters
     [form]="beneficiariesState.filterForm"
     [programOptions]="programOptions()"
@@ -13,34 +47,16 @@
     (pageSizeChange)="beneficiariesState.changePageSize($event)"
   />
 
-  <div class="content-grid">
+  <div class="content-grid listing-grid">
     <app-beneficiary-list
       [items]="beneficiariesState.items()"
       [pagination]="beneficiariesState.pagination()"
       [listLoading]="beneficiariesState.listLoading()"
       [submitPending]="beneficiariesState.submitPending()"
-      (create)="beneficiariesState.editor.startCreate()"
-      (select)="beneficiariesState.editor.select($event)"
+      (create)="openCreate(editorDialog)"
+      (select)="openItem($event, editorDialog)"
       (pageChange)="beneficiariesState.changePage($event)"
     />
 
-    <app-beneficiary-form
-      [form]="beneficiariesState.form"
-      [selected]="beneficiariesState.selected()"
-      [generatedCredential]="beneficiariesState.generatedCredential()"
-      [isReadOnly]="beneficiariesState.isReadOnly()"
-      [submitPending]="beneficiariesState.submitPending()"
-      [programOptions]="programOptions()"
-      [dependentRelationshipOptions]="beneficiariesState.dependentRelationshipOptions"
-      [countryOptions]="countryOptions()"
-      [documentLabelKey]="beneficiariesState.documentLabelKey"
-      [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
-      (save)="beneficiariesState.submit()"
-      (cancel)="beneficiariesState.editor.cancel()"
-      (edit)="beneficiariesState.editor.startEditing()"
-      (addDependent)="beneficiariesState.addDependent()"
-      (removeDependent)="beneficiariesState.removeDependent($event)"
-      (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
-    />
   </div>
 </div>

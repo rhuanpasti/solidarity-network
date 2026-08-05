@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -15,6 +15,25 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
+export function filterSelectOptions(
+  options: SelectOption[],
+  search: string,
+  selectedValues: string[] = [],
+) {
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+
+  if (!normalizedSearch) {
+    return options;
+  }
+
+  const selected = new Set(selectedValues);
+  return options.filter(
+    (option) =>
+      selected.has(option.value) ||
+      option.label?.toLocaleLowerCase().includes(normalizedSearch),
+  );
+}
+
 @Component({
   selector: 'app-form-select',
   standalone: true,
@@ -28,6 +47,17 @@ export interface SelectOption {
         }
       </span>
 
+      @if (searchable()) {
+        <input
+          class="input select-search"
+          type="search"
+          [value]="optionSearch()"
+          [placeholder]="searchPlaceholder() | translate"
+          [attr.aria-label]="searchPlaceholder() | translate"
+          (input)="updateOptionSearch($event)"
+        />
+      }
+
       @if (multiple()) {
         <select
           class="input"
@@ -37,7 +67,7 @@ export interface SelectOption {
           multiple
           [disabled]="readonly()"
         >
-          @for (option of options(); track option.value) {
+          @for (option of filteredOptions(); track option.value) {
             <option [value]="option.value" [disabled]="option.disabled">
               @if (option.translationKey) {
                 {{ option.translationKey | translate }}
@@ -59,7 +89,7 @@ export interface SelectOption {
             <option value="">{{ placeholderKey | translate }}</option>
           }
 
-          @for (option of options(); track option.value) {
+          @for (option of filteredOptions(); track option.value) {
             <option [value]="option.value" [disabled]="option.disabled">
               @if (option.translationKey) {
                 {{ option.translationKey | translate }}
@@ -86,6 +116,14 @@ export class FormSelectComponent {
   readonly placeholder = input<string | null>(null);
   readonly multiple = input(false);
   readonly readonly = input(false);
+  readonly searchable = input(false);
+  readonly searchPlaceholder = input('common.searchProgramsPlaceholder');
+  readonly optionSearch = signal('');
+  readonly filteredOptions = computed(() => {
+    const value = this.control().value;
+    const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+    return filterSelectOptions(this.options(), this.optionSearch(), selectedValues);
+  });
 
   readonly isRequired = computed(() => {
     const control = this.control();
@@ -98,4 +136,8 @@ export class FormSelectComponent {
   readonly errorKey = computed(() =>
     getControlErrorKey(this.control(), this.errors(), this.fallbackErrorKey() ?? undefined),
   );
+
+  updateOptionSearch(event: Event) {
+    this.optionSearch.set((event.target as HTMLInputElement).value);
+  }
 }

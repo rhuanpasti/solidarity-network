@@ -1,12 +1,15 @@
 import { DatePipe } from '@angular/common';
+import { DialogRef } from '@angular/cdk/dialog';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import type { TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import type {
+import {
   BenefitDeliverySummary,
   BenefitSummary,
   BeneficiarySummary,
+  CharityProgramStatus,
   CharityProgramSummary,
   PaginationMeta,
 } from '@solidarity-network/shared';
@@ -18,10 +21,11 @@ import { CharityProgramsService } from '../../core/services/charity-programs.ser
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { DetailGridComponent, type DetailGridItem } from '../../shared/components/detail-grid/detail-grid.component';
-import { EditorPanelComponent } from '../../shared/components/editor-panel/editor-panel.component';
 import { FormSelectComponent, type SelectOption } from '../../shared/components/form-select/form-select.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { ListPanelComponent } from '../../shared/components/list-panel/list-panel.component';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { ModalService } from '../../shared/components/modal/modal.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import {
   navigateWithMergedQuery,
@@ -50,10 +54,10 @@ const OPTION_PAGE_SIZE = 100;
     PageHeaderComponent,
     ListPanelComponent,
     ButtonComponent,
-    EditorPanelComponent,
     DetailGridComponent,
     FormSelectComponent,
     InputFieldComponent,
+    ModalComponent,
   ],
   templateUrl: './benefit-deliveries.page.html',
   styleUrl: './benefit-deliveries.page.scss',
@@ -68,6 +72,8 @@ export class BenefitDeliveriesPage implements OnInit {
   private readonly beneficiariesService = inject(BeneficiariesService);
   private readonly benefitsService = inject(BenefitsService);
   private readonly toastService = inject(ToastService);
+  private readonly modalService = inject(ModalService);
+  private editorDialogRef: DialogRef<unknown> | null = null;
 
   readonly deliveries = signal<BenefitDeliverySummary[]>([]);
   readonly selectedDelivery = signal<BenefitDeliverySummary | null>(null);
@@ -112,7 +118,7 @@ export class BenefitDeliveriesPage implements OnInit {
 
   ngOnInit() {
     this.charityProgramsService
-      .list({ pageSize: OPTION_PAGE_SIZE })
+      .list({ pageSize: OPTION_PAGE_SIZE, status: CharityProgramStatus.Active })
       .subscribe((response) => {
         this.programs.set(response.items);
         this.programOptions.set(
@@ -213,6 +219,29 @@ export class BenefitDeliveriesPage implements OnInit {
     ]);
   }
 
+  openCreate(template: TemplateRef<unknown>) {
+    this.startCreate();
+    this.openEditorDialog(template);
+  }
+
+  openDelivery(delivery: BenefitDeliverySummary, template: TemplateRef<unknown>) {
+    this.selectDelivery(delivery);
+    this.openEditorDialog(template);
+  }
+
+  closeEditorDialog() {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = null;
+  }
+
+  private openEditorDialog(template: TemplateRef<unknown>) {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = this.modalService.open(template);
+    this.editorDialogRef.closed.subscribe(() => {
+      this.editorDialogRef = null;
+    });
+  }
+
   startCreate() {
     this.selectedDelivery.set(null);
     this.selectedDeliveryDetails.set([]);
@@ -258,6 +287,7 @@ export class BenefitDeliveriesPage implements OnInit {
             text: 'Delivery registered successfully.',
           });
           this.startCreate();
+          this.closeEditorDialog();
           this.load();
         },
         error: (error) => {

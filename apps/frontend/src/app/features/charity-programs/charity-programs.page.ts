@@ -1,6 +1,8 @@
+import { DialogRef } from '@angular/cdk/dialog';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import type { TemplateRef } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   AdministratorRole,
@@ -12,10 +14,11 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { EditorPanelComponent } from '../../shared/components/editor-panel/editor-panel.component';
 import { FormSelectComponent, type SelectOption } from '../../shared/components/form-select/form-select.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { ListPanelComponent } from '../../shared/components/list-panel/list-panel.component';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { ModalService } from '../../shared/components/modal/modal.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { CrudFormController } from '../../shared/utils/crud-form.controller';
@@ -39,10 +42,10 @@ import {
     PageHeaderComponent,
     StatusBadgeComponent,
     ButtonComponent,
-    EditorPanelComponent,
     FormSelectComponent,
     InputFieldComponent,
     ListPanelComponent,
+    ModalComponent,
   ],
   templateUrl: './charity-programs.page.html',
   styleUrl: './charity-programs.page.scss',
@@ -53,6 +56,8 @@ export class CharityProgramsPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
+  private readonly modalService = inject(ModalService);
+  private editorDialogRef: DialogRef<unknown> | null = null;
 
   readonly items = signal<CharityProgramSummary[]>([]);
   readonly pagination = signal<PaginationMeta>(DEFAULT_PAGINATION_META);
@@ -134,6 +139,34 @@ export class CharityProgramsPage implements OnInit {
     this.load();
   }
 
+  openCreate(template: TemplateRef<unknown>) {
+    this.editor.startCreate();
+    this.openEditorDialog(template);
+  }
+
+  openItem(item: CharityProgramSummary, template: TemplateRef<unknown>) {
+    this.editor.select(item);
+    this.openEditorDialog(template);
+  }
+
+  cancelEditor() {
+    this.editor.cancel();
+    this.closeEditorDialog();
+  }
+
+  closeEditorDialog() {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = null;
+  }
+
+  private openEditorDialog(template: TemplateRef<unknown>) {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = this.modalService.open(template);
+    this.editorDialogRef.closed.subscribe(() => {
+      this.editorDialogRef = null;
+    });
+  }
+
   changePage(page: number) {
     const pagination = this.pagination();
 
@@ -185,6 +218,7 @@ export class CharityProgramsPage implements OnInit {
         this.isSubmitting.set(false);
         this.toastService.show({ type: 'success', text: 'Saved successfully.' });
         this.editor.startCreate();
+        this.closeEditorDialog();
         this.load();
       },
       error: (error) => {

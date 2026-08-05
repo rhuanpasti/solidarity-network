@@ -4,3 +4,5 @@ import '../src/app/core/auth/auth.storage.spec';
 import '../src/app/core/services/loading.service.spec';
 import '../src/app/shared/utils/http.utils.spec';
 import '../src/app/shared/utils/list-query.utils.spec';
+import '../src/app/shared/components/modal/modal.config.spec';
+import '../src/app/shared/components/form-select/form-select.component.spec';

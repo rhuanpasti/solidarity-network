@@ -92,6 +92,11 @@ this.logger.error(
 
 Clients and upstream services should pass `X-Request-Id` on every API request. Support teams should use the returned `X-Request-Id` from failed API responses to find all related logs.
 
+List endpoints accept search query parameters for operational filtering. Beneficiary searches can contain email
+addresses and CPF values, so raw search terms must not be copied into application logs, audit metadata, or error
+messages. Use the request correlation ID and endpoint path to investigate list requests without exposing the personal
+data entered into the filter.
+
 Example request:
 
 ```bash

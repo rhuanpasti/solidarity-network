@@ -5,75 +5,11 @@
     description="features.benefitDeliveries.description"
   />
 
-  <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-    <div class="field-grid">
-      <app-form-select
-        [control]="filterForm.controls.beneficiaryId"
-        label="forms.beneficiary"
-        [options]="filterBeneficiaryOptions()"
-        placeholder="common.all"
-      />
-
-      <app-form-select
-        [control]="filterForm.controls.charityProgramId"
-        label="forms.charityProgram"
-        [options]="programOptions()"
-        placeholder="common.all"
-      />
-
-      <label class="field">
-        <span>{{ 'common.pageSize' | translate }}</span>
-        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-          @for (size of pageSizes; track size) {
-            <option [value]="size">{{ size }}</option>
-          }
-        </select>
-      </label>
-    </div>
-
-    <div class="actions">
-      <app-button type="submit" variant="secondary">
-        {{ 'common.applyFilters' | translate }}
-      </app-button>
-    </div>
-  </form>
-
-  <div class="content-grid">
-    <app-list-panel
-      title="features.benefitDeliveries.historyTitle"
-      description="features.benefitDeliveries.historyDescription"
-      emptyTitle="features.benefitDeliveries.emptyTitle"
-      emptyDescription="features.benefitDeliveries.emptyDescription"
-      [hasItems]="deliveries().length > 0"
-      [loading]="listLoading()"
-      [pagination]="pagination()"
-      (pageChange)="changePage($event)"
-    >
-      <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="startCreate()">
-        {{ 'common.add' | translate }}
-      </app-button>
-
-      <div panelList class="list">
-        @for (delivery of deliveries(); track delivery.id) {
-          <button type="button" class="list-item" (click)="selectDelivery(delivery)">
-            <div>
-              <strong>{{ delivery.beneficiary.fullName }}</strong>
-              <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
-              <small>{{ delivery.administrator.name }}</small>
-            </div>
-            <div class="item-meta">
-              <span>x{{ delivery.quantity }}</span>
-              <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
-              <small>#{{ delivery.reference }}</small>
-            </div>
-          </button>
-        }
-      </div>
-    </app-list-panel>
-
-    <app-editor-panel
+  <ng-template #editorDialog>
+    <app-modal
       [title]="selectedDelivery() ? 'features.benefitDeliveries.detailTitle' : 'features.benefitDeliveries.registerTitle'"
       [description]="selectedDelivery() ? 'features.benefitDeliveries.detailDescription' : 'features.benefitDeliveries.formDescription'"
+      (closed)="closeEditorDialog()"
     >
       @if (selectedDelivery()) {
         <app-detail-grid [items]="selectedDeliveryDetails()" />
@@ -84,6 +20,7 @@
               [control]="form.controls.charityProgramId"
               label="forms.charityProgram"
               [options]="programOptions()"
+              [searchable]="true"
               [errors]="[['required', 'validation.required']]"
               placeholder="common.selectOption"
             />
@@ -97,15 +34,13 @@
             />
           </div>
 
-          <div class="field-grid">
-            <app-form-select
-              [control]="form.controls.benefitId"
-              label="forms.benefit"
-              [options]="benefitOptions()"
-              [errors]="[['required', 'validation.required']]"
-              placeholder="common.selectOption"
-            />
-          </div>
+          <app-form-select
+            [control]="form.controls.benefitId"
+            label="forms.benefit"
+            [options]="benefitOptions()"
+            [errors]="[['required', 'validation.required']]"
+            placeholder="common.selectOption"
+          />
 
           <div class="field-grid">
             <app-input-field
@@ -149,6 +84,75 @@
           </div>
         </form>
       }
-    </app-editor-panel>
+    </app-modal>
+  </ng-template>
+
+  <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+    <div class="field-grid">
+      <app-form-select
+        [control]="filterForm.controls.beneficiaryId"
+        label="forms.beneficiary"
+        [options]="filterBeneficiaryOptions()"
+        placeholder="common.all"
+      />
+
+      <app-form-select
+        [control]="filterForm.controls.charityProgramId"
+        label="forms.charityProgram"
+        [options]="programOptions()"
+        [searchable]="true"
+        placeholder="common.all"
+      />
+
+      <label class="field">
+        <span>{{ 'common.pageSize' | translate }}</span>
+        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+          @for (size of pageSizes; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <app-button type="submit" variant="secondary">
+        {{ 'common.applyFilters' | translate }}
+      </app-button>
+    </div>
+  </form>
+
+  <div class="content-grid listing-grid">
+    <app-list-panel
+      title="features.benefitDeliveries.historyTitle"
+      description="features.benefitDeliveries.historyDescription"
+      emptyTitle="features.benefitDeliveries.emptyTitle"
+      emptyDescription="features.benefitDeliveries.emptyDescription"
+      [hasItems]="deliveries().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="changePage($event)"
+    >
+      <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="openCreate(editorDialog)">
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <div panelList class="list">
+        @for (delivery of deliveries(); track delivery.id) {
+          <button type="button" class="list-item" (click)="openDelivery(delivery, editorDialog)">
+            <div>
+              <strong>{{ delivery.beneficiary.fullName }}</strong>
+              <p>{{ delivery.benefit.name }} · {{ delivery.charityProgram.name }}</p>
+              <small>{{ delivery.administrator.name }}</small>
+            </div>
+            <div class="item-meta">
+              <span>x{{ delivery.quantity }}</span>
+              <small>{{ delivery.deliveryDate | date: 'mediumDate' }}</small>
+              <small>#{{ delivery.reference }}</small>
+            </div>
+          </button>
+        }
+      </div>
+    </app-list-panel>
+
   </div>
 </div>

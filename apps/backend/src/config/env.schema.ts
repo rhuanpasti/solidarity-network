@@ -18,6 +18,13 @@ export const DEFAULT_CORS_ORIGINS = [
   'https://solidarity-network-live.web.app',
 ].join(',');
 
+export function normalizeCorsOrigins(value: string): string[] {
+  return value
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
 export function validateEnv(config: Record<string, unknown>): AppEnvironment {
   const required = ['DATABASE_URL', 'JWT_SECRET'] as const;
 
@@ -42,11 +49,9 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
     throw new Error('JWT_SECRET must be replaced with a strong secret.');
   }
 
-  const corsOrigin = String(config.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS)
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean)
-    .join(',');
+  const corsOrigin = normalizeCorsOrigins(
+    String(config.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS),
+  ).join(',');
 
   return {
     PORT: Number(config.PORT ?? 3000),

@@ -4,7 +4,7 @@ import { CharityProgramsService } from './charity-programs.service';
 import { CreateCharityProgramDto } from './dto/create-charity-program.dto';
 import { UpdateCharityProgramDto } from './dto/update-charity-program.dto';
 import { UpdateCharityProgramStatusDto } from './dto/update-charity-program-status.dto';
-import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { QueryCharityProgramsDto } from './dto/query-charity-programs.dto';
 import { AccountTypes } from '../auth/auth.decorators';
 import type { AuthenticatedRequest } from '../auth/auth.guard';
 import { AuthorizeRoute } from '../authorization/authorization.decorators';
@@ -27,7 +27,7 @@ export class CharityProgramsController {
   }
 
   @Get()
-  findAll(@Req() request: AuthenticatedRequest, @Query() query: PaginationQueryDto) {
+  findAll(@Req() request: AuthenticatedRequest, @Query() query: QueryCharityProgramsDto) {
     return this.charityProgramsService.findAll(query, request.authUser);
   }
 

@@ -1,3 +1,4 @@
+import { DialogRef } from "@angular/cdk/dialog";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,10 +7,12 @@ import {
   inject,
   signal,
 } from "@angular/core";
+import type { TemplateRef } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { TranslateModule } from "@ngx-translate/core";
 import {
   AdministratorRole,
+  CharityProgramStatus,
   type PaginationMeta,
   type AdministratorSummary,
   type CharityProgramSummary,
@@ -32,13 +35,14 @@ import { CharityProgramsService } from "../../core/services/charity-programs.ser
 import { ToastService } from "../../core/services/toast.service";
 import { PageHeaderComponent } from "../../shared/components/page-header/page-header.component";
 import { ListPanelComponent } from "../../shared/components/list-panel/list-panel.component";
-import { EditorPanelComponent } from "../../shared/components/editor-panel/editor-panel.component";
 import { GeneratedCredentialCardComponent } from "../../shared/components/generated-credential-card/generated-credential-card.component";
 import {
   FormSelectComponent,
   type SelectOption,
 } from "../../shared/components/form-select/form-select.component";
 import { CrudFormController } from "../../shared/utils/crud-form.controller";
+import { ModalComponent } from "../../shared/components/modal/modal.component";
+import { ModalService } from "../../shared/components/modal/modal.service";
 
 interface GeneratedAdministratorCredential {
   name: string;
@@ -54,11 +58,11 @@ interface GeneratedAdministratorCredential {
     TranslateModule,
     PageHeaderComponent,
     ListPanelComponent,
-    EditorPanelComponent,
     ButtonComponent,
     InputFieldComponent,
     GeneratedCredentialCardComponent,
     FormSelectComponent,
+    ModalComponent,
   ],
   templateUrl: "./administrators.page.html",
   styleUrl: "./administrators.page.scss",
@@ -71,6 +75,8 @@ export class AdministratorsPage implements OnInit {
   private readonly administratorsService = inject(AdministratorsService);
   private readonly charityProgramsService = inject(CharityProgramsService);
   private readonly toastService = inject(ToastService);
+  private readonly modalService = inject(ModalService);
+  private editorDialogRef: DialogRef<unknown> | null = null;
 
   readonly items = signal<AdministratorSummary[]>([]);
   readonly programs = signal<CharityProgramSummary[]>([]);
@@ -90,6 +96,7 @@ export class AdministratorsPage implements OnInit {
   });
 
   readonly filterForm = this.formBuilder.nonNullable.group({
+    search: [''],
     pageSize: [DEFAULT_PAGE_SIZE],
   });
 
@@ -162,8 +169,36 @@ export class AdministratorsPage implements OnInit {
   ngOnInit() {
     this.load();
     this.charityProgramsService
-      .list({ pageSize: 10 })
+      .list({ pageSize: 100, status: CharityProgramStatus.Active })
       .subscribe((response) => this.programs.set(response.items));
+  }
+
+  openCreate(template: TemplateRef<unknown>) {
+    this.editor.startCreate();
+    this.openEditorDialog(template);
+  }
+
+  openItem(item: AdministratorSummary, template: TemplateRef<unknown>) {
+    this.editor.select(item);
+    this.openEditorDialog(template);
+  }
+
+  cancelEditor() {
+    this.editor.cancel();
+    this.closeEditorDialog();
+  }
+
+  closeEditorDialog() {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = null;
+  }
+
+  private openEditorDialog(template: TemplateRef<unknown>) {
+    this.editorDialogRef?.close();
+    this.editorDialogRef = this.modalService.open(template);
+    this.editorDialogRef.closed.subscribe(() => {
+      this.editorDialogRef = null;
+    });
   }
 
   load() {
@@ -172,6 +207,7 @@ export class AdministratorsPage implements OnInit {
       .list({
         page: this.pagination().page,
         pageSize: this.filterForm.controls.pageSize.value,
+        search: this.filterForm.controls.search.value,
       })
       .subscribe({
         next: (response) => {
@@ -183,6 +219,11 @@ export class AdministratorsPage implements OnInit {
           this.listLoading.set(false);
         },
       });
+  }
+
+  searchAdministrators() {
+    this.pagination.update((current) => ({ ...current, page: 1 }));
+    this.load();
   }
 
   changePage(page: number) {
@@ -236,6 +277,7 @@ export class AdministratorsPage implements OnInit {
             });
             this.editor.startCreate();
             this.load();
+            this.closeEditorDialog();
           },
           error: (error) => {
             this.isSubmitting.set(false);

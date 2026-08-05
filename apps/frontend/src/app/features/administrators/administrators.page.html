@@ -5,60 +5,16 @@
     description="features.administrators.description"
   />
 
-  <div class="content-grid">
-    <app-list-panel
-      title="features.administrators.title"
-      description="features.administrators.formDescription"
-      emptyTitle="features.administrators.emptyTitle"
-      emptyDescription="features.administrators.emptyDescription"
-      [hasItems]="items().length > 0"
-      [loading]="listLoading()"
-      [pagination]="pagination()"
-      (pageChange)="changePage($event)"
-    >
-      <app-button
-        panelAction
-        type="button"
-        variant="secondary"
-        [disabled]="isSubmitting() || !canCreateAdministrators()"
-        (click)="editor.startCreate()"
-      >
-        {{ 'common.add' | translate }}
-      </app-button>
-
-      <form panelToolbar class="panel-toolbar" [formGroup]="filterForm">
-        <label class="field">
-          <span>{{ 'common.pageSize' | translate }}</span>
-          <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-            @for (size of pageSizes; track size) {
-              <option [value]="size">{{ size }}</option>
-            }
-          </select>
-        </label>
-      </form>
-
-      <div panelList class="list">
-        @for (item of items(); track item.id) {
-          <button type="button" class="list-item" (click)="editor.select(item)">
-            <div>
-              <strong>{{ item.name }}</strong>
-              <p>{{ item.email }}</p>
-              <small>{{ ('enums.roles.' + item.role) | translate }}</small>
-            </div>
-            <span>{{ item.charityPrograms.length }}</span>
-          </button>
-        }
-      </div>
-    </app-list-panel>
-
-    <app-editor-panel
+  <ng-template #editorDialog>
+    <app-modal
       [title]="selected() ? 'features.administrators.editTitle' : 'features.administrators.createTitle'"
       description="features.administrators.formDescription"
       [note]="!selected() && !canCreateAdministrators() ? 'features.administrators.createRestrictedNote' : null"
       [showReadonlyNote]="isReadOnly()"
+      (closed)="closeEditorDialog()"
     >
       @if (selected() && isReadOnly()) {
-        <app-button panelAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+        <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
           <span class="material-symbols-rounded" aria-hidden="true">edit</span>
           {{ 'common.edit' | translate }}
         </app-button>
@@ -124,6 +80,7 @@
           label="forms.charityPrograms"
           [options]="programOptions()"
           [multiple]="true"
+          [searchable]="true"
           [readonly]="isReadOnly()"
         />
 
@@ -138,11 +95,68 @@
               {{ 'common.save' | translate }}
             </app-button>
           }
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="editor.cancel()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancelEditor()">
             {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>
-    </app-editor-panel>
+    </app-modal>
+  </ng-template>
+
+  <div class="content-grid listing-grid">
+    <app-list-panel
+      title="features.administrators.title"
+      description="features.administrators.formDescription"
+      emptyTitle="features.administrators.emptyTitle"
+      emptyDescription="features.administrators.emptyDescription"
+      [hasItems]="items().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="changePage($event)"
+    >
+      <app-button
+        panelAction
+        type="button"
+        variant="secondary"
+        [disabled]="isSubmitting() || !canCreateAdministrators()"
+        (click)="openCreate(editorDialog)"
+      >
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <form panelToolbar class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchAdministrators()">
+        <input
+          formControlName="search"
+          type="search"
+          class="input"
+          [placeholder]="'common.administratorSearchPlaceholder' | translate"
+        />
+        <label class="field">
+          <span>{{ 'common.pageSize' | translate }}</span>
+          <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+            @for (size of pageSizes; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+        <app-button type="submit" variant="secondary">
+          {{ 'common.search' | translate }}
+        </app-button>
+      </form>
+
+      <div panelList class="list">
+        @for (item of items(); track item.id) {
+          <button type="button" class="list-item" (click)="openItem(item, editorDialog)">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <p>{{ item.email }}</p>
+              <small>{{ ('enums.roles.' + item.role) | translate }}</small>
+            </div>
+            <span>{{ item.charityPrograms.length }}</span>
+          </button>
+        }
+      </div>
+    </app-list-panel>
+
   </div>
 </div>

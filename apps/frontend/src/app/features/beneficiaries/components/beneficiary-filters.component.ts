@@ -15,7 +15,12 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
       <div class="field-grid">
         <label class="field">
           <span>{{ 'common.search' | translate }}</span>
-          <input class="input" type="search" formControlName="search" />
+          <input
+            class="input"
+            type="search"
+            formControlName="search"
+            [placeholder]="'common.beneficiarySearchPlaceholder' | translate"
+          />
         </label>
 
         <app-form-select

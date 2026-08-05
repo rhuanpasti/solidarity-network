@@ -4,10 +4,8 @@ import {
   PaginatedResponse,
 } from '@solidarity-network/shared';
 import { createPaginatedResponse } from '../../common/dto/pagination-response';
-import {
-  normalizePaginationQuery,
-  PaginationQueryDto,
-} from '../../common/dto/pagination-query.dto';
+import { normalizePaginationQuery } from '../../common/dto/pagination-query.dto';
+import { QueryCharityProgramsDto } from './dto/query-charity-programs.dto';
 import { DomainNotFoundException } from '../../common/exceptions/domain-not-found.exception';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuthorizationService } from '../authorization/authorization.service';
@@ -42,7 +40,7 @@ export class CharityProgramsService {
   }
 
   async findAll(
-    query: PaginationQueryDto,
+    query: QueryCharityProgramsDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<CharityProgramSummary>> {
     const normalizedQuery = normalizePaginationQuery(query);
@@ -53,9 +51,10 @@ export class CharityProgramsService {
         skip,
         normalizedQuery.pageSize,
         normalizedQuery.search,
+        normalizedQuery.status,
         scope,
       ),
-      this.repository.count(normalizedQuery.search, scope),
+      this.repository.count(normalizedQuery.search, normalizedQuery.status, scope),
     ]);
 
     return createPaginatedResponse(

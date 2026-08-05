@@ -1,6 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { CharityProgramSummary, ListQuery, PaginatedResponse } from '@solidarity-network/shared';
+import type {
+  CharityProgramListQuery,
+  CharityProgramSummary,
+  PaginatedResponse,
+} from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import { buildHttpParams } from '../../shared/utils/http.utils';
 
@@ -15,9 +19,11 @@ export class CharityProgramsService {
   private readonly httpClient = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/charity-programs`;
 
-  list(searchOrQuery: string | ListQuery = '') {
+  list(searchOrQuery: string | CharityProgramListQuery = '') {
     const query =
-      typeof searchOrQuery === 'string' ? ({ search: searchOrQuery } satisfies ListQuery) : searchOrQuery;
+      typeof searchOrQuery === 'string'
+        ? ({ search: searchOrQuery } satisfies CharityProgramListQuery)
+        : searchOrQuery;
     const params = buildHttpParams(query);
 
     return this.httpClient.get<PaginatedResponse<CharityProgramSummary>>(this.baseUrl, { params });

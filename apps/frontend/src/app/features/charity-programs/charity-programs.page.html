@@ -5,84 +5,22 @@
     description="features.charityPrograms.description"
   />
 
-  <div class="content-grid">
-    <app-list-panel
-      title="features.charityPrograms.title"
-      description="features.charityPrograms.formDescription"
-      emptyTitle="features.charityPrograms.emptyTitle"
-      emptyDescription="features.charityPrograms.emptyDescription"
-      [hasItems]="items().length > 0"
-      [loading]="listLoading()"
-      [pagination]="pagination()"
-      (pageChange)="changePage($event)"
-    >
-      <app-button
-        panelAction
-        type="button"
-        variant="secondary"
-        [disabled]="isSubmitting() || !canCreatePrograms()"
-        (click)="editor.startCreate()"
-      >
-        {{ 'common.add' | translate }}
-      </app-button>
-
-      <form panelToolbar class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
-        <input
-          formControlName="search"
-          type="search"
-          class="input"
-          [placeholder]="'common.searchPlaceholder' | translate"
-        />
-        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-          @for (size of pageSizes; track size) {
-            <option [value]="size">{{ size }}</option>
-          }
-        </select>
-        <app-button type="submit" variant="secondary">
-          {{ 'common.search' | translate }}
-        </app-button>
-      </form>
-
-      <div panelList class="list">
-        @for (item of items(); track item.id) {
-          <button type="button" class="list-item" (click)="editor.select(item)">
-            <div>
-              <strong>{{ item.name }}</strong>
-              <p>{{ item.description }}</p>
-            </div>
-            <div class="item-meta">
-              <app-status-badge
-                [active]="item.status === 'active'"
-                [activeLabel]="'common.active' | translate"
-                [inactiveLabel]="'common.inactive' | translate"
-              />
-              <small>{{ item.updatedAt | date: 'mediumDate' }}</small>
-            </div>
-          </button>
-        }
-      </div>
-    </app-list-panel>
-
-    <app-editor-panel
+  <ng-template #editorDialog>
+    <app-modal
       [title]="selected() ? 'features.charityPrograms.editTitle' : 'features.charityPrograms.createTitle'"
       description="features.charityPrograms.formDescription"
       [note]="!selected() && !canCreatePrograms() ? 'features.charityPrograms.createRestrictedNote' : null"
       [showReadonlyNote]="isReadOnly()"
+      (closed)="closeEditorDialog()"
     >
       @if (selected(); as selectedProgram) {
         @if (isReadOnly()) {
-          <app-button panelAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
             <span class="material-symbols-rounded" aria-hidden="true">edit</span>
             {{ 'common.edit' | translate }}
           </app-button>
         } @else {
-          <app-button
-            panelAction
-            type="button"
-            variant="ghost"
-            [disabled]="isSubmitting()"
-            (click)="toggleStatus(selectedProgram)"
-          >
+          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(selectedProgram)">
             {{ 'features.charityPrograms.toggleStatus' | translate }}
           </app-button>
         }
@@ -129,11 +67,71 @@
               {{ 'common.save' | translate }}
             </app-button>
           }
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="editor.cancel()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancelEditor()">
             {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>
-    </app-editor-panel>
+    </app-modal>
+  </ng-template>
+
+  <div class="content-grid listing-grid">
+    <app-list-panel
+      title="features.charityPrograms.title"
+      description="features.charityPrograms.formDescription"
+      emptyTitle="features.charityPrograms.emptyTitle"
+      emptyDescription="features.charityPrograms.emptyDescription"
+      [hasItems]="items().length > 0"
+      [loading]="listLoading()"
+      [pagination]="pagination()"
+      (pageChange)="changePage($event)"
+    >
+      <app-button
+        panelAction
+        type="button"
+        variant="secondary"
+        [disabled]="isSubmitting() || !canCreatePrograms()"
+        (click)="openCreate(editorDialog)"
+      >
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <form panelToolbar class="panel-toolbar" [formGroup]="filterForm" (ngSubmit)="searchPrograms()">
+        <input
+          formControlName="search"
+          type="search"
+          class="input"
+          [placeholder]="'common.searchPlaceholder' | translate"
+        />
+        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
+          @for (size of pageSizes; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+        <app-button type="submit" variant="secondary">
+          {{ 'common.search' | translate }}
+        </app-button>
+      </form>
+
+      <div panelList class="list">
+        @for (item of items(); track item.id) {
+          <button type="button" class="list-item" (click)="openItem(item, editorDialog)">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <p>{{ item.description }}</p>
+            </div>
+            <div class="item-meta">
+              <app-status-badge
+                [active]="item.status === 'active'"
+                [activeLabel]="'common.active' | translate"
+                [inactiveLabel]="'common.inactive' | translate"
+              />
+              <small>{{ item.updatedAt | date: 'mediumDate' }}</small>
+            </div>
+          </button>
+        }
+      </div>
+    </app-list-panel>
+
   </div>
 </div>

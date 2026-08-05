@@ -5,49 +5,21 @@
     description="features.benefits.description"
   />
 
-  <div class="content-grid">
-    <app-list-panel
-      title="features.benefits.title"
-      description="features.benefits.formDescription"
-      emptyTitle="features.benefits.emptyTitle"
-      emptyDescription="features.benefits.emptyDescription"
-      [hasItems]="items().length > 0"
-    >
-      <app-button panelAction type="button" variant="secondary" [disabled]="isSubmitting()" (click)="editor.startCreate()">
-        {{ 'common.add' | translate }}
-      </app-button>
-
-      <div panelList class="list">
-        @for (item of items(); track item.id) {
-          <button type="button" class="list-item" (click)="editor.select(item)">
-            <div>
-              <strong>{{ item.name }}</strong>
-              <p>{{ item.description }}</p>
-              <small>{{ ('enums.categories.' + item.category) | translate }}</small>
-            </div>
-            <app-status-badge
-              [active]="item.active"
-              [activeLabel]="'common.active' | translate"
-              [inactiveLabel]="'common.inactive' | translate"
-            />
-          </button>
-        }
-      </div>
-    </app-list-panel>
-
-    <app-editor-panel
+  <ng-template #editorDialog>
+    <app-modal
       [title]="selected() ? 'features.benefits.editTitle' : 'features.benefits.createTitle'"
       description="features.benefits.formDescription"
       [showReadonlyNote]="isReadOnly()"
+      (closed)="closeEditorDialog()"
     >
       @if (selected(); as benefit) {
         @if (isReadOnly()) {
-          <app-button panelAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
             <span class="material-symbols-rounded" aria-hidden="true">edit</span>
             {{ 'common.edit' | translate }}
           </app-button>
         } @else {
-          <app-button panelAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(benefit)">
+          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(benefit)">
             {{ 'features.benefits.toggleStatus' | translate }}
           </app-button>
         }
@@ -97,11 +69,43 @@
               {{ 'common.save' | translate }}
             </app-button>
           }
-          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="editor.cancel()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting()" (click)="cancelEditor()">
             {{ selected() ? ('common.cancel' | translate) : ('common.clear' | translate) }}
           </app-button>
         </div>
       </form>
-    </app-editor-panel>
+    </app-modal>
+  </ng-template>
+
+  <div class="content-grid listing-grid">
+    <app-list-panel
+      title="features.benefits.title"
+      description="features.benefits.formDescription"
+      emptyTitle="features.benefits.emptyTitle"
+      emptyDescription="features.benefits.emptyDescription"
+      [hasItems]="items().length > 0"
+    >
+      <app-button panelAction type="button" variant="secondary" [disabled]="isSubmitting()" (click)="openCreate(editorDialog)">
+        {{ 'common.add' | translate }}
+      </app-button>
+
+      <div panelList class="list">
+        @for (item of items(); track item.id) {
+          <button type="button" class="list-item" (click)="openItem(item, editorDialog)">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <p>{{ item.description }}</p>
+              <small>{{ ('enums.categories.' + item.category) | translate }}</small>
+            </div>
+            <app-status-badge
+              [active]="item.active"
+              [activeLabel]="'common.active' | translate"
+              [inactiveLabel]="'common.inactive' | translate"
+            />
+          </button>
+        }
+      </div>
+    </app-list-panel>
+
   </div>
 </div>

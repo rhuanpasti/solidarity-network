@@ -1,3 +1,4 @@
+@import '@angular/cdk/overlay-prebuilt.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0');
 
@@ -102,6 +103,14 @@ textarea {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
   gap: 1.5rem;
+}
+
+.content-grid.listing-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.select-search {
+  margin-bottom: 0.5rem;
 }
 
 .panel-heading,

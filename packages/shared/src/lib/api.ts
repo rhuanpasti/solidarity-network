@@ -16,6 +16,10 @@ export interface ListQuery {
   search?: string;
 }
 
+export interface CharityProgramListQuery extends ListQuery {
+  status?: string;
+}
+
 export interface BeneficiaryListQuery extends ListQuery {
   charityProgramId?: string;
   status?: string;

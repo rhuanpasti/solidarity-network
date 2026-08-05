@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { EditorPanelComponent } from '../../../shared/components/editor-panel/editor-panel.component';
 import { FormSelectComponent, type SelectOption } from '../../../shared/components/form-select/form-select.component';
 import { GeneratedCredentialCardComponent } from '../../../shared/components/generated-credential-card/generated-credential-card.component';
 import { InputFieldComponent } from '../../../shared/components/input-field/input-field.component';
@@ -22,25 +21,12 @@ interface GeneratedCredentialInfo {
     ReactiveFormsModule,
     TranslateModule,
     ButtonComponent,
-    EditorPanelComponent,
     FormSelectComponent,
     GeneratedCredentialCardComponent,
     InputFieldComponent,
     BeneficiaryAddressFieldsComponent,
   ],
   template: `
-    <app-editor-panel
-      [title]="selected() ? 'features.beneficiaries.editTitle' : 'features.beneficiaries.createTitle'"
-      description="features.beneficiaries.formDescription"
-      [showReadonlyNote]="isReadOnly()"
-    >
-      @if (selected() && isReadOnly()) {
-        <app-button panelAction type="button" variant="ghost" [disabled]="submitPending()" (click)="edit.emit()">
-          <span class="material-symbols-rounded" aria-hidden="true">edit</span>
-          {{ 'common.edit' | translate }}
-        </app-button>
-      }
-
       @if (generatedCredential(); as credential) {
         <app-generated-credential-card
           eyebrow="features.beneficiaries.generatedPasskeyEyebrow"
@@ -121,6 +107,7 @@ interface GeneratedCredentialInfo {
             label="forms.charityPrograms"
             [options]="programOptions()"
             [multiple]="true"
+            [searchable]="true"
             [readonly]="isReadOnly()"
           />
 
@@ -240,7 +227,6 @@ interface GeneratedCredentialInfo {
           </app-button>
         </div>
       </form>
-    </app-editor-panel>
   `,
   styles: `
     .dependents {
@@ -311,7 +297,6 @@ export class BeneficiaryFormComponent {
   readonly addressLookupMessageKey = input<string | null>(null);
   readonly save = output<void>();
   readonly cancel = output<void>();
-  readonly edit = output<void>();
   readonly addDependent = output<void>();
   readonly removeDependent = output<number>();
   readonly postalCodeBlur = output<void>();
