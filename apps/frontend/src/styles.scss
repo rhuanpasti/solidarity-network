@@ -199,6 +199,12 @@ textarea {
   gap: 1rem;
 }
 
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+}
+
 .field {
   display: grid;
   gap: 0.45rem;
@@ -349,6 +355,7 @@ select:disabled {
 
 @media (max-width: 720px) {
   .field-grid,
+  .filter-grid,
   .panel-heading,
   .panel-toolbar,
   .actions {

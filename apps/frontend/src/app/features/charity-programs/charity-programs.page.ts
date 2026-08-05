@@ -198,11 +198,12 @@ export class CharityProgramsPage implements OnInit {
     this.load();
   }
 
-  changePageSize(pageSize: string) {
+  changePageSize(pageSize: number) {
+    this.filterForm.controls.pageSize.setValue(pageSize);
     this.requestQuery.update((current) => ({
       ...current,
       page: 1,
-      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
+      pageSize: pageSize || DEFAULT_PAGE_SIZE,
     }));
     this.load();
   }

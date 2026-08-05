@@ -93,7 +93,7 @@
   </ng-template>
 
   <form class="panel filter-panel" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-    <div class="field-grid">
+    <div class="filter-grid">
       <app-form-select
         [control]="filterForm.controls.beneficiaryId"
         label="forms.beneficiary"
@@ -109,14 +109,6 @@
         placeholder="common.all"
       />
 
-      <label class="field">
-        <span>{{ 'common.pageSize' | translate }}</span>
-        <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-          @for (size of pageSizes; track size) {
-            <option [value]="size">{{ size }}</option>
-          }
-        </select>
-      </label>
     </div>
 
     <div class="actions">
@@ -135,7 +127,10 @@
       [hasItems]="deliveries().length > 0"
       [loading]="listLoading()"
       [pagination]="pagination()"
+      [pageSize]="filters().pageSize"
+      [pageSizes]="pageSizes"
       (pageChange)="changePage($event)"
+      (pageSizeChange)="changePageSize($event)"
     >
       <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="openCreate(editorDialog)">
         {{ 'common.add' | translate }}

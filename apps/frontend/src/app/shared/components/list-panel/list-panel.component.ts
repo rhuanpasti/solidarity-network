@@ -29,17 +29,36 @@ import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
         @if (pagination(); as meta) {
           <div class="pagination">
-            <p>
-              {{
-                'common.paginationSummary'
-                  | translate
-                    : {
-                        page: meta.page,
-                        totalPages: meta.totalPages,
-                        totalItems: meta.totalItems
-                      }
-              }}
-            </p>
+            <div class="pagination-summary">
+              <p>
+                {{
+                  'common.paginationSummary'
+                    | translate
+                      : {
+                          page: meta.page,
+                          totalPages: meta.totalPages,
+                          totalItems: meta.totalItems
+                        }
+                }}
+              </p>
+
+              @if (pageSizes().length) {
+                <label class="pagination-page-size">
+                  <span>{{ 'common.pageSize' | translate }}</span>
+                  <select
+                    class="input"
+                    [value]="pageSize()"
+                    [disabled]="loading()"
+                    (change)="pageSizeChange.emit(readPageSize($event, pageSize() ?? pageSizes()[0]))"
+                  >
+                    @for (size of pageSizes(); track size) {
+                      <option [value]="size">{{ size }}</option>
+                    }
+                  </select>
+                </label>
+              }
+            </div>
+
             <div class="pagination-actions">
               <app-button
                 type="button"
@@ -77,9 +96,19 @@ export class ListPanelComponent {
   readonly hasItems = input(false);
   readonly loading = input(false);
   readonly pagination = input<PaginationMeta | null>(null);
+  readonly pageSize = input<number | null>(null);
+  readonly pageSizes = input<readonly number[]>([]);
   readonly pageChange = output<number>();
+  readonly pageSizeChange = output<number>();
+  readonly readPageSize = readPageSize;
 }
 
 export function shouldShowListEmptyState(loading: boolean, hasItems: boolean) {
   return !loading && !hasItems;
+}
+
+export function readPageSize(event: Event, fallback: number) {
+  const value = Number((event.target as HTMLSelectElement | null)?.value);
+
+  return Number.isInteger(value) && value > 0 ? value : fallback;
 }

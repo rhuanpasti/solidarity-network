@@ -230,10 +230,10 @@ export class BenefitDeliveriesPage implements OnInit {
     void navigateWithMergedQuery(this.router, this.route, { page });
   }
 
-  changePageSize(pageSize: string) {
+  changePageSize(pageSize: number) {
     void navigateWithMergedQuery(this.router, this.route, {
       page: 1,
-      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
+      pageSize: pageSize || DEFAULT_PAGE_SIZE,
     });
   }
 

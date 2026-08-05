@@ -12,7 +12,7 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
   imports: [ReactiveFormsModule, TranslateModule, ButtonComponent, FormSelectComponent],
   template: `
     <form class="panel filter-panel" [formGroup]="form()" (ngSubmit)="submitFilters.emit()">
-      <div class="field-grid">
+      <div class="filter-grid">
         <label class="field">
           <span>{{ 'common.search' | translate }}</span>
           <input
@@ -37,14 +37,6 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
           placeholder="common.all"
         />
 
-        <label class="field">
-          <span>{{ 'common.pageSize' | translate }}</span>
-          <select class="input" formControlName="pageSize" (change)="pageSizeChange.emit($any($event.target).value)">
-            @for (size of pageSizes(); track size) {
-              <option [value]="size">{{ size }}</option>
-            }
-          </select>
-        </label>
       </div>
 
       <div class="actions">
@@ -59,9 +51,7 @@ import { FormSelectComponent, type SelectOption } from '../../../shared/componen
 export class BeneficiaryFiltersComponent {
   readonly form = input.required<BeneficiaryFiltersForm>();
   readonly programOptions = input.required<SelectOption[]>();
-  readonly pageSizes = input.required<number[]>();
   readonly submitFilters = output<void>();
-  readonly pageSizeChange = output<string>();
   readonly statusOptions: SelectOption[] = [
     { value: BeneficiaryStatus.Active, translationKey: 'enums.beneficiaryStatuses.active' },
     { value: BeneficiaryStatus.Inactive, translationKey: 'enums.beneficiaryStatuses.inactive' },

@@ -117,7 +117,10 @@
       [hasItems]="items().length > 0"
       [loading]="listLoading()"
       [pagination]="pagination()"
+      [pageSize]="requestQuery().pageSize"
+      [pageSizes]="pageSizes"
       (pageChange)="changePage($event)"
+      (pageSizeChange)="changePageSize($event)"
     >
       <app-button
         panelAction
@@ -136,14 +139,6 @@
           class="input"
           [placeholder]="'common.administratorSearchPlaceholder' | translate"
         />
-        <label class="field">
-          <span>{{ 'common.pageSize' | translate }}</span>
-          <select class="input" formControlName="pageSize" (change)="changePageSize($any($event.target).value)">
-            @for (size of pageSizes; track size) {
-              <option [value]="size">{{ size }}</option>
-            }
-          </select>
-        </label>
         <app-button type="submit" variant="secondary">
           {{ 'common.search' | translate }}
         </app-button>

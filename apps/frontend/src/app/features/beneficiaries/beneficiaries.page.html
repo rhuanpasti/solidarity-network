@@ -47,20 +47,21 @@
   <app-beneficiary-filters
     [form]="beneficiariesState.filterForm"
     [programOptions]="programOptions()"
-    [pageSizes]="beneficiariesState.pageSizes"
     (submitFilters)="beneficiariesState.applyFilters()"
-    (pageSizeChange)="beneficiariesState.changePageSize($event)"
   />
 
   <div class="content-grid listing-grid">
     <app-beneficiary-list
       [items]="beneficiariesState.items()"
       [pagination]="beneficiariesState.pagination()"
+      [pageSize]="beneficiariesState.filters().pageSize"
+      [pageSizes]="beneficiariesState.pageSizes"
       [listLoading]="beneficiariesState.listLoading()"
       [submitPending]="beneficiariesState.submitPending()"
       (create)="openCreate(editorDialog)"
       (itemSelected)="openItem($event, editorDialog)"
       (pageChange)="beneficiariesState.changePage($event)"
+      (pageSizeChange)="beneficiariesState.changePageSize($event)"
     />
 
   </div>

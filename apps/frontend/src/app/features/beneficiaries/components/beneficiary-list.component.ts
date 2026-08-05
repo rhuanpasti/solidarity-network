@@ -17,7 +17,10 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
       [hasItems]="items().length > 0"
       [loading]="listLoading()"
       [pagination]="pagination()"
+      [pageSize]="pageSize()"
+      [pageSizes]="pageSizes()"
       (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)"
     >
       <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="create.emit()">
         {{ 'common.add' | translate }}
@@ -51,11 +54,14 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
 export class BeneficiaryListComponent {
   readonly items = input.required<BeneficiarySummary[]>();
   readonly pagination = input.required<PaginationMeta>();
+  readonly pageSize = input.required<number>();
+  readonly pageSizes = input.required<readonly number[]>();
   readonly listLoading = input(false);
   readonly submitPending = input(false);
   readonly create = output<void>();
   readonly itemSelected = output<BeneficiarySummary>();
   readonly pageChange = output<number>();
+  readonly pageSizeChange = output<number>();
 
   charityProgramNames(item: BeneficiarySummary) {
     return item.charityPrograms.map((program) => program.name).join(', ');
