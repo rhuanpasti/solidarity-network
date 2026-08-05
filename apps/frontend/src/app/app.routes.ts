@@ -15,6 +15,13 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./features/login/login.page').then((m) => m.LoginPage),
   },
   {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/reset-password/reset-password.page').then(
+        (m) => m.ResetPasswordPage,
+      ),
+  },
+  {
     path: 'first-access',
     canActivate: [authGuard],
     loadComponent: () =>

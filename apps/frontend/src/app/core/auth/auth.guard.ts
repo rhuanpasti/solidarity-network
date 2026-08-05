@@ -74,6 +74,13 @@ export const authGuard: CanActivateFn = async (route, state) => {
 export const loginGuard: CanActivateFn = async (route) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const resetToken = route.queryParamMap.get('token');
+
+  if (resetToken) {
+    return router.createUrlTree(['/reset-password'], {
+      queryParams: { token: resetToken },
+    });
+  }
 
   if (!authService.isAuthenticated()) {
     return true;

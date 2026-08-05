@@ -285,6 +285,14 @@
     "passwordMismatch": "Password confirmation does not match the new password.",
     "firstAccessEyebrow": "First access",
     "firstAccessTitle": "Set a new password before continuing",
-    "firstAccessDescription": "For security, update your password before entering the dashboard."
+    "firstAccessDescription": "For security, update your password before entering the dashboard.",
+    "resetPasswordEyebrow": "Password reset",
+    "resetPasswordTitle": "Set a new password",
+    "resetPasswordDescription": "Choose a strong password to regain access to Solidarity Network.",
+    "resetPasswordSubmit": "Reset password",
+    "resetPasswordSuccess": "Your password was reset successfully. You can now sign in.",
+    "resetPasswordTokenInvalid": "This password reset link is invalid or expired.",
+    "resetPasswordTokenMissing": "This password reset link is incomplete.",
+    "resetPasswordBackToLogin": "Back to login"
   }
 }

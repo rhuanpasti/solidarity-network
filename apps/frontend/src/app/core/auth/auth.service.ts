@@ -33,6 +33,11 @@ export interface ForgotPasswordPayload {
   email: string;
 }
 
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+}
+
 interface AuthApiResponse {
   token?: string;
   csrfToken: string;
@@ -120,6 +125,30 @@ export class AuthService {
       return {
         success: false,
         message: this.resolveAuthErrorKey(error, 'errors.requestFailed'),
+      };
+    }
+  }
+
+  async resetPassword(payload: ResetPasswordPayload): Promise<LoginResult> {
+    try {
+      await firstValueFrom(
+        this.httpClient.post(
+          `${this.baseUrl}/reset-password`,
+          payload,
+          {
+            context: new HttpContext().set(SKIP_GLOBAL_ERROR_TOAST, true),
+          },
+        ),
+      );
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: this.resolveAuthErrorKey(
+          error,
+          'auth.resetPasswordTokenInvalid',
+        ),
       };
     }
   }
@@ -212,6 +241,8 @@ export class AuthService {
         return 'auth.invalidCurrentPassword';
       case 'PASSWORD_REUSE_NOT_ALLOWED':
         return 'auth.passwordReuseNotAllowed';
+      case 'PASSWORD_RESET_TOKEN_INVALID':
+        return 'auth.resetPasswordTokenInvalid';
       case 'TOO_MANY_LOGIN_ATTEMPTS':
         return 'auth.tooManyLoginAttempts';
       default:

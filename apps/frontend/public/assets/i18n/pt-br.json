@@ -285,6 +285,14 @@
     "passwordMismatch": "A confirmacao da senha nao corresponde a nova senha.",
     "firstAccessEyebrow": "Primeiro acesso",
     "firstAccessTitle": "Defina uma nova senha antes de continuar",
-    "firstAccessDescription": "Por seguranca, atualize sua senha antes de entrar no dashboard."
+    "firstAccessDescription": "Por seguranca, atualize sua senha antes de entrar no dashboard.",
+    "resetPasswordEyebrow": "Redefinicao de senha",
+    "resetPasswordTitle": "Defina uma nova senha",
+    "resetPasswordDescription": "Escolha uma senha forte para voltar a acessar a Rede Solidaria.",
+    "resetPasswordSubmit": "Redefinir senha",
+    "resetPasswordSuccess": "Sua senha foi redefinida com sucesso. Agora voce ja pode entrar.",
+    "resetPasswordTokenInvalid": "Este link de redefinicao e invalido ou expirou.",
+    "resetPasswordTokenMissing": "Este link de redefinicao esta incompleto.",
+    "resetPasswordBackToLogin": "Voltar para o login"
   }
 }

@@ -7,6 +7,7 @@
     "prebuild": "npm --prefix ../../packages/shared run build",
     "start": "ng serve",
     "build": "ng build",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting",
     "deploy:workers": "npx wrangler deploy",
     "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts"
   },

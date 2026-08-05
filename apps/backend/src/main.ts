@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { createValidationException } from './common/validation/validation-exception.factory';
+import { DEFAULT_CORS_ORIGINS } from './config/env.schema';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,8 +13,7 @@ async function bootstrap() {
   });
   const expressApp = app.getHttpAdapter().getInstance();
   const isProduction = process.env.NODE_ENV === 'production';
-  const allowedOrigins = (process.env.CORS_ORIGIN ??
-    'http://localhost:4200,https://solidarity-network.rhuanpasti.workers.dev')
+  const allowedOrigins = (process.env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS)
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);

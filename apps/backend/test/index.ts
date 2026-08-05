@@ -9,4 +9,5 @@ import '../src/modules/email/email-template.service.spec';
 import '../src/modules/email/email.service.spec';
 import '../src/modules/email/brevo-email.sender.spec';
 import '../src/modules/observability/log-sanitizer.util.spec';
+import '../src/config/env.schema.spec';
 import '../prisma/demo-seed-data.spec';

@@ -271,6 +271,12 @@ npm install
 npm run start
 ```
 
+To build and deploy the frontend to Firebase Hosting from this directory:
+
+```bash
+npm run deploy:firebase
+```
+
 Update `src/environments/environment.ts` when you need a different API URL locally.
 
 The backend seed no longer creates a default login automatically. To provision an administrator credential, set `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` explicitly before running the seed.

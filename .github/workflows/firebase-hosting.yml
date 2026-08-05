@@ -1,0 +1,44 @@
+# Build the frontend for every PR and every commit that reaches main.
+# Deploy previews for PRs and the live site for main.
+
+name: Firebase Hosting
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: npm ci
+
+      - run: npm run build
+        working-directory: apps/frontend
+
+      - name: Deploy pull request preview
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOLIDARITY_NETWORK_LIVE }}
+          projectId: solidarity-network-live
+          entryPoint: apps/frontend
+
+      - name: Deploy production hosting
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOLIDARITY_NETWORK_LIVE }}
+          channelId: live
+          projectId: solidarity-network-live
+          entryPoint: apps/frontend

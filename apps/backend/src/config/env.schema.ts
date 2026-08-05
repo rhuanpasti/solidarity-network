@@ -12,6 +12,12 @@ export interface AppEnvironment {
   BREVO_FROM_NAME: string;
 }
 
+export const DEFAULT_CORS_ORIGINS = [
+  'http://localhost:4200',
+  'https://solidarity-network.rhuanpasti.workers.dev',
+  'https://solidarity-network-live.web.app',
+].join(',');
+
 export function validateEnv(config: Record<string, unknown>): AppEnvironment {
   const required = ['DATABASE_URL', 'JWT_SECRET'] as const;
 
@@ -36,10 +42,7 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
     throw new Error('JWT_SECRET must be replaced with a strong secret.');
   }
 
-  const corsOrigin = String(
-    config.CORS_ORIGIN ??
-      'http://localhost:4200,https://solidarity-network.rhuanpasti.workers.dev',
-  )
+  const corsOrigin = String(config.CORS_ORIGIN ?? DEFAULT_CORS_ORIGINS)
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)

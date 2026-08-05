@@ -1,5 +1,5 @@
 import '@angular/compiler';
-import { HttpClient, HttpContext } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
@@ -91,6 +91,74 @@ describe('AuthService', () => {
     assert.deepEqual(result, {
       success: false,
       message: 'errors.requestFailed',
+    });
+  });
+
+  it('resets the password with the token and skips duplicate global error toasts', async () => {
+    const post = mock.fn(() => of({ success: true }));
+
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        {
+          provide: HttpClient,
+          useValue: { post },
+        },
+      ],
+    });
+
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    const result = await service.resetPassword({
+      token: 'reset-token',
+      newPassword: 'NewPassword1!',
+    });
+
+    assert.deepEqual(result, { success: true });
+    assert.equal(post.mock.callCount(), 1);
+    const [url, body, options] = post.mock.calls[0]!.arguments as [
+      string,
+      { token: string; newPassword: string },
+      { context: HttpContext },
+    ];
+    assert.equal(url, 'http://localhost:3000/api/v1/auth/reset-password');
+    assert.deepEqual(body, {
+      token: 'reset-token',
+      newPassword: 'NewPassword1!',
+    });
+    assert.equal(options.context.get(SKIP_GLOBAL_ERROR_TOAST), true);
+  });
+
+  it('maps an invalid reset token response to the reset-link error', async () => {
+    const post = mock.fn(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { code: 'PASSWORD_RESET_TOKEN_INVALID' },
+          }),
+      ),
+    );
+
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        {
+          provide: HttpClient,
+          useValue: { post },
+        },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    const result = await service.resetPassword({
+      token: 'expired-token',
+      newPassword: 'NewPassword1!',
+    });
+
+    assert.deepEqual(result, {
+      success: false,
+      message: 'auth.resetPasswordTokenInvalid',
     });
   });
 });
