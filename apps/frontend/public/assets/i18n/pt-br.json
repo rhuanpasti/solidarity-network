@@ -43,6 +43,8 @@
     "pageSize": "Linhas por pagina",
     "loading": "Carregando",
     "loadingDescription": "Aguarde enquanto os dados sao atualizados.",
+    "refresh": "Atualizar",
+    "refreshing": "Atualizando",
     "readOnlyDetails": "Os campos estao bloqueados. Clique em editar para habilitar a alteracao.",
     "paginationSummary": "Pagina {{page}} de {{totalPages}} · {{totalItems}} no total"
   },

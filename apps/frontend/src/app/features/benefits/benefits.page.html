@@ -3,6 +3,11 @@
     eyebrow="features.benefits.eyebrow"
     title="features.benefits.title"
     description="features.benefits.description"
+    [showRefresh]="true"
+    [refreshing]="refreshing()"
+    [refreshDisabled]="refreshDisabled()"
+    [refreshCooldownSeconds]="refreshCooldownSeconds()"
+    (refresh)="refresh()"
   />
 
   <ng-template #editorDialog>
@@ -84,6 +89,7 @@
       emptyTitle="features.benefits.emptyTitle"
       emptyDescription="features.benefits.emptyDescription"
       [hasItems]="items().length > 0"
+      [loading]="listState().loading && !listState().data"
     >
       <app-button panelAction type="button" variant="secondary" [disabled]="isSubmitting()" (click)="openCreate(editorDialog)">
         {{ 'common.add' | translate }}

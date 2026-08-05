@@ -13,6 +13,7 @@ import { TranslateModule } from "@ngx-translate/core";
 import {
   AdministratorRole,
   CharityProgramStatus,
+  type ListQuery,
   type PaginationMeta,
   type AdministratorSummary,
   type CharityProgramSummary,
@@ -78,14 +79,41 @@ export class AdministratorsPage implements OnInit {
   private readonly modalService = inject(ModalService);
   private editorDialogRef: DialogRef<unknown> | null = null;
 
-  readonly items = signal<AdministratorSummary[]>([]);
-  readonly programs = signal<CharityProgramSummary[]>([]);
-  readonly pagination = signal<PaginationMeta>(DEFAULT_PAGINATION_META);
+  readonly requestQuery = signal<ListQuery>({
+    page: DEFAULT_PAGINATION_META.page,
+    pageSize: DEFAULT_PAGE_SIZE,
+    search: '',
+  });
+  readonly listState = computed(() =>
+    this.administratorsService.listState(this.requestQuery()),
+  );
+  readonly items = computed(() => this.listState().data?.items ?? []);
+  readonly pagination = computed(
+    () => this.listState().data?.meta ?? DEFAULT_PAGINATION_META,
+  );
+  readonly programsState = computed(() =>
+    this.charityProgramsService.listState({
+      pageSize: 100,
+      status: CharityProgramStatus.Active,
+    }),
+  );
+  readonly programs = computed(() => this.programsState().data?.items ?? []);
   readonly generatedCredential =
     signal<GeneratedAdministratorCredential | null>(null);
   readonly isSubmitting = signal(false);
   readonly pageSizes = [10, 25, 50];
-  readonly listLoading = signal(false);
+  readonly listLoading = computed(
+    () => this.listState().loading && !this.listState().data,
+  );
+  readonly refreshing = computed(() => this.listState().refreshing);
+  readonly refreshCooldownSeconds = computed(() =>
+    this.listState().nextRefreshAt === null
+      ? 0
+      : Math.max(1, Math.ceil((this.listState().nextRefreshAt! - Date.now()) / 1000)),
+  );
+  readonly refreshDisabled = computed(
+    () => this.refreshing() || this.refreshCooldownSeconds() > 0,
+  );
   readonly canCreateAdministrators = computed(() => {
     const session = this.authService.session();
 
@@ -168,9 +196,10 @@ export class AdministratorsPage implements OnInit {
 
   ngOnInit() {
     this.load();
-    this.charityProgramsService
-      .list({ pageSize: 100, status: CharityProgramStatus.Active })
-      .subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService.ensureList({
+      pageSize: 100,
+      status: CharityProgramStatus.Active,
+    });
   }
 
   openCreate(template: TemplateRef<unknown>) {
@@ -201,28 +230,31 @@ export class AdministratorsPage implements OnInit {
     });
   }
 
-  load() {
-    this.listLoading.set(true);
-    this.administratorsService
-      .list({
-        page: this.pagination().page,
-        pageSize: this.filterForm.controls.pageSize.value,
-        search: this.filterForm.controls.search.value,
-      })
-      .subscribe({
-        next: (response) => {
-          this.listLoading.set(false);
-          this.items.set(response.items);
-          this.pagination.set(response.meta);
-        },
-        error: () => {
-          this.listLoading.set(false);
-        },
-      });
+  load(force = false) {
+    const query: ListQuery = {
+      page: this.requestQuery().page,
+      pageSize: this.filterForm.controls.pageSize.value,
+      search: this.filterForm.controls.search.value,
+    };
+    this.requestQuery.set(query);
+
+    if (force) {
+      this.administratorsService.invalidateList(query);
+    }
+
+    this.administratorsService.ensureList(query);
+  }
+
+  refresh() {
+    this.administratorsService.refreshList(this.requestQuery());
+    this.charityProgramsService.refreshList({
+      pageSize: 100,
+      status: CharityProgramStatus.Active,
+    });
   }
 
   searchAdministrators() {
-    this.pagination.update((current) => ({ ...current, page: 1 }));
+    this.requestQuery.update((current) => ({ ...current, page: 1 }));
     this.load();
   }
 
@@ -233,12 +265,12 @@ export class AdministratorsPage implements OnInit {
       return;
     }
 
-    this.pagination.update((current) => ({ ...current, page }));
+    this.requestQuery.update((current) => ({ ...current, page }));
     this.load();
   }
 
   changePageSize(pageSize: string) {
-    this.pagination.update((current) => ({
+    this.requestQuery.update((current) => ({
       ...current,
       page: 1,
       pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
@@ -276,7 +308,7 @@ export class AdministratorsPage implements OnInit {
               text: "Saved successfully.",
             });
             this.editor.startCreate();
-            this.load();
+            this.load(true);
             this.closeEditorDialog();
           },
           error: (error) => {
@@ -306,7 +338,7 @@ export class AdministratorsPage implements OnInit {
           passkey: response.generatedPasskey,
         });
         this.editor.startCreate();
-        this.load();
+        this.load(true);
       },
       error: (error) => {
         this.isSubmitting.set(false);

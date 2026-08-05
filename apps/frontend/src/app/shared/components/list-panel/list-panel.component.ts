@@ -20,7 +20,7 @@ import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
       <ng-content select="[panelToolbar]" />
 
-      @if (loading()) {
+      @if (loading() && !hasItems()) {
         <div class="list-state" aria-live="polite">{{ 'common.loadingDescription' | translate }}</div>
       }
 
@@ -60,7 +60,7 @@ import { EmptyStateComponent } from '../empty-state/empty-state.component';
             </div>
           </div>
         }
-      } @else {
+      } @else if (shouldShowListEmptyState(loading(), hasItems())) {
         <app-empty-state [title]="emptyTitle()" [description]="emptyDescription()" />
       }
     </section>
@@ -69,6 +69,7 @@ import { EmptyStateComponent } from '../empty-state/empty-state.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListPanelComponent {
+  readonly shouldShowListEmptyState = shouldShowListEmptyState;
   readonly title = input.required<string>();
   readonly description = input.required<string>();
   readonly emptyTitle = input.required<string>();
@@ -77,4 +78,8 @@ export class ListPanelComponent {
   readonly loading = input(false);
   readonly pagination = input<PaginationMeta | null>(null);
   readonly pageChange = output<number>();
+}
+
+export function shouldShowListEmptyState(loading: boolean, hasItems: boolean) {
+  return !loading && !hasItems;
 }

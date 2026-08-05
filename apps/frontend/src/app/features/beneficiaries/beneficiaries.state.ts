@@ -17,9 +17,8 @@ import {
   WORLD_COUNTRY,
   formatBrazilianPostalCode,
   isBrazilCountry,
-  type PaginationMeta,
   type BeneficiarySummary,
-  type CharityProgramSummary,
+  type PaginatedResponse,
   type SupportedCountry,
 } from '@solidarity-network/shared';
 import { distinctUntilChanged, startWith } from 'rxjs';
@@ -103,15 +102,24 @@ export class BeneficiariesState {
   private readonly route = inject(ActivatedRoute);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
-
-  readonly items = signal<BeneficiarySummary[]>([]);
-  readonly programs = signal<CharityProgramSummary[]>([]);
-  readonly pagination = signal<PaginationMeta>(DEFAULT_PAGINATION_META);
+  readonly listState = computed(() =>
+    this.beneficiariesService.listState(this.filters()),
+  );
+  readonly items = computed(() => this.listState().data?.items ?? []);
+  readonly programsState = computed(() =>
+    this.charityProgramsService.listState({ pageSize: PROGRAM_OPTIONS_PAGE_SIZE }),
+  );
+  readonly programs = computed(() => this.programsState().data?.items ?? []);
+  readonly pagination = computed(
+    () => this.listState().data?.meta ?? DEFAULT_PAGINATION_META,
+  );
   readonly generatedCredential = signal<GeneratedCredentialInfo | null>(null);
   readonly selectedCountry = signal<SupportedCountry>(BRAZIL_COUNTRY);
   readonly addressLookupPending = signal(false);
   readonly addressLookupMessageKey = signal<string | null>(null);
-  readonly listLoading = signal(false);
+  readonly listLoading = computed(
+    () => this.listState().loading && !this.listState().data,
+  );
   readonly submitPending = signal(false);
   readonly isBrazilSelected = computed(() => isBrazilCountry(this.selectedCountry()));
   readonly documentLabelKey = 'forms.document';
@@ -249,9 +257,7 @@ export class BeneficiariesState {
 
   initialize() {
     this.watchCountrySelection();
-    this.charityProgramsService
-      .list({ pageSize: PROGRAM_OPTIONS_PAGE_SIZE })
-      .subscribe((response) => this.programs.set(response.items));
+    this.charityProgramsService.ensureList({ pageSize: PROGRAM_OPTIONS_PAGE_SIZE });
     this.route.queryParamMap.subscribe((params) => {
       const nextFilters = {
         search: params.get('search') ?? '',
@@ -266,18 +272,23 @@ export class BeneficiariesState {
     });
   }
 
-  load() {
-    this.listLoading.set(true);
-    this.beneficiariesService.list(this.filters()).subscribe({
-      next: (response) => {
-        this.listLoading.set(false);
-        this.items.set(response.items);
-        this.pagination.set(response.meta);
-      },
-      error: () => {
-        this.listLoading.set(false);
-      },
-    });
+  load(force = false) {
+    const query = this.filters();
+
+    if (force) {
+      this.beneficiariesService.invalidateList(query);
+    }
+
+    this.beneficiariesService.ensureList(query);
+  }
+
+  refresh() {
+    this.beneficiariesService.refreshList(this.filters());
+    this.charityProgramsService.refreshList({ pageSize: PROGRAM_OPTIONS_PAGE_SIZE });
+  }
+
+  refreshState() {
+    return this.listState();
   }
 
   applyFilters() {
@@ -343,7 +354,7 @@ export class BeneficiariesState {
           this.submitPending.set(false);
           this.toastService.show({ type: 'success', text: 'Saved successfully.' });
           this.editor.startCreate();
-          this.load();
+          this.load(true);
         },
         error: (error) => {
           this.submitPending.set(false);
@@ -364,7 +375,7 @@ export class BeneficiariesState {
           passkey: response.generatedPasskey,
         });
         this.editor.startCreate();
-        this.load();
+        this.load(true);
       },
       error: (error) => {
         this.submitPending.set(false);

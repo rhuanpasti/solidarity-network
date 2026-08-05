@@ -25,24 +25,32 @@ describe('BenefitDeliveriesPage', () => {
         { provide: FormBuilder, useValue: new FormBuilder() },
         {
           provide: BeneficiariesService,
-          useValue: { list: listBeneficiaries },
+          useValue: {
+            list: listBeneficiaries,
+            listCached: listBeneficiaries,
+          },
         },
         {
           provide: BenefitDeliveriesService,
           useValue: {
             list: () => of({ items: [], meta: {} }),
+            ensureList: () => undefined,
           },
         },
         {
           provide: BenefitsService,
           useValue: {
             list: () => of({ items: [], meta: {} }),
+            ensureList: () => undefined,
+            listState: () => ({ data: { items: [] }, loading: false, refreshing: false, nextRefreshAt: null }),
           },
         },
         {
           provide: CharityProgramsService,
           useValue: {
             list: () => of({ items: [], meta: {} }),
+            ensureList: () => undefined,
+            listState: () => ({ data: { items: [] }, loading: false, refreshing: false, nextRefreshAt: null }),
           },
         },
         { provide: Router, useValue: {} },

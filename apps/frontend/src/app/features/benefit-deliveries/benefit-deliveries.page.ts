@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { DialogRef } from '@angular/cdk/dialog';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import type { TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -82,14 +82,39 @@ export class BenefitDeliveriesPage implements OnInit {
   private readonly modalService = inject(ModalService);
   private editorDialogRef: DialogRef<unknown> | null = null;
 
-  readonly deliveries = signal<BenefitDeliverySummary[]>([]);
+  readonly listState = computed(() =>
+    this.benefitDeliveriesService.listState(this.filters()),
+  );
+  readonly deliveries = computed(() => this.listState().data?.items ?? []);
   readonly selectedDelivery = signal<BenefitDeliverySummary | null>(null);
-  readonly pagination = signal<PaginationMeta>(DEFAULT_PAGINATION_META);
-  readonly programs = signal<CharityProgramSummary[]>([]);
+  readonly pagination = computed(
+    () => this.listState().data?.meta ?? DEFAULT_PAGINATION_META,
+  );
+  readonly programsState = computed(() =>
+    this.charityProgramsService.listState({
+      pageSize: OPTION_PAGE_SIZE,
+      status: CharityProgramStatus.Active,
+    }),
+  );
+  readonly programs = computed(() => this.programsState().data?.items ?? []);
   readonly filterBeneficiaries = signal<BeneficiarySummary[]>([]);
   readonly formBeneficiaries = signal<BeneficiarySummary[]>([]);
-  readonly benefits = signal<BenefitSummary[]>([]);
-  readonly listLoading = signal(false);
+  readonly benefitsState = computed(() =>
+    this.benefitsService.listState({ pageSize: OPTION_PAGE_SIZE }),
+  );
+  readonly benefits = computed(() => this.benefitsState().data?.items ?? []);
+  readonly listLoading = computed(
+    () => this.listState().loading && !this.listState().data,
+  );
+  readonly refreshing = computed(() => this.listState().refreshing);
+  readonly refreshCooldownSeconds = computed(() =>
+    this.listState().nextRefreshAt === null
+      ? 0
+      : Math.max(1, Math.ceil((this.listState().nextRefreshAt! - Date.now()) / 1000)),
+  );
+  readonly refreshDisabled = computed(
+    () => this.refreshing() || this.refreshCooldownSeconds() > 0,
+  );
   readonly submitPending = signal(false);
   
   readonly filters = signal({
@@ -117,10 +142,14 @@ export class BenefitDeliveriesPage implements OnInit {
     reference: ['', [Validators.required, Validators.maxLength(80)]],
   });
   
-  readonly programOptions = signal<SelectOption[]>([]);
+  readonly programOptions = computed<SelectOption[]>(() =>
+    this.programs().map((program) => ({ value: program.id, label: program.name })),
+  );
   readonly filterBeneficiaryOptions = signal<SelectOption[]>([]);
   readonly formBeneficiaryOptions = signal<SelectOption[]>([]);
-  readonly benefitOptions = signal<SelectOption[]>([]);
+  readonly benefitOptions = computed<SelectOption[]>(() =>
+    this.benefits().map((benefit) => ({ value: benefit.id, label: benefit.name })),
+  );
   readonly selectedDeliveryDetails = signal<DetailGridItem[]>([]);
   private readonly beneficiaryOptionsRequests = new Map<
     string,
@@ -128,20 +157,11 @@ export class BenefitDeliveriesPage implements OnInit {
   >();
 
   ngOnInit() {
-    this.charityProgramsService
-      .list({ pageSize: OPTION_PAGE_SIZE, status: CharityProgramStatus.Active })
-      .subscribe((response) => {
-        this.programs.set(response.items);
-        this.programOptions.set(
-          response.items.map((program) => ({ value: program.id, label: program.name })),
-        );
-      });
-    this.benefitsService.list({ pageSize: OPTION_PAGE_SIZE }).subscribe((response) => {
-      this.benefits.set(response.items);
-      this.benefitOptions.set(
-        response.items.map((benefit) => ({ value: benefit.id, label: benefit.name })),
-      );
+    this.charityProgramsService.ensureList({
+      pageSize: OPTION_PAGE_SIZE,
+      status: CharityProgramStatus.Active,
     });
+    this.benefitsService.ensureList({ pageSize: OPTION_PAGE_SIZE });
 
     this.filterForm.controls.charityProgramId.valueChanges
       .pipe(startWith(this.filterForm.controls.charityProgramId.value), distinctUntilChanged())
@@ -173,18 +193,23 @@ export class BenefitDeliveriesPage implements OnInit {
     });
   }
 
-  load() {
-    this.listLoading.set(true);
-    this.benefitDeliveriesService.list(this.filters()).subscribe({
-      next: (response) => {
-        this.listLoading.set(false);
-        this.deliveries.set(response.items);
-        this.pagination.set(response.meta);
-      },
-      error: () => {
-        this.listLoading.set(false);
-      },
+  load(force = false) {
+    const query = this.filters();
+
+    if (force) {
+      this.benefitDeliveriesService.invalidateList(query);
+    }
+
+    this.benefitDeliveriesService.ensureList(query);
+  }
+
+  refresh() {
+    this.benefitDeliveriesService.refreshList(this.filters());
+    this.charityProgramsService.refreshList({
+      pageSize: OPTION_PAGE_SIZE,
+      status: CharityProgramStatus.Active,
     });
+    this.benefitsService.refreshList({ pageSize: OPTION_PAGE_SIZE });
   }
 
   applyFilters() {
@@ -299,7 +324,7 @@ export class BenefitDeliveriesPage implements OnInit {
           });
           this.startCreate();
           this.closeEditorDialog();
-          this.load();
+          this.load(true);
         },
         error: (error) => {
           this.submitPending.set(false);
@@ -317,7 +342,7 @@ export class BenefitDeliveriesPage implements OnInit {
 
     if (!request$) {
       request$ = this.beneficiariesService
-        .list({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
+        .listCached({ charityProgramId: charityProgramId || undefined, pageSize: OPTION_PAGE_SIZE })
         .pipe(
           map((response) => response.items),
           finalize(() => this.beneficiaryOptionsRequests.delete(requestKey)),

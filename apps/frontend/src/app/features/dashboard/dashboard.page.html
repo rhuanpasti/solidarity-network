@@ -3,6 +3,11 @@
     eyebrow="features.dashboard.eyebrow"
     title="features.dashboard.title"
     description="features.dashboard.description"
+    [showRefresh]="true"
+    [refreshing]="refreshing()"
+    [refreshDisabled]="refreshDisabled()"
+    [refreshCooldownSeconds]="refreshCooldownSeconds()"
+    (refresh)="refresh()"
   />
 
   <section class="stats-grid">

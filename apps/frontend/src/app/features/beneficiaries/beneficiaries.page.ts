@@ -51,9 +51,23 @@ export class BeneficiariesPage implements OnInit {
       translationKey: this.beneficiariesState.countryLabelKey(country),
     })),
   );
+  readonly refreshing = computed(() => this.beneficiariesState.refreshState().refreshing);
+  readonly refreshCooldownSeconds = computed(() => {
+    const nextRefreshAt = this.beneficiariesState.refreshState().nextRefreshAt;
+    return nextRefreshAt === null
+      ? 0
+      : Math.max(1, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+  });
+  readonly refreshDisabled = computed(
+    () => this.refreshing() || this.refreshCooldownSeconds() > 0,
+  );
 
   ngOnInit() {
     this.beneficiariesState.initialize();
+  }
+
+  refresh() {
+    this.beneficiariesState.refresh();
   }
 
   openCreate(template: TemplateRef<unknown>) {

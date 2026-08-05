@@ -1,15 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import type { BenefitDeliverySummary } from '@solidarity-network/shared';
-import { forkJoin } from 'rxjs';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { AdministratorsService } from '../../core/services/administrators.service';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
 import { BenefitsService } from '../../core/services/benefits.service';
 import { CharityProgramsService } from '../../core/services/charity-programs.service';
+
+const DEFAULT_LIST_QUERY = { page: 1, pageSize: 10 };
+const BENEFITS_LIST_QUERY = { page: 1, pageSize: 100 };
 
 @Component({
   selector: 'app-dashboard-page',
@@ -26,47 +27,83 @@ export class DashboardPage implements OnInit {
   private readonly benefitsService = inject(BenefitsService);
   private readonly benefitDeliveriesService = inject(BenefitDeliveriesService);
 
-  readonly stats = signal([
-    { key: 'programs', label: 'features.dashboard.stats.programs', value: 0 },
-    { key: 'administrators', label: 'features.dashboard.stats.administrators', value: 0 },
-    { key: 'beneficiaries', label: 'features.dashboard.stats.beneficiaries', value: 0 },
-    { key: 'benefits', label: 'features.dashboard.stats.benefits', value: 0 },
+  private readonly programsState = computed(() => this.charityProgramsService.listState(DEFAULT_LIST_QUERY));
+  private readonly administratorsState = computed(() => this.administratorsService.listState(DEFAULT_LIST_QUERY));
+  private readonly beneficiariesState = computed(() => this.beneficiariesService.listState(DEFAULT_LIST_QUERY));
+  private readonly benefitsState = computed(() => this.benefitsService.listState(BENEFITS_LIST_QUERY));
+  private readonly deliveriesState = computed(() => this.benefitDeliveriesService.listState(DEFAULT_LIST_QUERY));
+
+  readonly stats = computed(() => [
+    {
+      key: 'programs',
+      label: 'features.dashboard.stats.programs',
+      value: this.programsState().data?.meta.totalItems ?? 0,
+    },
+    {
+      key: 'administrators',
+      label: 'features.dashboard.stats.administrators',
+      value: this.administratorsState().data?.meta.totalItems ?? 0,
+    },
+    {
+      key: 'beneficiaries',
+      label: 'features.dashboard.stats.beneficiaries',
+      value: this.beneficiariesState().data?.meta.totalItems ?? 0,
+    },
+    {
+      key: 'benefits',
+      label: 'features.dashboard.stats.benefits',
+      value: this.benefitsState().data?.meta.totalItems ?? 0,
+    },
   ]);
-  readonly recentDeliveries = signal<BenefitDeliverySummary[]>([]);
+  readonly recentDeliveries = computed(
+    () => this.deliveriesState().data?.items.slice(0, 5) ?? [],
+  );
+  readonly refreshing = computed(() =>
+    [
+      this.programsState(),
+      this.administratorsState(),
+      this.beneficiariesState(),
+      this.benefitsState(),
+      this.deliveriesState(),
+    ].some((state) => state.refreshing),
+  );
+  readonly refreshCooldownSeconds = computed(() => {
+    const nextRefreshAt = [
+      this.programsState(),
+      this.administratorsState(),
+      this.beneficiariesState(),
+      this.benefitsState(),
+      this.deliveriesState(),
+    ]
+      .map((state) => state.nextRefreshAt)
+      .filter((value): value is number => value !== null)
+      .sort((left, right) => left - right)[0];
+
+    return nextRefreshAt === undefined
+      ? 0
+      : Math.max(1, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+  });
+  readonly refreshDisabled = computed(
+    () => this.refreshing() || this.refreshCooldownSeconds() > 0,
+  );
 
   ngOnInit() {
-    forkJoin({
-      programs: this.charityProgramsService.list(),
-      administrators: this.administratorsService.list(),
-      beneficiaries: this.beneficiariesService.list(),
-      benefits: this.benefitsService.list(),
-      deliveries: this.benefitDeliveriesService.list(),
-    }).subscribe(
-      ({ programs, administrators, beneficiaries, benefits, deliveries }) => {
-        this.stats.set([
-          {
-            key: 'programs',
-            label: 'features.dashboard.stats.programs',
-            value: programs.meta.totalItems,
-          },
-          {
-            key: 'administrators',
-            label: 'features.dashboard.stats.administrators',
-            value: administrators.meta.totalItems,
-          },
-          {
-            key: 'beneficiaries',
-            label: 'features.dashboard.stats.beneficiaries',
-            value: beneficiaries.meta.totalItems,
-          },
-          {
-            key: 'benefits',
-            label: 'features.dashboard.stats.benefits',
-            value: benefits.meta.totalItems,
-          },
-        ]);
-        this.recentDeliveries.set(deliveries.items.slice(0, 5));
-      },
-    );
+    this.ensureLoaded();
+  }
+
+  refresh() {
+    this.charityProgramsService.refreshList(DEFAULT_LIST_QUERY);
+    this.administratorsService.refreshList(DEFAULT_LIST_QUERY);
+    this.beneficiariesService.refreshList(DEFAULT_LIST_QUERY);
+    this.benefitsService.refreshList(BENEFITS_LIST_QUERY);
+    this.benefitDeliveriesService.refreshList(DEFAULT_LIST_QUERY);
+  }
+
+  private ensureLoaded() {
+    this.charityProgramsService.ensureList(DEFAULT_LIST_QUERY);
+    this.administratorsService.ensureList(DEFAULT_LIST_QUERY);
+    this.beneficiariesService.ensureList(DEFAULT_LIST_QUERY);
+    this.benefitsService.ensureList(BENEFITS_LIST_QUERY);
+    this.benefitDeliveriesService.ensureList(DEFAULT_LIST_QUERY);
   }
 }

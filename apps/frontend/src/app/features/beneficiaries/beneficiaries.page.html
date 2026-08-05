@@ -3,6 +3,11 @@
     eyebrow="features.beneficiaries.eyebrow"
     title="features.beneficiaries.title"
     description="features.beneficiaries.description"
+    [showRefresh]="true"
+    [refreshing]="refreshing()"
+    [refreshDisabled]="refreshDisabled()"
+    [refreshCooldownSeconds]="refreshCooldownSeconds()"
+    (refresh)="refresh()"
   />
 
   <ng-template #editorDialog>

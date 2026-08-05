@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DialogRef } from '@angular/cdk/dialog';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { TemplateRef } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { BenefitCategory, type BenefitSummary } from '@solidarity-network/shared';
+import { BenefitCategory, type ListQuery, type BenefitSummary } from '@solidarity-network/shared';
 import { BenefitsService } from '../../core/services/benefits.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -16,6 +16,7 @@ import { ModalService } from '../../shared/components/modal/modal.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { CrudFormController } from '../../shared/utils/crud-form.controller';
+import { DEFAULT_PAGE_SIZE } from '../../shared/utils/pagination.utils';
 import {
   applyServerValidationErrors,
   prepareFormForSubmit,
@@ -48,7 +49,18 @@ export class BenefitsPage implements OnInit {
   private readonly modalService = inject(ModalService);
   private editorDialogRef: DialogRef<unknown> | null = null;
 
-  readonly items = signal<BenefitSummary[]>([]);
+  readonly requestQuery = signal<ListQuery>({ page: 1, pageSize: 100 });
+  readonly listState = computed(() => this.benefitsService.listState(this.requestQuery()));
+  readonly items = computed(() => this.listState().data?.items ?? []);
+  readonly refreshing = computed(() => this.listState().refreshing);
+  readonly refreshCooldownSeconds = computed(() =>
+    this.listState().nextRefreshAt === null
+      ? 0
+      : Math.max(1, Math.ceil((this.listState().nextRefreshAt! - Date.now()) / 1000)),
+  );
+  readonly refreshDisabled = computed(
+    () => this.refreshing() || this.refreshCooldownSeconds() > 0,
+  );
   readonly isSubmitting = signal(false);
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -93,10 +105,19 @@ export class BenefitsPage implements OnInit {
     this.load();
   }
 
-  load() {
-    this.benefitsService
-      .list({ pageSize: 100 })
-      .subscribe((response) => this.items.set(response.items));
+  load(force = false) {
+    const query = { page: 1, pageSize: DEFAULT_PAGE_SIZE * 10 };
+    this.requestQuery.set(query);
+
+    if (force) {
+      this.benefitsService.invalidateList(query);
+    }
+
+    this.benefitsService.ensureList(query);
+  }
+
+  refresh() {
+    this.benefitsService.refreshList(this.requestQuery());
   }
 
   openCreate(template: TemplateRef<unknown>) {
@@ -155,7 +176,7 @@ export class BenefitsPage implements OnInit {
         this.toastService.show({ type: 'success', text: 'Saved successfully.' });
         this.editor.startCreate();
         this.closeEditorDialog();
-        this.load();
+        this.load(true);
       },
       error: (error) => {
         this.isSubmitting.set(false);
@@ -165,6 +186,8 @@ export class BenefitsPage implements OnInit {
   }
 
   toggleStatus(item: BenefitSummary) {
-    this.benefitsService.updateStatus(item.id, !item.active).subscribe(() => this.load());
+    this.benefitsService
+      .updateStatus(item.id, !item.active)
+      .subscribe(() => this.load(true));
   }
 }
