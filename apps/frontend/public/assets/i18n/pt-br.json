@@ -271,6 +271,7 @@
     "signIn": "Entrar",
     "updatePassword": "Atualizar senha",
     "logout": "Sair",
+    "sessionExpired": "Sua sessao expirou. Entre novamente para continuar.",
     "invalidCredentials": "Login ou senha invalidos.",
     "tooManyLoginAttempts": "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
     "invalidCurrentPassword": "A senha atual esta invalida.",

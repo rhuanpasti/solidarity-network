@@ -13,17 +13,10 @@ const resolveAuthenticatedUrl = (
   return authService.resolvePostLoginUrl(safeReturnUrl);
 };
 
-export const authGuard: CanActivateFn = async (route, state) => {
+export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-
-  if (!authService.isAuthenticated()) {
-    return router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url },
-    });
-  }
-
-  const session = await authService.validateSession();
+  const session = authService.session();
 
   if (!session) {
     return router.createUrlTree(['/login'], {
@@ -71,7 +64,7 @@ export const authGuard: CanActivateFn = async (route, state) => {
   return true;
 };
 
-export const loginGuard: CanActivateFn = async (route) => {
+export const loginGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const resetToken = route.queryParamMap.get('token');
@@ -82,13 +75,7 @@ export const loginGuard: CanActivateFn = async (route) => {
     });
   }
 
-  if (!authService.isAuthenticated()) {
-    return true;
-  }
-
-  const session = await authService.validateSession();
-
-  if (!session) {
+  if (!authService.session()) {
     return true;
   }
 

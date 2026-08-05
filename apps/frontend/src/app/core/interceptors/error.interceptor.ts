@@ -39,8 +39,13 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         payload?.code === 'AUTH_ACCOUNT_UNAVAILABLE' ||
         payload?.code === 'CSRF_TOKEN_INVALID'
       ) {
-        void authService.logout({ remote: false });
-        void router.navigate(['/login']);
+        if (authService.expireSession()) {
+          toastService.show({
+            type: 'error',
+            translationKey: 'auth.sessionExpired',
+          });
+          void router.navigate(['/login']);
+        }
         return throwError(() => error);
       }
 

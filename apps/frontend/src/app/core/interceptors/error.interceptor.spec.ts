@@ -1,0 +1,83 @@
+import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
+import { Injector, runInInjectionContext } from '@angular/core';
+import { Router } from '@angular/router';
+import { afterEach, describe, it, mock } from 'node:test';
+import assert from 'node:assert/strict';
+import { throwError } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { ToastService } from '../services/toast.service';
+import { errorInterceptor } from './error.interceptor';
+
+describe('errorInterceptor', () => {
+  afterEach(() => {
+    mock.reset();
+  });
+
+  it('expires the session, warns the user, and redirects once for an invalid token', () => {
+    const expireSession = mock.fn(() => true);
+    const show = mock.fn();
+    const navigate = mock.fn(() => Promise.resolve(true));
+    const injector = Injector.create({
+      providers: [
+        { provide: AuthService, useValue: { expireSession } },
+        { provide: Router, useValue: { navigate } },
+        { provide: ToastService, useValue: { show } },
+      ],
+    });
+    const request = new HttpRequest('GET', '/api/protected');
+    const error = new HttpErrorResponse({
+      status: 401,
+      error: { code: 'INVALID_TOKEN' },
+    });
+
+    const response$ = runInInjectionContext(injector, () =>
+      errorInterceptor(request, () => throwError(() => error)),
+    );
+
+    response$.subscribe({ error: () => undefined });
+
+    assert.equal(expireSession.mock.callCount(), 1);
+    assert.deepEqual(show.mock.calls[0]?.arguments[0], {
+      type: 'error',
+      translationKey: 'auth.sessionExpired',
+    });
+    assert.deepEqual(navigate.mock.calls[0]?.arguments, [['/login']]);
+  });
+
+  it('does not repeat the warning or redirect after expiration was handled', () => {
+    let expirationHandled = false;
+    const expireSession = mock.fn(() => {
+      if (expirationHandled) {
+        return false;
+      }
+
+      expirationHandled = true;
+      return true;
+    });
+    const show = mock.fn();
+    const navigate = mock.fn(() => Promise.resolve(true));
+    const injector = Injector.create({
+      providers: [
+        { provide: AuthService, useValue: { expireSession } },
+        { provide: Router, useValue: { navigate } },
+        { provide: ToastService, useValue: { show } },
+      ],
+    });
+    const request = new HttpRequest('GET', '/api/protected');
+    const error = new HttpErrorResponse({
+      status: 401,
+      error: { code: 'AUTH_REQUIRED' },
+    });
+
+    const response$ = runInInjectionContext(injector, () =>
+      errorInterceptor(request, () => throwError(() => error)),
+    );
+
+    response$.subscribe({ error: () => undefined });
+    response$.subscribe({ error: () => undefined });
+
+    assert.equal(expireSession.mock.callCount(), 2);
+    assert.equal(show.mock.callCount(), 1);
+    assert.equal(navigate.mock.callCount(), 1);
+  });
+});

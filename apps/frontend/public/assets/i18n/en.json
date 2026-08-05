@@ -271,6 +271,7 @@
     "signIn": "Sign in",
     "updatePassword": "Update password",
     "logout": "Logout",
+    "sessionExpired": "Your session expired. Please sign in again.",
     "invalidCredentials": "Invalid login or password.",
     "tooManyLoginAttempts": "Too many login attempts. Please wait a few minutes and try again.",
     "invalidCurrentPassword": "Current password is invalid.",
