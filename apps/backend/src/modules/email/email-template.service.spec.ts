@@ -14,10 +14,14 @@ describe('EmailTemplateService', () => {
       expiresIn: '1 hour',
     });
 
-    assert.equal(result.subject, 'Reset your Solidarity Network password');
-    assert.match(result.html, /Reset your password/);
+    assert.equal(result.subject, 'Redefina sua senha na Rede Solidaria');
+    assert.match(result.html, /Rede Solidaria/);
+    assert.match(result.html, /role="presentation"/);
+    assert.match(result.html, /background:#f3f4f6/);
+    assert.match(result.html, /background:#16a34a/);
+    assert.match(result.html, /Redefina sua senha/);
     assert.match(result.html, /https:\/\/app\.example\.org\/reset\?token=secret-token/);
-    assert.match(result.text, /This link expires in 1 hour/);
+    assert.match(result.text, /Este link expira em 1 hour/);
   });
 
   it('requires dynamic variables for the selected template', () => {
@@ -34,4 +38,3 @@ describe('EmailTemplateService', () => {
     );
   });
 });
-

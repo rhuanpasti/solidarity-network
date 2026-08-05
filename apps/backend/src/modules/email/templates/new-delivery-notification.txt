@@ -1,0 +1,14 @@
+REDE SOLIDARIA - ATUALIZACAO DO PROGRAMA
+
+Uma nova entrega foi registrada
+
+Ola {{userName}},
+
+Uma nova entrega foi registrada para voce por {{organizationName}}.
+
+Entrega: {{deliveryTitle}}
+Tipo: {{deliveryType}}
+Data: {{deliveryDate}}
+Programa: {{programName}}
+
+Revise o portal ou entre em contato com a equipe do programa se precisar de ajuda.

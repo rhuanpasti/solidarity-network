@@ -25,9 +25,8 @@ describe('EmailService', () => {
     assert.equal(sender.send.mock.callCount(), 1);
     const payload = sender.send.mock.calls[0]?.arguments[0];
     assert.equal(payload.to.email, 'maria@example.org');
-    assert.equal(payload.subject, 'Your temporary Solidarity Network password');
+    assert.equal(payload.subject, 'Seu acesso a Rede Solidaria esta pronto');
     assert.match(payload.html, /1234567890123456/);
-    assert.match(payload.text, /change this password after login/);
+    assert.match(payload.text, /altere esta senha depois do login/);
   });
 });
-
