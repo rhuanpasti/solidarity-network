@@ -123,16 +123,6 @@ describe('SendPulseEmailSender', () => {
         assert.deepEqual(error.getResponse(), {
           code: 'EMAIL_SEND_FAILED',
           message: 'Email could not be sent.',
-          details: {
-            provider: 'sendpulse',
-            stage: 'send',
-            recipientFingerprint: logger.error.mock.calls[0]?.arguments[1].recipientFingerprint,
-            providerResponse: {
-              is_error: 1,
-              message: 'provider failed',
-              error_code: 500,
-            },
-          },
         });
         return true;
       },
@@ -143,6 +133,11 @@ describe('SendPulseEmailSender', () => {
       logger.error.mock.calls[0]?.arguments[1].recipientFingerprint.length,
       16,
     );
+    assert.deepEqual(logger.error.mock.calls[0]?.arguments[1].providerResponse, {
+      is_error: 1,
+      message: 'provider failed',
+      error_code: 500,
+    });
   });
 
   it('skips sending in test environments', async () => {

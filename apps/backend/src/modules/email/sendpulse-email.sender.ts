@@ -192,7 +192,6 @@ export class SendPulseEmailSender implements EmailSender {
     return new ServiceUnavailableException({
       code: 'EMAIL_SEND_FAILED',
       message: 'Email could not be sent.',
-      details: providerErrorDetails,
     }, {
       cause: new Error(message, {
         cause: providerErrorDetails,

@@ -5,12 +5,12 @@
   "scripts": {
     "prestart:dev": "npm --prefix ../../packages/shared run build",
     "prebuild": "npm --prefix ../../packages/shared run build",
-    "prestart": "npm --prefix ../../packages/shared run build",
+    "prestart": "npm run build",
     "start:dev": "nest start --watch",
     "build": "nest build",
     "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts",
-    "start": "node dist/apps/backend/src/main.js",
-    "start:prod": "prisma migrate deploy && node dist/apps/backend/src/main.js",
+    "start": "node dist/src/main.js",
+    "start:prod": "prisma migrate deploy && node dist/src/main.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:seed": "tsx prisma/seed.ts"
