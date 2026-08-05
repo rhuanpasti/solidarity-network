@@ -65,4 +65,40 @@ describe('authGuard', () => {
       { queryParams: { returnUrl: '/dashboard' } },
     ]);
   });
+
+  it('keeps case workers away from sensitive administrator routes', () => {
+    const homeTree = { path: '/dashboard' };
+    const createUrlTree = mock.fn(() => homeTree);
+    const injector = Injector.create({
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            session: signal({
+              accountType: 'administrator',
+              role: 'case_worker',
+              mustChangePassword: false,
+            }),
+            requiresPasswordChange: () => false,
+            resolveHomeUrl: () => '/dashboard',
+          },
+        },
+        { provide: Router, useValue: { createUrlTree } },
+      ],
+    });
+
+    const result = runInInjectionContext(injector, () =>
+      authGuard(
+        {
+          data: {
+            accountTypes: ['administrator'],
+            administratorRoles: ['super_admin', 'program_manager'],
+          },
+        } as never,
+        { url: '/beneficiaries' } as never,
+      ),
+    );
+
+    assert.equal(result, homeTree);
+  });
 });

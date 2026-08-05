@@ -30,6 +30,13 @@ const programManager: AuthenticatedUser = {
   programIds: ['program-a', 'program-a', 'program-b'],
 };
 
+const caseWorker: AuthenticatedUser = {
+  ...programManager,
+  sub: 'admin-3',
+  username: 'worker',
+  role: 'case_worker',
+};
+
 const beneficiary: AuthenticatedUser = {
   ...superAdmin,
   sub: 'beneficiary-1',
@@ -54,6 +61,27 @@ describe('AuthorizationService', () => {
     });
     assert.equal(service.canCreateCharityProgram(programManager), false);
     assert.equal(service.canCreateCharityProgram(superAdmin), true);
+  });
+
+  it('limits sensitive route policies to admins and subadmins', () => {
+    const sensitivePolicies = [
+      AuthorizationRoutePolicy.ViewAdministrators,
+      AuthorizationRoutePolicy.AccessPrograms,
+      AuthorizationRoutePolicy.ManageBenefits,
+      AuthorizationRoutePolicy.ManageBeneficiaries,
+      AuthorizationRoutePolicy.ManageDeliveries,
+    ];
+
+    for (const policy of sensitivePolicies) {
+      assert.equal(service.canAccessRoutePolicy(superAdmin, policy), true);
+      assert.equal(service.canAccessRoutePolicy(programManager, policy), true);
+      assert.equal(service.canAccessRoutePolicy(caseWorker, policy), false);
+      assert.equal(service.canAccessRoutePolicy(beneficiary, policy), false);
+    }
+
+    assert.equal(service.canManageBenefit(superAdmin), true);
+    assert.equal(service.canManageBenefit(programManager), true);
+    assert.equal(service.canManageBenefit(caseWorker), false);
   });
 
   it('allows managers to edit beneficiaries only inside their program scope', () => {

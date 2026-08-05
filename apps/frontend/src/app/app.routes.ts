@@ -39,6 +39,10 @@ export const appRoutes: Routes = [
         path: 'dashboard',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [
+            AdministratorRole.SuperAdmin,
+            AdministratorRole.ProgramManager,
+          ],
         },
         loadComponent: () =>
           import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
@@ -57,6 +61,10 @@ export const appRoutes: Routes = [
         path: 'charity-programs',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [
+            AdministratorRole.SuperAdmin,
+            AdministratorRole.ProgramManager,
+          ],
         },
         loadComponent: () =>
           import('./features/charity-programs/charity-programs.page').then(
@@ -78,6 +86,10 @@ export const appRoutes: Routes = [
         path: 'beneficiaries',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [
+            AdministratorRole.SuperAdmin,
+            AdministratorRole.ProgramManager,
+          ],
         },
         loadComponent: () =>
           import('./features/beneficiaries/beneficiaries.page').then(
@@ -88,6 +100,10 @@ export const appRoutes: Routes = [
         path: 'benefits',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [
+            AdministratorRole.SuperAdmin,
+            AdministratorRole.ProgramManager,
+          ],
         },
         loadComponent: () =>
           import('./features/benefits/benefits.page').then((m) => m.BenefitsPage),
@@ -96,6 +112,10 @@ export const appRoutes: Routes = [
         path: 'benefit-deliveries',
         data: {
           accountTypes: ['administrator'],
+          administratorRoles: [
+            AdministratorRole.SuperAdmin,
+            AdministratorRole.ProgramManager,
+          ],
         },
         loadComponent: () =>
           import('./features/benefit-deliveries/benefit-deliveries.page').then(

@@ -38,7 +38,7 @@ export class AuthorizationService {
   canAccessRoutePolicy(user: AuthenticatedUser, policy: RoutePolicy) {
     switch (policy) {
       case AuthorizationRoutePolicy.ViewAdministrators:
-        return user.accountType === 'administrator';
+        return this.canAccessSensitiveData(user);
       case AuthorizationRoutePolicy.ManageAdministrators:
         return this.canManageAdministrator(user);
       case AuthorizationRoutePolicy.CreateCharityProgram:
@@ -47,7 +47,7 @@ export class AuthorizationService {
       case AuthorizationRoutePolicy.ManageBenefits:
       case AuthorizationRoutePolicy.ManageBeneficiaries:
       case AuthorizationRoutePolicy.ManageDeliveries:
-        return user.accountType === 'administrator';
+        return this.canAccessSensitiveData(user);
       case AuthorizationRoutePolicy.AccessBeneficiaryPortal:
         return user.accountType === 'beneficiary';
       default:
@@ -118,7 +118,7 @@ export class AuthorizationService {
   }
 
   canManageBenefit(user: AuthenticatedUser) {
-    return user.accountType === 'administrator';
+    return this.canAccessSensitiveData(user);
   }
 
   assertRoutePolicy(
@@ -260,6 +260,13 @@ export class AuthorizationService {
 
   private isSuperAdmin(user: AuthenticatedUser) {
     return user.accountType === 'administrator' && user.role === 'super_admin';
+  }
+
+  private canAccessSensitiveData(user: AuthenticatedUser) {
+    return (
+      user.accountType === 'administrator' &&
+      (user.role === 'super_admin' || user.role === 'program_manager')
+    );
   }
 
   private logFailure(

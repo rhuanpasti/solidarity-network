@@ -97,6 +97,11 @@ addresses and CPF values, so raw search terms must not be copied into applicatio
 messages. Use the request correlation ID and endpoint path to investigate list requests without exposing the personal
 data entered into the filter.
 
+Sensitive administrator routes for administrators, charity programs, beneficiaries, benefits, and benefit deliveries
+accept only `super_admin` (admin) and `program_manager` (subadmin) roles. A `case_worker` request is rejected by the
+authorization guard with `403 ROUTE_POLICY_FORBIDDEN` and emits `authorization.denied` with the route policy, account
+context, and request correlation ID; it must not include the requested records in logs.
+
 Example request:
 
 ```bash
@@ -178,7 +183,7 @@ Successful request:
   "userAgent": "Mozilla/5.0",
   "accountId": "clw9admin0001",
   "accountType": "administrator",
-  "role": "case_worker",
+  "role": "program_manager",
   "event": "request.completed",
   "statusCode": 200,
   "durationMs": 42,
@@ -196,16 +201,14 @@ Authorization denial:
   "service": "solidarity-network-backend",
   "requestId": "req_01HXDENIED",
   "traceId": "req_01HXDENIED",
-  "method": "PATCH",
-  "path": "/api/v1/benefits/clw9benefit0001",
-  "accountId": "clw9admin0002",
+  "method": "GET",
+  "path": "/api/v1/beneficiaries",
+  "accountId": "clw9admin0003",
   "accountType": "administrator",
-  "role": "viewer",
+  "role": "case_worker",
   "event": "authorization.denied",
-  "action": "benefit.update",
-  "resource": "benefit",
-  "resourceId": "clw9benefit0001",
-  "reason": "missing_permission"
+  "policy": "manage_beneficiaries",
+  "reason": "route_policy_denied"
 }
 ```
 
@@ -223,7 +226,7 @@ Unhandled exception:
   "path": "/api/v1/benefit-deliveries",
   "accountId": "clw9admin0001",
   "accountType": "administrator",
-  "role": "case_worker",
+  "role": "program_manager",
   "event": "request.exception",
   "statusCode": 500,
   "error": {
