@@ -34,6 +34,7 @@ import { toBeneficiarySummary } from './beneficiaries.mapper';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
 import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
+import { rethrowBeneficiaryUniqueError } from './beneficiary-unique-error';
 
 @Injectable()
 export class BeneficiariesService {
@@ -108,7 +109,7 @@ export class BeneficiariesService {
         status: dto.status ?? 'active',
       });
     } catch (error) {
-      this.rethrowUniqueDocumentError(error);
+      rethrowBeneficiaryUniqueError(error);
       throw error;
     }
 
@@ -270,7 +271,7 @@ export class BeneficiariesService {
               },
       }, dto.charityProgramIds);
     } catch (error) {
-      this.rethrowUniqueDocumentError(error);
+      rethrowBeneficiaryUniqueError(error);
       throw error;
     }
     const newSnapshot = this.toAuditSnapshot(beneficiary);
@@ -377,27 +378,6 @@ export class BeneficiariesService {
         },
       ],
     });
-  }
-
-  private rethrowUniqueDocumentError(error: unknown): never | void {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002' &&
-      Array.isArray(error.meta?.target) &&
-      error.meta.target.includes('document')
-    ) {
-      throw new BadRequestException({
-        code: 'BENEFICIARY_DOCUMENT_ALREADY_EXISTS',
-        message: 'A beneficiary with this document already exists.',
-        details: [
-          {
-            field: 'document',
-            code: 'beneficiaryDocumentAlreadyExists',
-            message: 'A beneficiary with this document already exists.',
-          },
-        ],
-      });
-    }
   }
 
   private toAuditSnapshot(beneficiary: {

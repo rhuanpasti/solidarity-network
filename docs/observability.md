@@ -174,6 +174,10 @@ Do not expose stack traces, database errors, tokens, cookies, or raw exception o
 
 Beneficiary dependent validation failures use `INVALID_BENEFICIARY_DEPENDENTS` with user-safe messages such as "Dependent 1 must be under 18 years old." The dependent document field is nullable; blank documents are normalized to `null` before persistence and audit snapshots.
 
+Beneficiary create and update operations translate Prisma duplicate-key errors into field-level `400` responses. Use
+`BENEFICIARY_EMAIL_ALREADY_EXISTS` or `BENEFICIARY_DOCUMENT_ALREADY_EXISTS` with a `details` entry identifying the
+conflicting field; these are expected user-correctable errors, not `500` application failures.
+
 ## Example Logs
 
 Successful request:

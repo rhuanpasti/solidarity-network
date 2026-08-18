@@ -129,7 +129,8 @@
     "addressAutoFilled": "Address filled automatically from the postal code.",
     "postalCodeLookupFailed": "Unable to find an address for this postal code.",
     "server": {
-      "beneficiaryDocumentAlreadyExists": "A beneficiary with this document already exists."
+      "beneficiaryDocumentAlreadyExists": "A beneficiary with this document already exists.",
+      "beneficiaryEmailAlreadyExists": "A beneficiary with this email already exists."
     }
   },
   "errors": {

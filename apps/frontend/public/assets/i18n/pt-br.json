@@ -129,7 +129,8 @@
     "addressAutoFilled": "Endereco preenchido automaticamente pelo CEP.",
     "postalCodeLookupFailed": "Nao foi possivel localizar o endereco pelo CEP.",
     "server": {
-      "beneficiaryDocumentAlreadyExists": "Ja existe um beneficiario cadastrado com este documento."
+      "beneficiaryDocumentAlreadyExists": "Ja existe um beneficiario cadastrado com este documento.",
+      "beneficiaryEmailAlreadyExists": "Ja existe um beneficiario cadastrado com este email."
     }
   },
   "errors": {

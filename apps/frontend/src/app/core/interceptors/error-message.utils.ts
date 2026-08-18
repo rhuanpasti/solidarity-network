@@ -10,7 +10,12 @@ export function getApiErrorToast(
   error: HttpErrorResponse,
   payload?: ApiErrorResponse,
 ): ToastMessage {
-  if (payload?.code === 'VALIDATION_ERROR' || payload?.code === 'INVALID_BENEFICIARY_DATA') {
+  if (
+    payload?.code === 'VALIDATION_ERROR' ||
+    payload?.code === 'INVALID_BENEFICIARY_DATA' ||
+    payload?.code === 'BENEFICIARY_DOCUMENT_ALREADY_EXISTS' ||
+    payload?.code === 'BENEFICIARY_EMAIL_ALREADY_EXISTS'
+  ) {
     return {
       type: 'error',
       translationKey: 'validation.reviewHighlightedFields',
