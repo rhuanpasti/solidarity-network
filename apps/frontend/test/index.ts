@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import '../src/app/app.config.spec';
 import '../src/app/core/auth/auth.guard.spec';
 import '../src/app/core/auth/auth.service.spec';
 import '../src/app/core/auth/auth.storage.spec';

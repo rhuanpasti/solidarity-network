@@ -150,7 +150,7 @@ textarea {
 }
 
 .field-grid {
-  @apply grid grid-cols-2 gap-4;
+  @apply grid grid-cols-2 items-start gap-4;
 }
 
 .filter-grid {
@@ -158,7 +158,7 @@ textarea {
 }
 
 .field {
-  @apply grid gap-[0.45rem] text-text;
+  @apply grid content-start self-start gap-[0.45rem] text-text;
 }
 
 .field span {
@@ -179,7 +179,11 @@ textarea {
 }
 
 .input {
-  @apply min-h-[3.15rem] w-full rounded-2xl border border-surface-border bg-surface-alt px-4 py-[0.9rem] text-text;
+  @apply min-h-[3.15rem] w-full rounded-2xl border border-slate-300 bg-surface-alt px-4 py-[0.9rem] text-text;
+}
+
+.input:hover:not(:disabled) {
+  @apply border-slate-400;
 }
 
 .input:disabled,
@@ -196,12 +200,12 @@ select:disabled {
 }
 
 .input.input-invalid {
-  @apply border-red-700/45 bg-red-50;
+  @apply border-red-600/75 bg-red-50;
 }
 
 .input.ng-invalid.ng-touched,
 .input.ng-invalid.ng-dirty {
-  @apply border-red-700/45 bg-red-50;
+  @apply border-red-600/75 bg-red-50;
 }
 
 .input:focus {
