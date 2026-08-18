@@ -269,4 +269,38 @@ describe('AuthService', () => {
     assert.equal(sessionStorage.getItem('solidarity-network-auth-session'), null);
   });
 
+  it('clears the HttpOnly cookie through logout and removes local session data', async () => {
+    sessionStorage.setItem(
+      'solidarity-network-auth-session',
+      JSON.stringify({
+        id: 'session-id',
+        username: 'maria',
+        email: 'maria@example.org',
+        displayName: 'Maria',
+        role: null,
+        accountType: 'administrator',
+        mustChangePassword: false,
+        csrfToken: 'csrf-token',
+      }),
+    );
+    const post = mock.fn(() => of({ success: true }));
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: { post } },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    await service.logout();
+
+    assert.equal(post.mock.callCount(), 1);
+    assert.equal(
+      (post.mock.calls[0]?.arguments[0] as string),
+      `${environment.apiBaseUrl}/auth/logout`,
+    );
+    assert.equal(service.session(), null);
+    assert.equal(sessionStorage.getItem('solidarity-network-auth-session'), null);
+  });
+
 });

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { timeout } from 'rxjs';
 import type { LoginMetricsResponse } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 
@@ -9,6 +10,8 @@ export class LoginMetricsService {
   private readonly baseUrl = `${environment.apiBaseUrl}/public/login-metrics`;
 
   get() {
-    return this.httpClient.get<LoginMetricsResponse>(this.baseUrl);
+    return this.httpClient
+      .get<LoginMetricsResponse>(this.baseUrl)
+      .pipe(timeout({ first: 10_000 }));
   }
 }

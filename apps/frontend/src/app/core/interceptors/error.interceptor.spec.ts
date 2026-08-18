@@ -15,11 +15,12 @@ describe('errorInterceptor', () => {
 
   it('expires the session, warns the user, and redirects once for an invalid token', () => {
     const expireSession = mock.fn(() => true);
+    const logout = mock.fn(async () => undefined);
     const show = mock.fn();
     const navigate = mock.fn(() => Promise.resolve(true));
     const injector = Injector.create({
       providers: [
-        { provide: AuthService, useValue: { expireSession } },
+        { provide: AuthService, useValue: { expireSession, logout } },
         { provide: Router, useValue: { navigate } },
         { provide: ToastService, useValue: { show } },
       ],
@@ -37,6 +38,7 @@ describe('errorInterceptor', () => {
     response$.subscribe({ error: () => undefined });
 
     assert.equal(expireSession.mock.callCount(), 1);
+    assert.equal(logout.mock.callCount(), 1);
     assert.deepEqual(show.mock.calls[0]?.arguments[0], {
       type: 'error',
       translationKey: 'auth.sessionExpired',
@@ -46,6 +48,7 @@ describe('errorInterceptor', () => {
 
   it('does not repeat the warning or redirect after expiration was handled', () => {
     let expirationHandled = false;
+    const logout = mock.fn(async () => undefined);
     const expireSession = mock.fn(() => {
       if (expirationHandled) {
         return false;
@@ -58,7 +61,7 @@ describe('errorInterceptor', () => {
     const navigate = mock.fn(() => Promise.resolve(true));
     const injector = Injector.create({
       providers: [
-        { provide: AuthService, useValue: { expireSession } },
+        { provide: AuthService, useValue: { expireSession, logout } },
         { provide: Router, useValue: { navigate } },
         { provide: ToastService, useValue: { show } },
       ],
@@ -77,6 +80,7 @@ describe('errorInterceptor', () => {
     response$.subscribe({ error: () => undefined });
 
     assert.equal(expireSession.mock.callCount(), 2);
+    assert.equal(logout.mock.callCount(), 1);
     assert.equal(show.mock.callCount(), 1);
     assert.equal(navigate.mock.callCount(), 1);
   });

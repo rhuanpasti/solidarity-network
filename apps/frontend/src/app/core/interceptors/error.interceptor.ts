@@ -44,6 +44,9 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         }
 
         if (authService.expireSession()) {
+          // The auth token is an HttpOnly cookie, so clear it through the
+          // public logout endpoint instead of trying to access it in JS.
+          void authService.logout();
           toastService.show({
             type: 'error',
             translationKey: 'auth.sessionExpired',
