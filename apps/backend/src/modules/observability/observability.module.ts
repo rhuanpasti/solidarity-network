@@ -3,6 +3,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
+  RequestMethod,
 } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuditTrailService } from './audit-trail.service';
@@ -33,6 +34,9 @@ import { StructuredLoggerService } from './structured-logger.service';
 })
 export class ObservabilityModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestTracingMiddleware).forRoutes('*');
+    consumer.apply(RequestTracingMiddleware).forRoutes({
+      path: '*path',
+      method: RequestMethod.ALL,
+    });
   }
 }

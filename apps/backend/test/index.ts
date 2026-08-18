@@ -1,6 +1,7 @@
 import '../src/modules/auth/auth-rate-limit.service.spec';
 import '../src/modules/auth/password-reset-token.service.spec';
 import '../src/modules/authorization/authorization.service.spec';
+import '../src/modules/observability/observability.module.spec';
 import '../src/modules/beneficiaries/beneficiary-dependents.validation.spec';
 import '../src/modules/beneficiaries/beneficiary-portal.service.spec';
 import '../src/modules/beneficiaries/beneficiary-validation.spec';
