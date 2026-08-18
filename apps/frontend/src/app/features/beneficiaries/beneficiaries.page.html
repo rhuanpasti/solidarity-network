@@ -17,12 +17,14 @@
       [showReadonlyNote]="beneficiariesState.isReadOnly()"
       (closed)="closeEditorDialog()"
     >
+      <ng-container modalAction>
       @if (beneficiariesState.selected() && beneficiariesState.isReadOnly()) {
-        <app-button modalAction type="button" variant="ghost" [disabled]="beneficiariesState.submitPending()" (click)="beneficiariesState.editor.startEditing()">
+        <app-button type="button" variant="ghost" [disabled]="beneficiariesState.submitPending()" (click)="beneficiariesState.editor.startEditing()">
           <span class="material-symbols-rounded" aria-hidden="true">edit</span>
           {{ 'common.edit' | translate }}
         </app-button>
       }
+      </ng-container>
 
       <app-beneficiary-form
         [form]="beneficiariesState.form"

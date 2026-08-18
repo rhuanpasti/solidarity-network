@@ -25,7 +25,7 @@
 }
 
 .modal-actions {
-  @apply flex flex-wrap justify-end gap-2 px-6 pb-4;
+  @apply flex flex-wrap justify-start gap-2 px-6 pb-4;
 }
 
 .modal-actions:empty {

@@ -18,18 +18,20 @@
       [showReadonlyNote]="isReadOnly()"
       (closed)="closeEditorDialog()"
     >
+      <ng-container modalAction>
       @if (selected() && isReadOnly()) {
         @if (canCreateAdministrators()) {
-          <app-button modalAction type="button" variant="secondary" [disabled]="isSubmitting() || isResendingAccess()" [loading]="isResendingAccess()" (click)="resendTemporaryAccess()">
+          <app-button type="button" variant="secondary" [disabled]="isSubmitting() || isResendingAccess()" [loading]="isResendingAccess()" (click)="resendTemporaryAccess()">
             <span class="material-symbols-rounded" aria-hidden="true">forward_to_inbox</span>
             {{ 'features.administrators.resendAccess' | translate }}
           </app-button>
         }
-        <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting() || isResendingAccess()" (click)="editor.startEditing()">
+        <app-button type="button" variant="ghost" [disabled]="isSubmitting() || isResendingAccess()" (click)="editor.startEditing()">
           <span class="material-symbols-rounded" aria-hidden="true">edit</span>
           {{ 'common.edit' | translate }}
         </app-button>
       }
+      </ng-container>
 
       @if (generatedCredential(); as credential) {
         <app-generated-credential-card

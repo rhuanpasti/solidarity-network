@@ -18,18 +18,20 @@
       [showReadonlyNote]="isReadOnly()"
       (closed)="closeEditorDialog()"
     >
+      <ng-container modalAction>
       @if (selected(); as selectedProgram) {
         @if (isReadOnly()) {
-          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+          <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
             <span class="material-symbols-rounded" aria-hidden="true">edit</span>
             {{ 'common.edit' | translate }}
           </app-button>
         } @else {
-          <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(selectedProgram)">
+          <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="toggleStatus(selectedProgram)">
             {{ 'features.charityPrograms.toggleStatus' | translate }}
           </app-button>
         }
       }
+      </ng-container>
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <app-input-field
