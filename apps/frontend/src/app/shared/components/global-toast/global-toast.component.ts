@@ -8,7 +8,13 @@ import { ToastService } from '../../../core/services/toast.service';
   imports: [TranslateModule],
   template: `
     @if (toastService.message(); as toast) {
-      <div class="toast" role="status" aria-live="polite" [class.error]="toast.type === 'error'">
+      <div
+        class="toast"
+        role="status"
+        aria-live="polite"
+        [class.success]="toast.type === 'success'"
+        [class.error]="toast.type === 'error'"
+      >
         @if (toast.translationKey) {
           {{ toast.translationKey | translate: toast.translationParams }}
         } @else {

@@ -12,6 +12,10 @@
   @apply bg-danger;
 }
 
+.toast.success {
+  @apply bg-brand-strong;
+}
+
 @media (max-width: 720px) {
   .toast {
     @apply bottom-4 left-4 right-4 max-w-none;
