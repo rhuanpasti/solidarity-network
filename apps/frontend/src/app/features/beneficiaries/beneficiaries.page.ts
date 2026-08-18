@@ -85,6 +85,10 @@ export class BeneficiariesPage implements OnInit {
     this.closeEditorDialog();
   }
 
+  submitBeneficiary() {
+    this.beneficiariesState.submit(() => this.closeEditorDialog());
+  }
+
   closeEditorDialog() {
     this.editorDialogRef?.close();
     this.editorDialogRef = null;

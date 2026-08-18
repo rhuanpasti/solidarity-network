@@ -35,7 +35,7 @@
         [countryOptions]="countryOptions()"
         [documentLabelKey]="beneficiariesState.documentLabelKey"
         [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
-        (saveRequested)="beneficiariesState.submit()"
+        (saveRequested)="submitBeneficiary()"
         (cancelRequested)="cancelEditor()"
         (addDependent)="beneficiariesState.addDependent()"
         (removeDependent)="beneficiariesState.removeDependent($event)"

@@ -338,6 +338,7 @@ export class AdministratorsPage implements OnInit {
         });
         this.editor.startCreate();
         this.load(true);
+        this.closeEditorDialog();
       },
       error: (error) => {
         this.isSubmitting.set(false);

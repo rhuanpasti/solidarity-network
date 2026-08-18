@@ -319,7 +319,7 @@ export class BeneficiariesState {
     });
   }
 
-  submit() {
+  submit(onSuccess?: () => void) {
     if (this.submitPending() || this.isReadOnly()) {
       return;
     }
@@ -354,6 +354,7 @@ export class BeneficiariesState {
           this.toastService.show({ type: 'success', text: 'Saved successfully.' });
           this.editor.startCreate();
           this.load(true);
+          onSuccess?.();
         },
         error: (error) => {
           this.submitPending.set(false);
@@ -375,6 +376,7 @@ export class BeneficiariesState {
         });
         this.editor.startCreate();
         this.load(true);
+        onSuccess?.();
       },
       error: (error) => {
         this.submitPending.set(false);
