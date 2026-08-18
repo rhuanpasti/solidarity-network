@@ -15,22 +15,23 @@ import { TranslateModule } from '@ngx-translate/core';
           }
         </div>
 
-        <div class="modal-header-actions">
-          <ng-content select="[modalAction]" />
-          <button
-            type="button"
-            class="modal-close"
-            [attr.aria-label]="'common.close' | translate"
-            (click)="closed.emit()"
-          >
-            <span class="material-symbols-rounded" aria-hidden="true">close</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          class="modal-close"
+          [attr.aria-label]="'common.close' | translate"
+          (click)="closed.emit()"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
       </header>
 
       @if (showReadonlyNote()) {
         <p class="form-readonly-note">{{ 'common.readOnlyDetails' | translate }}</p>
       }
+
+      <div class="modal-actions">
+        <ng-content select="[modalAction]" />
+      </div>
 
       <div class="modal-body">
         <ng-content />
