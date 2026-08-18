@@ -75,11 +75,13 @@ export const loginGuard: CanActivateFn = (route) => {
     });
   }
 
-  if (!authService.session()) {
-    return true;
-  }
+  return authService.validateStoredSession().then((isValid) => {
+    if (!isValid && !authService.session()) {
+      return true;
+    }
 
-  return router.createUrlTree([
-    resolveAuthenticatedUrl(authService, route.queryParamMap.get('returnUrl')),
-  ]);
+    return router.createUrlTree([
+      resolveAuthenticatedUrl(authService, route.queryParamMap.get('returnUrl')),
+    ]);
+  });
 };

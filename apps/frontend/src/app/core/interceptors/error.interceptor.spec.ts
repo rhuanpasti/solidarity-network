@@ -80,4 +80,32 @@ describe('errorInterceptor', () => {
     assert.equal(show.mock.callCount(), 1);
     assert.equal(navigate.mock.callCount(), 1);
   });
+
+  it('leaves session validation errors for the auth service to handle', () => {
+    const expireSession = mock.fn(() => true);
+    const show = mock.fn();
+    const navigate = mock.fn(() => Promise.resolve(true));
+    const injector = Injector.create({
+      providers: [
+        { provide: AuthService, useValue: { expireSession } },
+        { provide: Router, useValue: { navigate } },
+        { provide: ToastService, useValue: { show } },
+      ],
+    });
+    const request = new HttpRequest('GET', '/api/auth/session');
+    const error = new HttpErrorResponse({
+      status: 401,
+      error: { code: 'INVALID_TOKEN' },
+    });
+
+    const response$ = runInInjectionContext(injector, () =>
+      errorInterceptor(request, () => throwError(() => error)),
+    );
+
+    response$.subscribe({ error: () => undefined });
+
+    assert.equal(expireSession.mock.callCount(), 0);
+    assert.equal(show.mock.callCount(), 0);
+    assert.equal(navigate.mock.callCount(), 0);
+  });
 });

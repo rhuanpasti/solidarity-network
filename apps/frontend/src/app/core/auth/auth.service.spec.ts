@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { of, throwError } from 'rxjs';
 import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
+import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
 class MemoryStorage {
@@ -67,7 +68,7 @@ describe('AuthService', () => {
       { email: string },
       { context: HttpContext },
     ];
-    assert.equal(url, 'http://localhost:3000/api/v1/auth/forgot-password');
+    assert.equal(url, `${environment.apiBaseUrl}/auth/forgot-password`);
     assert.deepEqual(body, { email: 'maria@example.org' });
     assert.equal(options.context.get(SKIP_GLOBAL_ERROR_TOAST), true);
   });
@@ -121,7 +122,7 @@ describe('AuthService', () => {
       { token: string; newPassword: string },
       { context: HttpContext },
     ];
-    assert.equal(url, 'http://localhost:3000/api/v1/auth/reset-password');
+    assert.equal(url, `${environment.apiBaseUrl}/auth/reset-password`);
     assert.deepEqual(body, {
       token: 'reset-token',
       newPassword: 'NewPassword1!',
@@ -160,6 +161,112 @@ describe('AuthService', () => {
       success: false,
       message: 'auth.resetPasswordTokenInvalid',
     });
+  });
+
+  it('refreshes a stored session from the API', async () => {
+    sessionStorage.setItem(
+      'solidarity-network-auth-session',
+      JSON.stringify({
+        id: 'old-id',
+        username: 'maria',
+        email: 'maria@example.org',
+        displayName: 'Maria',
+        role: 'case_worker',
+        accountType: 'administrator',
+        mustChangePassword: false,
+        csrfToken: 'old-csrf',
+      }),
+    );
+    const get = mock.fn(() =>
+      of({
+        csrfToken: 'new-csrf',
+        user: {
+          id: 'new-id',
+          username: 'maria',
+          email: 'maria@example.org',
+          name: 'Maria Silva',
+          role: 'case_worker',
+          accountType: 'administrator',
+          mustChangePassword: false,
+        },
+      }),
+    );
+
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: { get } },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    assert.equal(await service.validateStoredSession(), true);
+    assert.equal(get.mock.callCount(), 1);
+    assert.equal(service.session()?.id, 'new-id');
+    assert.equal(service.session()?.csrfToken, 'new-csrf');
+  });
+
+  it('restores a valid cookie session when browser storage is empty', async () => {
+    const get = mock.fn(() =>
+      of({
+        csrfToken: 'csrf-token',
+        user: {
+          id: 'new-id',
+          username: 'maria',
+          email: 'maria@example.org',
+          name: 'Maria Silva',
+          role: null,
+          accountType: 'beneficiary',
+          mustChangePassword: false,
+        },
+      }),
+    );
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: { get } },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    assert.equal(await service.validateStoredSession(), true);
+    assert.equal(service.session()?.accountType, 'beneficiary');
+  });
+
+  it('clears a stored session when the API rejects it', async () => {
+    sessionStorage.setItem(
+      'solidarity-network-auth-session',
+      JSON.stringify({
+        id: 'old-id',
+        username: 'maria',
+        email: 'maria@example.org',
+        displayName: 'Maria',
+        role: null,
+        accountType: 'administrator',
+        mustChangePassword: false,
+        csrfToken: 'old-csrf',
+      }),
+    );
+    const get = mock.fn(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            error: { code: 'INVALID_TOKEN' },
+          }),
+      ),
+    );
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: { get } },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    assert.equal(await service.validateStoredSession(), false);
+    assert.equal(service.session(), null);
+    assert.equal(sessionStorage.getItem('solidarity-network-auth-session'), null);
   });
 
 });

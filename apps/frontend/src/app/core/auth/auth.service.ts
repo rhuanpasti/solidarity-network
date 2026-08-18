@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import type { AccountType, AuthUserSummary } from '@solidarity-network/shared';
 import { environment } from '../../../environments/environment';
 import { SKIP_GLOBAL_ERROR_TOAST } from '../interceptors/error-toast.token';
@@ -44,6 +44,13 @@ interface AuthApiResponse {
   user: AuthUserSummary;
 }
 
+interface SessionApiResponse {
+  csrfToken: string;
+  user: AuthUserSummary;
+}
+
+const SESSION_VALIDATION_TIMEOUT_MS = 10_000;
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly httpClient = inject(HttpClient);
@@ -57,6 +64,31 @@ export class AuthService {
   readonly requiresPasswordChange = computed(
     () => this.sessionState()?.mustChangePassword ?? false,
   );
+
+  async validateStoredSession() {
+    try {
+      const response = await firstValueFrom(
+        this.httpClient
+          .get<SessionApiResponse>(`${this.baseUrl}/session`)
+          .pipe(timeout({ first: SESSION_VALIDATION_TIMEOUT_MS })),
+      );
+
+      this.persistSession(
+        this.toAuthSession(response.user, response.csrfToken),
+        isSessionStoredInLocalStorage(),
+      );
+      return true;
+    } catch (error) {
+      // Keep a locally cached session when the API is unavailable. It can be
+      // validated by the next protected request, while an auth failure is
+      // cleared immediately so the login page does not get stuck in a loop.
+      if (error instanceof HttpErrorResponse && [401, 403].includes(error.status)) {
+        this.clearSessionState();
+      }
+
+      return false;
+    }
+  }
 
   async login(payload: LoginPayload): Promise<LoginResult> {
     try {

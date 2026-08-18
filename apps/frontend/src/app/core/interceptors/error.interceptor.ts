@@ -39,6 +39,10 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         payload?.code === 'AUTH_ACCOUNT_UNAVAILABLE' ||
         payload?.code === 'CSRF_TOKEN_INVALID'
       ) {
+        if (request.url.includes('/auth/session')) {
+          return throwError(() => error);
+        }
+
         if (authService.expireSession()) {
           toastService.show({
             type: 'error',
