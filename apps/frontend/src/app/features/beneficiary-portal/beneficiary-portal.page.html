@@ -90,7 +90,7 @@
               </div>
               <div class="item-meta">
                 @if (person.document) {
-                  <span>{{ person.document }}</span>
+                  <span>{{ formatDocument(person.document) }}</span>
                 }
                 @if (person.birthDate) {
                   <small>{{ person.birthDate | date: 'mediumDate' }}</small>

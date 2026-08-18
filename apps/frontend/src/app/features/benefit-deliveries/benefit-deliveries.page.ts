@@ -45,6 +45,7 @@ import {
   prepareFormForSubmit,
   touchAll,
 } from '../../shared/utils/form.utils';
+import { formatCpfForDisplay } from '../../shared/utils/validation.utils';
 
 const OPTION_PAGE_SIZE = 100;
 
@@ -241,7 +242,7 @@ export class BenefitDeliveriesPage implements OnInit {
     this.selectedDelivery.set(delivery);
     this.selectedDeliveryDetails.set([
       { label: 'forms.beneficiary', value: delivery.beneficiary.fullName },
-      { label: 'forms.document', value: delivery.beneficiary.document },
+      { label: 'forms.document', value: formatCpfForDisplay(delivery.beneficiary.document) },
       { label: 'forms.charityProgram', value: delivery.charityProgram.name },
       { label: 'forms.benefit', value: delivery.benefit.name },
       { label: 'forms.quantity', value: delivery.quantity },

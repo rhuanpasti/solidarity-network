@@ -9,6 +9,20 @@ export function touchAll(control: AbstractControl) {
 
 export type ControlErrorMap = ReadonlyArray<readonly [string, string]>;
 
+const DEFAULT_CONTROL_ERROR_TRANSLATIONS: Readonly<Record<string, string>> = {
+  required: 'validation.required',
+  requiredTrue: 'validation.required',
+  maxlength: 'validation.maxLength',
+  minlength: 'validation.minLength',
+  email: 'validation.invalidEmail',
+  phone: 'validation.invalidPhone',
+  min: 'validation.minValue',
+  cpf: 'validation.invalidCpf',
+  brazilianPhone: 'validation.invalidBrazilianPhone',
+  postalCode: 'validation.invalidPostalCode',
+  dependentUnder18: 'validation.dependentUnder18',
+};
+
 function getServerValidationTranslationKey(code: string) {
   return `validation.server.${code}`;
 }
@@ -29,6 +43,12 @@ export function getControlErrorKey(
   for (const [errorCode, translationKey] of errors) {
     if (control?.hasError(errorCode)) {
       return translationKey;
+    }
+  }
+
+  for (const errorCode of Object.keys(DEFAULT_CONTROL_ERROR_TRANSLATIONS)) {
+    if (control?.hasError(errorCode)) {
+      return DEFAULT_CONTROL_ERROR_TRANSLATIONS[errorCode];
     }
   }
 

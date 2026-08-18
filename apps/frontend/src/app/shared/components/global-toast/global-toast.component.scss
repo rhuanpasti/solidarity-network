@@ -1,7 +1,11 @@
 @reference '../../../../styles.scss';
 
+:host {
+  @apply pointer-events-none fixed inset-0 z-[2000] block;
+}
+
 .toast {
-  @apply fixed bottom-6 right-6 z-[1100] max-w-[min(24rem,calc(100vw-2rem))] rounded-2xl bg-gray-900 px-[1.2rem] py-4 text-white shadow-[0_18px_40px_rgba(17,24,39,0.22)];
+  @apply pointer-events-auto absolute bottom-6 right-6 z-[2000] max-w-[min(24rem,calc(100vw-2rem))] rounded-2xl bg-gray-900 px-[1.2rem] py-4 text-white shadow-[0_18px_40px_rgba(17,24,39,0.22)];
 }
 
 .toast.error {

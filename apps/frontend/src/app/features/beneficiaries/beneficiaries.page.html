@@ -34,6 +34,7 @@
         [dependentRelationshipOptions]="beneficiariesState.dependentRelationshipOptions"
         [countryOptions]="countryOptions()"
         [documentLabelKey]="beneficiariesState.documentLabelKey"
+        [isBrazilDocument]="beneficiariesState.isBrazilSelected()"
         [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
         (saveRequested)="submitBeneficiary()"
         (cancelRequested)="cancelEditor()"

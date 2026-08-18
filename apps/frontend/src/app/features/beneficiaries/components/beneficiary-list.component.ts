@@ -3,6 +3,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import type { PaginationMeta, BeneficiarySummary } from '@solidarity-network/shared';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ListPanelComponent } from '../../../shared/components/list-panel/list-panel.component';
+import { formatCpfForDisplay } from '../../../shared/utils/validation.utils';
 
 @Component({
   selector: 'app-beneficiary-list',
@@ -31,7 +32,7 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
           <button type="button" class="list-item" (click)="itemSelected.emit(item)">
             <div>
               <strong>{{ item.fullName }}</strong>
-              <p>{{ item.document }}</p>
+              <p>{{ formatDocument(item.document) }}</p>
               @if (item.email) {
                 <small>{{ item.email }}</small>
               }
@@ -62,6 +63,10 @@ export class BeneficiaryListComponent {
   readonly itemSelected = output<BeneficiarySummary>();
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
+
+  formatDocument(document: string) {
+    return formatCpfForDisplay(document);
+  }
 
   charityProgramNames(item: BeneficiarySummary) {
     return item.charityPrograms.map((program) => program.name).join(', ');

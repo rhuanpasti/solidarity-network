@@ -73,6 +73,8 @@ interface GeneratedCredentialInfo {
           <app-input-field
             [control]="form().controls.document"
             [label]="documentLabelKey()"
+            [mask]="isBrazilDocument() ? 'cpf' : null"
+            [inputMode]="isBrazilDocument() ? 'numeric' : null"
             [errors]="[
               ['required', 'validation.required'],
               ['cpf', 'validation.invalidCpf'],
@@ -199,6 +201,8 @@ interface GeneratedCredentialInfo {
                     <app-input-field
                       [control]="dependentGroup.controls.document"
                       label="forms.document"
+                      [mask]="isBrazilDocument() ? 'cpf' : null"
+                      [inputMode]="isBrazilDocument() ? 'numeric' : null"
                       [errors]="[['maxlength', 'validation.maxLength']]"
                       [readonly]="isReadOnly()"
                     />
@@ -241,6 +245,7 @@ export class BeneficiaryFormComponent {
   readonly dependentRelationshipOptions = input.required<SelectOption[]>();
   readonly countryOptions = input.required<SelectOption[]>();
   readonly documentLabelKey = input.required<string>();
+  readonly isBrazilDocument = input(false);
   readonly addressLookupMessageKey = input<string | null>(null);
   readonly saveRequested = output<void>();
   readonly cancelRequested = output<void>();

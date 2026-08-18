@@ -14,6 +14,7 @@ import {
   type ControlErrorMap,
 } from '../../utils/form.utils';
 import { FieldActionDirective } from './field-action.directive';
+import { formatCpf } from '../../utils/validation.utils';
 
 let nextInputFieldId = 0;
 
@@ -64,6 +65,7 @@ let nextInputFieldId = 0;
             [attr.placeholder]="placeholder() ? (placeholder()! | translate) : null"
             [attr.readonly]="readonly() ? true : null"
             [attr.step]="step()"
+            (input)="handleInput($event)"
             (blur)="handleBlur($event)"
           />
           @if (hasAction()) {
@@ -115,6 +117,7 @@ export class InputFieldComponent {
   readonly max = input<string | number | null>(null);
   readonly step = input<string | number | null>(null);
   readonly readonly = input(false);
+  readonly mask = input<'cpf' | null>(null);
   readonly blurred = output<FocusEvent>();
 
   private readonly projectedAction = contentChild(FieldActionDirective);
@@ -170,5 +173,21 @@ export class InputFieldComponent {
 
   handleBlur(event: FocusEvent) {
     this.blurred.emit(event);
+  }
+
+  handleInput(event: Event) {
+    if (this.mask() !== 'cpf') {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    const formatted = formatCpf(input.value);
+
+    if (input.value === formatted) {
+      return;
+    }
+
+    input.value = formatted;
+    this.control().setValue(formatted);
   }
 }

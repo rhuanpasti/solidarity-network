@@ -40,7 +40,9 @@ import {
   touchAll,
 } from '../../shared/utils/form.utils';
 import {
+  cpfValidator,
   brazilianPostalCodeValidator,
+  formatCpf,
 } from '../../shared/utils/validation.utils';
 
 interface GeneratedCredentialInfo {
@@ -142,7 +144,7 @@ export class BeneficiariesState {
 
   readonly form: BeneficiaryForm = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
-    document: ['', [Validators.required, Validators.maxLength(40)]],
+    document: ['', [Validators.required, Validators.maxLength(40), cpfValidator()]],
     birthDate: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
@@ -203,7 +205,7 @@ export class BeneficiariesState {
       this.form.controls.dependents.clear();
       this.form.reset({
         fullName: item.fullName,
-        document: item.document,
+        document: isBrazilCountry(item.address.country) ? formatCpf(item.document) : item.document,
         birthDate: item.birthDate ? item.birthDate.slice(0, 10) : '',
         email: item.email ?? '',
         phone: item.phone,
@@ -226,7 +228,9 @@ export class BeneficiariesState {
           this.createDependentForm({
             fullName: dependent.fullName,
             relationship: dependent.relationship,
-            document: dependent.document ?? '',
+            document: isBrazilCountry(item.address.country)
+              ? formatCpf(dependent.document ?? '')
+              : dependent.document ?? '',
             birthDate: dependent.birthDate.slice(0, 10),
           }),
         );
@@ -459,6 +463,7 @@ export class BeneficiariesState {
       .subscribe((country) => {
         this.selectedCountry.set(country);
         this.applyCountryValidators(country);
+        this.applyDocumentValidators(country);
 
         if (!isBrazilCountry(country)) {
           this.addressLookupPending.set(false);
@@ -479,6 +484,17 @@ export class BeneficiariesState {
     this.form.controls.address.controls.postalCode.updateValueAndValidity({
       emitEvent: false,
     });
+  }
+
+  private applyDocumentValidators(country: SupportedCountry) {
+    const documentValidators = [Validators.required, Validators.maxLength(40)];
+
+    if (isBrazilCountry(country)) {
+      documentValidators.push(cpfValidator());
+    }
+
+    this.form.controls.document.setValidators(documentValidators);
+    this.form.controls.document.updateValueAndValidity({ emitEvent: false });
   }
 
   private createDependentForm(value?: {

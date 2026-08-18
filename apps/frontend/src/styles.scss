@@ -199,11 +199,21 @@ select:disabled {
   @apply border-red-700/45 bg-red-50;
 }
 
+.input.ng-invalid.ng-touched,
+.input.ng-invalid.ng-dirty {
+  @apply border-red-700/45 bg-red-50;
+}
+
 .input:focus {
   @apply border-green-300 bg-white outline-none ring-4 ring-green-500/12;
 }
 
 .input.input-invalid:focus {
+  @apply border-red-600/70 ring-4 ring-red-600/12;
+}
+
+.input.ng-invalid.ng-touched:focus,
+.input.ng-invalid.ng-dirty:focus {
   @apply border-red-600/70 ring-4 ring-red-600/12;
 }
 

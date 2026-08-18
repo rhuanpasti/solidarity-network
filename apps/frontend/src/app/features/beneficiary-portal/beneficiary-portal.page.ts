@@ -8,6 +8,7 @@ import type {
 import { BeneficiaryPortalService } from '../../core/services/beneficiary-portal.service';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { formatCpfForDisplay } from '../../shared/utils/validation.utils';
 
 @Component({
   selector: 'app-beneficiary-portal-page',
@@ -31,6 +32,10 @@ export class BeneficiaryPortalPage implements OnInit {
 
   beneficiaryProgramNames(portal: BeneficiaryPortalSummary) {
     return portal.programs.map((program) => program.name).join(', ');
+  }
+
+  formatDocument(document: string | null) {
+    return formatCpfForDisplay(document);
   }
 
   deliveryTrackBy(_: number, delivery: BeneficiaryPortalDeliverySummary) {
