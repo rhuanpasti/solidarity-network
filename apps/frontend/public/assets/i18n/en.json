@@ -183,7 +183,10 @@
       "formDescription": "Use program links to keep delivery responsibility aligned.",
       "generatedPasskeyEyebrow": "Initial access password",
       "generatedPasskeyLabel": "Generated passkey",
-      "createRestrictedNote": "Only super admins can create new administrators."
+      "createRestrictedNote": "Only super admins can create new administrators.",
+      "resendAccess": "Resend access email",
+      "accessEmailResent": "Access email resent with a new temporary password.",
+      "accessEmailResendFailed": "The access email could not be sent. Please try again."
     },
     "beneficiaries": {
       "eyebrow": "Beneficiaries",

@@ -45,6 +45,12 @@ export class AdministratorsController {
     return this.administratorsService.findOne(id, request.authUser);
   }
 
+  @Post(':id/resend-access')
+  @AuthorizeRoute(AuthorizationRoutePolicy.ManageAdministrators)
+  resendAccess(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.administratorsService.resendTemporaryPassword(id, request.authUser);
+  }
+
   @Patch(':id')
   @AuthorizeRoute(AuthorizationRoutePolicy.ManageAdministrators)
   update(

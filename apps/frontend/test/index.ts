@@ -6,6 +6,7 @@ import '../src/app/core/auth/auth.storage.spec';
 import '../src/app/core/interceptors/error.interceptor.spec';
 import '../src/app/core/interceptors/loading.interceptor.spec';
 import '../src/app/core/services/loading.service.spec';
+import '../src/app/core/services/administrators.service.spec';
 import '../src/app/core/state/cached-list.store.spec';
 import '../src/app/features/benefit-deliveries/benefit-deliveries.page.spec';
 import '../src/app/features/beneficiaries/beneficiaries.page.spec';

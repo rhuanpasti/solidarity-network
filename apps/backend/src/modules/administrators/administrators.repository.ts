@@ -100,6 +100,16 @@ export class AdministratorsRepository {
     return results[results.length - 1] as AdministratorWithPrograms;
   }
 
+  updateCredential(
+    administratorId: string,
+    data: Prisma.AuthCredentialUpdateInput,
+  ) {
+    return this.prisma.authCredential.update({
+      where: { administratorId },
+      data,
+    });
+  }
+
   findProgramLinks(administratorId: string): Promise<AdministratorProgramLink[]> {
     return this.prisma.administratorProgramLink.findMany({
       where: { administratorId },

@@ -60,4 +60,8 @@ export class AdministratorsService {
   update(id: string, payload: Partial<AdministratorPayload>) {
     return this.httpClient.patch<AdministratorSummary>(`${this.baseUrl}/${id}`, payload);
   }
+
+  resendTemporaryAccess(id: string) {
+    return this.httpClient.post<{ success: boolean }>(`${this.baseUrl}/${id}/resend-access`, {});
+  }
 }

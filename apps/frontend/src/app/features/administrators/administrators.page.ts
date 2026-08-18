@@ -99,6 +99,7 @@ export class AdministratorsPage implements OnInit {
   readonly generatedCredential =
     signal<GeneratedAdministratorCredential | null>(null);
   readonly isSubmitting = signal(false);
+  readonly isResendingAccess = signal(false);
   readonly pageSizes = [10, 25, 50];
   readonly listLoading = computed(
     () => this.listState().loading && !this.listState().data,
@@ -218,6 +219,30 @@ export class AdministratorsPage implements OnInit {
   closeEditorDialog() {
     this.editorDialogRef?.close();
     this.editorDialogRef = null;
+  }
+
+  resendTemporaryAccess() {
+    const administrator = this.selected();
+
+    if (!administrator || this.isResendingAccess() || this.isSubmitting()) {
+      return;
+    }
+
+    this.isResendingAccess.set(true);
+    this.administratorsService.resendTemporaryAccess(administrator.id).subscribe({
+      next: (response) => {
+        this.isResendingAccess.set(false);
+        this.toastService.show({
+          type: response.success ? "success" : "error",
+          translationKey: response.success
+            ? "features.administrators.accessEmailResent"
+            : "features.administrators.accessEmailResendFailed",
+        });
+      },
+      error: () => {
+        this.isResendingAccess.set(false);
+      },
+    });
   }
 
   private openEditorDialog(template: TemplateRef<unknown>) {

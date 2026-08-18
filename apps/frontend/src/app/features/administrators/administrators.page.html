@@ -19,7 +19,13 @@
       (closed)="closeEditorDialog()"
     >
       @if (selected() && isReadOnly()) {
-        <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting()" (click)="editor.startEditing()">
+        @if (canCreateAdministrators()) {
+          <app-button modalAction type="button" variant="secondary" [disabled]="isSubmitting() || isResendingAccess()" [loading]="isResendingAccess()" (click)="resendTemporaryAccess()">
+            <span class="material-symbols-rounded" aria-hidden="true">forward_to_inbox</span>
+            {{ 'features.administrators.resendAccess' | translate }}
+          </app-button>
+        }
+        <app-button modalAction type="button" variant="ghost" [disabled]="isSubmitting() || isResendingAccess()" (click)="editor.startEditing()">
           <span class="material-symbols-rounded" aria-hidden="true">edit</span>
           {{ 'common.edit' | translate }}
         </app-button>

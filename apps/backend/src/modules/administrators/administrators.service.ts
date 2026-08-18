@@ -132,6 +132,47 @@ export class AdministratorsService {
     return toAdministratorSummary(administrator);
   }
 
+  async resendTemporaryPassword(id: string, actor: AuthenticatedUser) {
+    this.authorizationService.assertCanManageAdministrator(actor, {
+      action: 'administrator.temporary_password.resend',
+      targetAdministratorId: id,
+    });
+
+    const administrator = await this.findVisibleAdministrator(id, actor);
+
+    if (!administrator) {
+      throw new DomainNotFoundException('administrator', id);
+    }
+
+    const temporaryPassword = generateNumericPasskey(16);
+
+    await this.repository.updateCredential(id, {
+      passwordHash: await hashPassword(temporaryPassword),
+      mustChangePassword: true,
+      lastPasswordChangedAt: null,
+    });
+
+    const emailSent = await this.sendTemporaryPasswordEmail({
+      email: administrator.email,
+      name: administrator.name,
+      temporaryPassword,
+    });
+
+    if (emailSent) {
+      await this.auditTrailService.record({
+        action: 'administrator.temporary_password.resent',
+        entityType: 'administrator',
+        entityId: administrator.id,
+        actor,
+        metadata: {
+          emailFingerprint: this.buildEmailFingerprint(administrator.email),
+        },
+      });
+    }
+
+    return { success: emailSent };
+  }
+
   async update(
     id: string,
     dto: UpdateAdministratorDto,
@@ -258,7 +299,7 @@ export class AdministratorsService {
     email: string;
     name: string;
     temporaryPassword: string;
-  }) {
+  }): Promise<boolean> {
     try {
       await this.emailService.send({
         to: {
@@ -273,6 +314,7 @@ export class AdministratorsService {
           organizationName: 'Solidarity Network',
         },
       });
+      return true;
     } catch {
       await this.auditTrailService.record({
         action: 'administrator.temporary_password_email.failed',
@@ -281,6 +323,7 @@ export class AdministratorsService {
           emailFingerprint: this.buildEmailFingerprint(payload.email),
         },
       });
+      return false;
     }
   }
 

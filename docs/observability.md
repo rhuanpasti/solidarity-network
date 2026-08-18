@@ -43,6 +43,8 @@ email.send.succeeded
 email.send.failed
 email.send.skipped
 email.send.configuration_missing
+administrator.temporary_password.resent
+administrator.temporary_password_email.failed
 ```
 
 Prefer names that describe what happened, not where it happened. Put module-specific data in fields.
@@ -101,6 +103,13 @@ Sensitive administrator routes for administrators, charity programs, beneficiari
 accept only `super_admin` (admin) and `program_manager` (subadmin) roles. A `case_worker` request is rejected by the
 authorization guard with `403 ROUTE_POLICY_FORBIDDEN` and emits `authorization.denied` with the route policy, account
 context, and request correlation ID; it must not include the requested records in logs.
+
+The administrator details modal can call `POST /administrators/:id/resend-access`. This regenerates the temporary
+credential, stores only its hash, and sends the existing `temporary-password` email template. Audit metadata contains
+only an email fingerprint; neither the temporary password nor its hash is returned in the response or written to logs.
+Successful requests emit `administrator.temporary_password.resent`. Provider failures are captured as
+`administrator.temporary_password_email.failed` with the same fingerprint-only sanitization; the endpoint returns
+`{"success": false}` so the modal can show an actionable retry message.
 
 Example request:
 

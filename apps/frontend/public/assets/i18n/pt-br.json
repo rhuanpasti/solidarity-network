@@ -183,7 +183,10 @@
       "formDescription": "Use os vinculos de programa para manter a responsabilidade de entrega alinhada.",
       "generatedPasskeyEyebrow": "Senha inicial de acesso",
       "generatedPasskeyLabel": "Passkey gerada",
-      "createRestrictedNote": "Somente super administradores podem criar novos administradores."
+      "createRestrictedNote": "Somente super administradores podem criar novos administradores.",
+      "resendAccess": "Reenviar acesso por email",
+      "accessEmailResent": "Email de acesso reenviado com uma nova senha temporaria.",
+      "accessEmailResendFailed": "Nao foi possivel enviar o email de acesso. Tente novamente."
     },
     "beneficiaries": {
       "eyebrow": "Beneficiados",
