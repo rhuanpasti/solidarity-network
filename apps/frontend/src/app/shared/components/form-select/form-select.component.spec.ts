@@ -17,4 +17,13 @@ describe('filterSelectOptions', () => {
   it('returns all options for an empty search', () => {
     assert.deepEqual(filterSelectOptions(options, '  '), options);
   });
+
+  it('can search options that expose a translation key or value instead of a label', () => {
+    const translatedOption: SelectOption = {
+      value: 'food-security',
+      translationKey: 'programs.foodSecurity',
+    };
+
+    assert.deepEqual(filterSelectOptions([translatedOption], 'food-security'), [translatedOption]);
+  });
 });
