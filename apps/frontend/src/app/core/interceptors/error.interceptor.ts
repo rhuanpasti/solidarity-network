@@ -8,6 +8,13 @@ import { ToastService } from '../services/toast.service';
 import { getApiErrorToast } from './error-message.utils';
 import { SKIP_GLOBAL_ERROR_TOAST } from './error-toast.token';
 
+const sessionErrorCodes: readonly string[] = [
+  'AUTH_REQUIRED',
+  'INVALID_TOKEN',
+  'AUTH_ACCOUNT_UNAVAILABLE',
+  'CSRF_TOKEN_INVALID',
+];
+
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -16,29 +23,25 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       const payload = error.error as ApiErrorResponse | undefined;
+      const code = payload?.code;
 
-      if (payload?.code === 'PASSWORD_CHANGE_REQUIRED') {
+      if (code === 'PASSWORD_CHANGE_REQUIRED') {
         authService.markPasswordChangeRequired();
         void router.navigate(['/first-access']);
         return throwError(() => error);
       }
 
-      if (payload?.code === 'ACCOUNT_TYPE_NOT_ALLOWED') {
+      if (code === 'ACCOUNT_TYPE_NOT_ALLOWED') {
         void router.navigateByUrl(authService.resolveHomeUrl());
         return throwError(() => error);
       }
 
-      if (payload?.code === 'ADMINISTRATOR_ROLE_NOT_ALLOWED') {
+      if (code === 'ADMINISTRATOR_ROLE_NOT_ALLOWED') {
         void router.navigateByUrl(authService.resolveHomeUrl());
         return throwError(() => error);
       }
 
-      if (
-        payload?.code === 'AUTH_REQUIRED' ||
-        payload?.code === 'INVALID_TOKEN' ||
-        payload?.code === 'AUTH_ACCOUNT_UNAVAILABLE' ||
-        payload?.code === 'CSRF_TOKEN_INVALID'
-      ) {
+      if (code && sessionErrorCodes.includes(code)) {
         if (request.url.includes('/auth/session')) {
           return throwError(() => error);
         }

@@ -4,6 +4,7 @@ import '../src/app/core/auth/auth.guard.spec';
 import '../src/app/core/auth/auth.service.spec';
 import '../src/app/core/auth/auth.storage.spec';
 import '../src/app/core/interceptors/error.interceptor.spec';
+import '../src/app/core/interceptors/error-message.utils.spec';
 import '../src/app/core/interceptors/loading.interceptor.spec';
 import '../src/app/core/services/loading.service.spec';
 import '../src/app/core/services/administrators.service.spec';

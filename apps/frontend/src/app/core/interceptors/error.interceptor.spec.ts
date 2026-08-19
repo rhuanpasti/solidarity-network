@@ -13,7 +13,7 @@ describe('errorInterceptor', () => {
     mock.reset();
   });
 
-  it('expires the session, warns the user, and redirects once for an invalid token', () => {
+  it('expires the session, warns the user, and redirects for auth errors', () => {
     const expireSession = mock.fn(() => true);
     const logout = mock.fn(async () => undefined);
     const show = mock.fn();
@@ -25,25 +25,35 @@ describe('errorInterceptor', () => {
         { provide: ToastService, useValue: { show } },
       ],
     });
-    const request = new HttpRequest('GET', '/api/protected');
-    const error = new HttpErrorResponse({
-      status: 401,
-      error: { code: 'INVALID_TOKEN' },
-    });
+    const authErrorCodes = [
+      'AUTH_REQUIRED',
+      'INVALID_TOKEN',
+      'AUTH_ACCOUNT_UNAVAILABLE',
+      'CSRF_TOKEN_INVALID',
+    ];
 
-    const response$ = runInInjectionContext(injector, () =>
-      errorInterceptor(request, () => throwError(() => error)),
-    );
+    for (const code of authErrorCodes) {
+      const request = new HttpRequest('GET', '/api/protected');
+      const error = new HttpErrorResponse({
+        status: 401,
+        error: { code },
+      });
+      const response$ = runInInjectionContext(injector, () =>
+        errorInterceptor(request, () => throwError(() => error)),
+      );
 
-    response$.subscribe({ error: () => undefined });
+      response$.subscribe({ error: () => undefined });
+    }
 
-    assert.equal(expireSession.mock.callCount(), 1);
-    assert.equal(logout.mock.callCount(), 1);
+    assert.equal(expireSession.mock.callCount(), authErrorCodes.length);
+    assert.equal(logout.mock.callCount(), authErrorCodes.length);
     assert.deepEqual(show.mock.calls[0]?.arguments[0], {
       type: 'error',
       translationKey: 'auth.sessionExpired',
     });
     assert.deepEqual(navigate.mock.calls[0]?.arguments, [['/login']]);
+    assert.equal(show.mock.callCount(), authErrorCodes.length);
+    assert.equal(navigate.mock.callCount(), authErrorCodes.length);
   });
 
   it('does not repeat the warning or redirect after expiration was handled', () => {

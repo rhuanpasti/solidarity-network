@@ -1,69 +1,48 @@
 # Solidarity Network
 
-Solidarity Network is a production-oriented full stack platform for managing charity programs, administrators, beneficiaries, benefits, and benefit deliveries.
+Solidarity Network is an open-source full-stack starter for organizations that coordinate charity programs, administrators, beneficiaries, benefits, and benefit deliveries.
 
-This is an open source project intended to serve as a practical starting point for social impact initiatives. If you need a base for a nonprofit, community, charity, or other social project, the idea is simple: fork this repository and adapt it to your reality.
+It provides a practical operational workspace that can be forked and adapted to a nonprofit, community initiative, or other social-impact program. The domain model, workflows, visual identity, integrations, deployment model, and policies are intentionally customizable.
 
-From that point on, you can change anything you consider necessary, including the domain model, user flows, visual identity, integrations, deployment model, and operational rules.
+In Portuguese, the interface uses the institutional name **Rede Solidaria**.
 
-Em portugues, a interface exibe o nome institucional **Rede Solidaria**.
+## Project status and production guidance
 
-## Open Source Usage Recommendation
+This repository is a working application and a reusable foundation, not a turnkey compliance solution. Review the authorization rules, privacy requirements, retention policies, infrastructure, and operational processes before using it with real personal data.
 
-The recommended workflow is to fork this project instead of treating it as a closed template. A fork gives you freedom to evolve the codebase according to your organization, region, policies, and service model while preserving the original structure as a reliable starting point.
+The application includes username/email authentication, password hashing, protected sessions, password recovery, first-access password changes, rate limiting, and role-based authorization. For a production deployment, consider replacing or integrating the built-in authentication with a dedicated identity provider that supports the account protection, MFA, auditability, and recovery requirements of your organization.
 
-## Security Recommendation
+## What it includes
 
-I strongly recommend using a dedicated authentication provider or identity service for user authentication instead of building and maintaining the full authentication flow yourself. This usually brings better security, more mature account protection features, and a lower long-term maintenance burden for the application.
+- An administrator workspace for programs, administrators, beneficiaries, benefits, and deliveries.
+- A beneficiary portal for linked programs, household dependents, upcoming deliveries, and delivery history.
+- Role-aware access for super administrators, program managers, and case workers.
+- Runtime English and Portuguese translations.
+- Postal-code address lookup for Brazilian beneficiary addresses.
+- Temporary access credentials, first-access password changes, password reset emails, and delivery notifications through optional Brevo integration.
+- Audit trails, entity version snapshots, request IDs, structured logging, and normalized API errors.
+- OpenAPI/Swagger documentation during non-production backend runs.
 
-Examples include managed identity providers, external OAuth/OIDC providers, or any equivalent service that offers secure session management, password policies, multi-factor authentication, auditability, and recovery flows.
+## Technology
 
-## Technical Overview
+- `Angular 21` with standalone components, Signals, typed reactive forms, lazy routes, and runtime i18n.
+- `NestJS 11` with controllers, services, repositories, DTO validation, authorization guards, and global error handling.
+- `Prisma 6` with `PostgreSQL 16`.
+- `TypeScript 5.9` across the stack.
+- `Docker Compose` for local PostgreSQL and containerized application runs.
+- `npm workspaces` for the monorepo.
 
-This solution uses:
-
-- `Angular 21` for a strongly typed frontend with standalone components, Signals, reactive forms, route-based feature separation, and runtime i18n.
-- `NestJS` for a layered Node.js backend with controllers, services, repositories, DTO validation, and standardized error handling.
-- `Prisma + PostgreSQL` for a typed relational model with safe schema evolution and a free-tier friendly deployment path.
-
-NestJS was preferred over raw Express because the project needs consistent architecture, scalable module boundaries, validation, interceptors, and future authorization support without hand-rolling cross-cutting concerns.
-
-## Technical Patterns And Technologies
-
-This repository follows a full stack monorepo approach with clear separation of concerns across frontend, backend, and shared contracts.
-
-Main technologies:
-
-- `Angular 21` for the frontend application
-- `NestJS` for the backend API
-- `TypeScript` across the stack
-- `Prisma` as the ORM
-- `PostgreSQL` as the relational database
-- `Docker Compose` for local infrastructure support
-- `npm workspaces` for monorepo dependency management
-
-Main patterns:
-
-- monorepo organization with isolated applications and shared packages
-- layered backend architecture with `controller -> service -> repository`
-- DTO-based request validation and consistent API contracts
-- reusable shared types and domain contracts across applications
-- feature-oriented frontend structure for route and page isolation
-- standalone Angular components to reduce module overhead
-- Angular Signals for localized reactive state
-- reactive forms with strong typing
-- centralized error normalization and interceptor-based cross-cutting behavior
-- environment-driven configuration for local and deployable setups
-
-## Monorepo Structure
+## Repository structure
 
 ```text
 solidarity-network/
 |- apps/
-|  |- backend/
-|  \- frontend/
+|  |- backend/       NestJS API and Prisma schema
+|  \- frontend/      Angular application
 |- packages/
-|  \- shared/
+|  \- shared/        Shared enums, contracts, and view models
+|- docs/
+|  \- observability.md
 |- docker-compose.yml
 \- README.md
 ```
@@ -72,143 +51,213 @@ solidarity-network/
 
 ### Backend
 
-- `src/common`: global filters, interceptors, DTO helpers, and environment validation
-- `src/prisma`: Prisma client module
-- `src/modules/*`: feature modules with `controller -> service -> repository`
-- DTOs are validated with `class-validator`
-- API errors are normalized through a global exception filter
+- `src/common`: global filters, interceptors, DTO helpers, and validation.
+- `src/config`: environment parsing and validation.
+- `src/prisma`: Prisma client module.
+- `src/modules/auth`: authentication, sessions, password changes, and recovery.
+- `src/modules/authorization`: account and role policies.
+- `src/modules/observability`: request tracing, structured logs, audit trails, and entity versions.
+- `src/modules/*`: domain modules organized around controllers, services, and repositories.
 
 ### Frontend
 
-- `src/app/core`: application shell, HTTP config, layout, i18n, interceptors
-- `src/app/shared`: reusable UI building blocks, utilities, and types
-- `src/app/features`: isolated feature routes and pages
-- standalone components throughout
-- Angular Signals for local UI state and loading feedback
-- reactive forms with strong typing
+- `src/app/core`: application shell, auth, HTTP configuration, layout, i18n, and interceptors.
+- `src/app/shared`: reusable UI components, utilities, and types.
+- `src/app/features`: lazy-loaded pages for each operational area.
+- Standalone components, Signals for local state, and typed reactive forms.
 
-#### Frontend UI Styling Rule
+New UI work should use the repository's shared components and Tailwind utilities where available. Keep component-specific styling limited to cases that shared utilities cannot express.
 
-- Use Tailwind utility classes for new components and UI changes.
-- Do not add component-specific CSS or SCSS for layout and visual styling unless Tailwind cannot express the requirement; document that exception in the component or pull request.
-- Prefer shared Tailwind patterns and reusable components over repeating custom styles.
+### Shared package
 
-### Shared Package
+The shared package contains domain enums, API contracts, pagination types, filters, and view models consumed by both applications.
 
-- shared enums
-- domain view models
-- pagination contracts
-- filter contracts
+## Main features
 
-## Main Features
+### Charity programs
 
-### Charity Programs
-
-- create, update, list, details
-- activate and deactivate
+- Create, update, list, view, activate, and deactivate programs.
+- Link administrators and beneficiaries through many-to-many relationships.
 
 ### Administrators
 
-- create, update, list, details
-- program linking through a many-to-many relationship
+- Create, update, list, and view administrators.
+- Assign roles and program access.
+- Resend temporary access credentials.
 
 ### Beneficiaries
 
-- create, update, list, details
-- filters by program, status, and name
+- Create, update, list, and view beneficiary records.
+- Filter by program, status, and name.
+- Store optional email, address, notes, and dependents.
+- Look up Brazilian addresses by postal code.
 
-### Benefits
+### Benefits and deliveries
 
-- create, update, list, details
-- activate and deactivate
+- Create, update, list, view, activate, and deactivate benefits.
+- Register deliveries with beneficiary, program, benefit, quantity, date, notes, and a unique reference.
+- Review delivery history and filter by beneficiary or program.
 
-### Benefit Deliveries
+### Beneficiary portal
 
-- register deliveries
-- list history
-- filter by beneficiary and program
-- notes and delivery reference tracking
+Beneficiaries can sign in through the same protected entry point and view their linked programs, dependents, upcoming deliveries, and past deliveries.
 
-## Data Model
+## Data model
 
 Core entities:
 
 - `CharityProgram`
 - `Administrator`
+- `AuthCredential`
 - `Beneficiary`
+- `BeneficiaryDependent`
 - `Benefit`
 - `BenefitDelivery`
 
-Supporting concepts:
+Supporting entities:
 
 - `AdministratorProgramLink`
-- `Address`
-- typed enums for statuses, roles, and categories
+- `BeneficiaryProgramLink`
+- `AuditTrail`
+- `EntityVersion`
 
-## API Summary
+Addresses are stored as structured JSON on beneficiary records. Statuses, roles, dependent relationships, and benefit categories use typed enums.
 
-### Charity Programs
+## API summary
 
-- `GET /api/v1/charity-programs`
-- `POST /api/v1/charity-programs`
-- `GET /api/v1/charity-programs/:id`
-- `PATCH /api/v1/charity-programs/:id`
+The API uses the `/api/v1` global prefix. In development, interactive Swagger documentation is available at `http://localhost:3000/docs`.
+
+### Authentication
+
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/session`
+- `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/forgot-password`
+- `POST /api/v1/auth/reset-password`
+- `POST /api/v1/auth/change-password`
+
+Sessions are issued as an HTTP-only cookie. The API also accepts a bearer token for documented API clients.
+
+### Public
+
+- `GET /api/v1/public/login-metrics`
+
+### Charity programs
+
+- `GET|POST /api/v1/charity-programs`
+- `GET|PATCH /api/v1/charity-programs/:id`
 - `PATCH /api/v1/charity-programs/:id/status`
 
 ### Administrators
 
-- `GET /api/v1/administrators`
-- `POST /api/v1/administrators`
-- `GET /api/v1/administrators/:id`
-- `PATCH /api/v1/administrators/:id`
+- `GET|POST /api/v1/administrators`
+- `GET|PATCH /api/v1/administrators/:id`
+- `POST /api/v1/administrators/:id/resend-access`
 
 ### Beneficiaries
 
-- `GET /api/v1/beneficiaries`
-- `POST /api/v1/beneficiaries`
-- `GET /api/v1/beneficiaries/:id`
-- `PATCH /api/v1/beneficiaries/:id`
+- `GET|POST /api/v1/beneficiaries`
+- `GET|PATCH /api/v1/beneficiaries/:id`
+- `GET /api/v1/beneficiaries/address-lookup`
+
+### Beneficiary portal
+
+- `GET /api/v1/beneficiary-portal/me`
 
 ### Benefits
 
-- `GET /api/v1/benefits`
-- `POST /api/v1/benefits`
-- `GET /api/v1/benefits/:id`
-- `PATCH /api/v1/benefits/:id`
+- `GET|POST /api/v1/benefits`
+- `GET|PATCH /api/v1/benefits/:id`
 - `PATCH /api/v1/benefits/:id/status`
 
-### Benefit Deliveries
+### Benefit deliveries
 
-- `GET /api/v1/benefit-deliveries`
-- `POST /api/v1/benefit-deliveries`
+- `GET|POST /api/v1/benefit-deliveries`
 - `GET /api/v1/benefit-deliveries/:id`
 
-## Free Deployment Path
+## Local development
 
-This codebase is designed to be deployable without paid infrastructure:
+### Prerequisites
 
-- Angular frontend can be deployed as static assets on a free static hosting platform.
-- NestJS backend can be deployed as a Dockerized Node service on a free container/serverless offering, subject to the provider's current free-tier limits.
-- PostgreSQL can be provisioned on a free hosted Postgres provider or started locally through `docker-compose`.
+- Node.js 24 or a compatible current Node.js release.
+- npm.
+- Docker Desktop or another Docker Engine with Compose support.
 
-The repository includes Docker support and environment templates so local development does not depend on paid tooling.
+### 1. Install dependencies and configure the database
 
-For production-like environments:
+From the repository root:
 
-- do not use hardcoded secrets from source control
-- set `JWT_SECRET` to a unique value with at least 32 characters
-- set `BREVO_API_KEY` only through environment configuration when email
-  sending is enabled
-- keep Swagger disabled in production
-- create bootstrap administrator credentials explicitly through seed environment variables
+```bash
+npm install --workspaces
+```
 
-## Transactional Email
+Create a root `.env` from `.env.example`, replace `POSTGRES_PASSWORD` and `JWT_SECRET` with strong values, and start PostgreSQL:
 
-The backend supports Brevo transactional API delivery for password recovery,
-temporary passwords, and delivery notifications. Email sending is disabled by
-default for development and tests.
+```bash
+docker compose up -d postgres
+```
 
-Required production variables:
+Then create `apps/backend/.env` from `apps/backend/.env.example` and set its `DATABASE_URL` to match the local PostgreSQL credentials. The backend environment must contain a `JWT_SECRET` with at least 32 characters.
+
+### 2. Prepare and seed the backend
+
+```bash
+npm --prefix apps/backend run prisma:generate
+npm --prefix apps/backend run prisma:migrate
+npm run seed:backend
+```
+
+The seed always creates demo data. It creates an administrator login only when both `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set in `apps/backend/.env`; there is no default password.
+
+For macOS/Linux, the helper script can prepare the database before starting the API:
+
+```bash
+./scripts/dev-backend.sh --prepare-db
+```
+
+### 3. Start the applications
+
+From the repository root, in separate terminals:
+
+```bash
+npm run start:backend
+npm run start:frontend
+```
+
+- Frontend: `http://localhost:4200`
+- Backend API: `http://localhost:3000/api/v1`
+- Swagger UI: `http://localhost:3000/docs` (development only)
+
+The frontend's local API URL is configured in `apps/frontend/src/environments/environment.ts`.
+
+### Docker Compose full stack
+
+After configuring the root `.env`, start PostgreSQL, the backend, and the frontend together with:
+
+```bash
+docker compose up --build
+```
+
+The Compose backend applies migrations on startup. It does not run the seed automatically.
+
+## Useful commands
+
+```bash
+npm run build
+npm run lint
+npm test
+```
+
+Frontend deployment commands are available for Firebase Hosting and Cloudflare Workers:
+
+```bash
+npm --prefix apps/frontend run deploy:firebase
+npm run deploy:frontend:workers
+```
+
+## Transactional email
+
+Brevo email delivery is disabled by default for development and tests. To enable password recovery, temporary-password messages, and delivery notifications, configure:
 
 - `BREVO_ENABLED=true`
 - `BREVO_API_KEY=<brevo-api-key>`
@@ -216,103 +265,33 @@ Required production variables:
 - `BREVO_FROM_NAME=<sender-name>`
 - `APP_PUBLIC_URL=<frontend-origin>`
 
-Optional variables:
+Optional: `PASSWORD_RESET_PATH=/reset-password`.
 
-- `PASSWORD_RESET_PATH=/reset-password`
-
-Never commit Brevo credentials. Any credential shared in chat, tickets, or logs
-should be treated as compromised and rotated before production use. The
-`BREVO_FROM_EMAIL` address must be verified in Brevo; domain authentication is
-recommended for production deliverability.
-
-## Local Development
-
-### 1. Start PostgreSQL
-
-Create a root `.env` from `.env.example` before using Docker Compose.
-
-```bash
-docker compose up -d postgres
-```
-
-### 2. Run From The Repository Root
-
-Quick commands to start each application without changing directories:
-
-```bash
-npm install --workspaces
-npm run start:backend
-npm run start:frontend
-```
-
-- backend: `http://localhost:3000`
-- frontend: `http://localhost:4200`
-
-You can also use the helper scripts from the repository root:
-
-```bash
-./scripts/dev-backend.sh --prepare-db
-./scripts/dev-frontend.sh
-```
-
-### 3. Backend
-
-```bash
-cd apps/backend
-cp .env.example .env
-npm install
-npm run prisma:generate
-export SEED_ADMIN_USERNAME=your-admin-user
-export SEED_ADMIN_PASSWORD=your-strong-password
-npm run prisma:migrate
-npm run prisma:seed
-npm run start:dev
-```
-
-### 4. Frontend
-
-```bash
-cd apps/frontend
-npm install
-npm run start
-```
-
-To build and deploy the frontend to Firebase Hosting from this directory:
-
-```bash
-npm run deploy:firebase
-```
-
-Update `src/environments/environment.ts` when you need a different API URL locally.
-
-The backend seed no longer creates a default login automatically. To provision an administrator credential, set `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` explicitly before running the seed.
+Never commit Brevo credentials. Treat credentials shared in chat, tickets, or logs as compromised and rotate them before production use. The sender address must be verified in Brevo; domain authentication is recommended for deliverability.
 
 ## Internationalization
 
-The frontend ships with runtime i18n files:
+Runtime translations are stored in:
 
 - `apps/frontend/public/assets/i18n/en.json`
 - `apps/frontend/public/assets/i18n/pt-br.json`
 
-Default locale is English. Portuguese displays institutional labels as `Rede Solidaria`.
+English is the default locale. Portuguese uses the institutional label `Rede Solidaria`.
 
-## Database Defaults
+## Observability
 
-Example local PostgreSQL configuration:
+The backend adds request IDs, structured request logs, audit events, and entity-version snapshots. See [docs/observability.md](docs/observability.md) for event fields, error behavior, and operational guidance.
 
-- database: `solidarity`
-- user: `postgres`
-- password: set your own strong value in the root `.env`
-- connection string: `postgresql://postgres:<your-password>@localhost:5432/solidarity?schema=public`
+## Deployment and security checklist
 
-## Deliverables Included
+- Do not commit secrets or use placeholder credentials in production.
+- Set a unique `JWT_SECRET` with at least 32 characters.
+- Restrict `CORS_ORIGIN` to the deployed frontend origins.
+- Keep Swagger disabled in production; it is disabled automatically when `NODE_ENV=production`.
+- Configure `APP_PUBLIC_URL` and Brevo sender settings when email is enabled.
+- Provision bootstrap administrator credentials explicitly through `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD`, then rotate or replace them according to your operational policy.
+- Review the authorization and privacy model before exposing real beneficiary data.
 
-- project architecture
-- folder structure
-- Prisma database schema
-- REST API endpoints
-- typed DTOs
-- Angular routes and pages
-- Docker support
-- seed data
-- README instructions
+## License
+
+This project is distributed under the license in [LICENSE](LICENSE).
