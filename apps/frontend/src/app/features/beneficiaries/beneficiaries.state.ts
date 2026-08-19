@@ -146,7 +146,7 @@ export class BeneficiariesState {
     fullName: ['', [Validators.required, Validators.maxLength(160)]],
     document: ['', [Validators.required, Validators.maxLength(40), cpfValidator()]],
     birthDate: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', Validators.email],
     phone: ['', [Validators.required, Validators.maxLength(30)]],
     notes: [''],
     dependents: this.formBuilder.array<BeneficiaryDependentForm>([]),
@@ -355,7 +355,10 @@ export class BeneficiariesState {
       this.beneficiariesService.update(this.selected()!.id, payload).subscribe({
         next: () => {
           this.submitPending.set(false);
-          this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+          this.toastService.show({
+            type: 'success',
+            translationKey: 'common.savedSuccessfully',
+          });
           this.editor.startCreate();
           this.load(true);
           onSuccess?.();
@@ -372,10 +375,13 @@ export class BeneficiariesState {
     this.beneficiariesService.create(payload).subscribe({
       next: (response) => {
         this.submitPending.set(false);
-        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.toastService.show({
+          type: 'success',
+          translationKey: 'common.savedSuccessfully',
+        });
         this.generatedCredential.set({
           fullName: response.beneficiary.fullName,
-          email: response.beneficiary.email ?? payload.email,
+          email: response.beneficiary.email ?? (payload.email || ''),
           passkey: response.generatedPasskey,
         });
         this.editor.startCreate();

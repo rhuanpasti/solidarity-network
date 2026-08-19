@@ -334,7 +334,7 @@ export class AdministratorsPage implements OnInit {
             this.isSubmitting.set(false);
             this.toastService.show({
               type: "success",
-              text: "Saved successfully.",
+              translationKey: 'common.savedSuccessfully',
             });
             this.editor.startCreate();
             this.load(true);
@@ -359,7 +359,7 @@ export class AdministratorsPage implements OnInit {
         this.isSubmitting.set(false);
         this.toastService.show({
           type: "success",
-          text: "Saved successfully.",
+          translationKey: 'common.savedSuccessfully',
         });
         this.generatedCredential.set({
           name: response.administrator.name,

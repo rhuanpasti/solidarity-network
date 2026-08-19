@@ -64,6 +64,11 @@ export class BeneficiariesService {
         action: 'beneficiary.create',
       },
     );
+    this.authorizationService.assertCanAssignBeneficiaryPrograms(
+      actor,
+      dto.charityProgramIds ?? [],
+      { action: 'beneficiary.create' },
+    );
     await this.assertProgramsExist(dto.charityProgramIds);
     const normalizedInput = normalizeBeneficiaryInput({
       document: dto.document,
@@ -81,7 +86,7 @@ export class BeneficiariesService {
         fullName: dto.fullName,
         document: normalizedInput.document,
         birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        email: dto.email.trim().toLowerCase(),
+        email: dto.email?.trim().toLowerCase(),
         phone: normalizedInput.phone,
         passwordHash: await hashPassword(generatedPasskey),
         mustChangePassword: true,
@@ -206,7 +211,7 @@ export class BeneficiariesService {
     }
 
     if (dto.charityProgramIds !== undefined) {
-      this.authorizationService.assertCanEditBeneficiary(
+      this.authorizationService.assertCanAssignBeneficiaryPrograms(
         actor,
         dto.charityProgramIds,
         {
@@ -250,7 +255,10 @@ export class BeneficiariesService {
         fullName: dto.fullName,
         document: dto.document ? normalizedInput.document : undefined,
         birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        email: dto.email?.trim().toLowerCase(),
+        email:
+          dto.email === undefined
+            ? undefined
+            : dto.email.trim().toLowerCase() || null,
         phone: dto.phone ? normalizedInput.phone : undefined,
         address: dto.address
           ? (normalizedInput.address as unknown as Prisma.InputJsonValue)

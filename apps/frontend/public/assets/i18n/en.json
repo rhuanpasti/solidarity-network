@@ -48,6 +48,8 @@
     "refresh": "Refresh",
     "refreshing": "Refreshing",
     "readOnlyDetails": "Fields are locked. Click edit to enable changes.",
+    "savedSuccessfully": "Saved successfully.",
+    "deliveryRegisteredSuccessfully": "Delivery registered successfully.",
     "paginationSummary": "Page {{page}} of {{totalPages}} · {{totalItems}} total"
   },
   "forms": {

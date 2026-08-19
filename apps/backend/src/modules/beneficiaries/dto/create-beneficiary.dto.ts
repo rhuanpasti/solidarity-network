@@ -58,10 +58,10 @@ export class CreateBeneficiaryDto {
   @IsDateString()
   birthDate!: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string;
 
   @ApiProperty()
   @IsString()

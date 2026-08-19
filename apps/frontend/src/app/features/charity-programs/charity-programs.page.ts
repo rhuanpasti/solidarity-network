@@ -242,7 +242,7 @@ export class CharityProgramsPage implements OnInit {
     request.subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.toastService.show({ type: 'success', text: 'Saved successfully.' });
+        this.toastService.show({ type: 'success', translationKey: 'common.savedSuccessfully' });
         this.editor.startCreate();
         this.closeEditorDialog();
         this.load(true);

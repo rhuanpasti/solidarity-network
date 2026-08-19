@@ -91,6 +91,44 @@ describe('AuthorizationService', () => {
     assert.equal(service.canEditBeneficiary(beneficiary, ['program-b']), false);
   });
 
+  it('requires every assigned beneficiary program to be inside the manager scope', () => {
+    assert.equal(
+      service.canAssignBeneficiaryPrograms(programManager, ['program-a', 'program-b']),
+      true,
+    );
+    assert.equal(
+      service.canAssignBeneficiaryPrograms(programManager, ['program-a', 'program-c']),
+      false,
+    );
+    assert.equal(service.canAssignBeneficiaryPrograms(programManager, []), false);
+    assert.equal(service.canAssignBeneficiaryPrograms(superAdmin, ['program-c']), true);
+    assert.equal(service.canAssignBeneficiaryPrograms(beneficiary, ['program-a']), false);
+  });
+
+  it('throws a distinct denial when a manager assigns an out-of-scope program', () => {
+    logger.warn.mock.resetCalls();
+
+    let error: unknown;
+    try {
+      service.assertCanAssignBeneficiaryPrograms(
+        programManager,
+        ['program-a', 'program-c'],
+        { action: 'beneficiary.reassign_program' },
+      );
+    } catch (caught) {
+      error = caught;
+    }
+
+    if (!(error instanceof ForbiddenException)) {
+      throw error;
+    }
+    assert.deepEqual(error.getResponse(), {
+      code: 'BENEFICIARY_PROGRAM_ASSIGNMENT_FORBIDDEN',
+      message: 'Authenticated account cannot assign one or more of these charity programs.',
+    });
+    assert.equal(logger.warn.mock.calls[0]?.arguments[1]?.policy, 'canAssignBeneficiaryPrograms');
+  });
+
   it('throws and logs when a route policy is denied', () => {
     logger.warn.mock.resetCalls();
 

@@ -1,6 +1,22 @@
 # Solidarity Network
 
-Solidarity Network is an open-source full-stack starter for organizations that coordinate charity programs, administrators, beneficiaries, benefits, and benefit deliveries.
+[![Quality gate](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml/badge.svg)](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml)
+[![License](https://img.shields.io/badge/license-see%20LICENSE-1f2937)](LICENSE)
+
+**Angular 21 · NestJS 11 · PostgreSQL · Prisma · Docker**
+
+Solidarity Network is a full-stack, role-based management platform for organizations that coordinate charity programs, beneficiaries, benefits, and deliveries.
+
+[Live demo](https://solidarity-network-live.web.app) · [API documentation](http://localhost:3000/docs) · [Observability guide](docs/observability.md)
+
+> **Demo availability:** The hosted frontend and backend run on the free tiers of their respective providers. The API or database may occasionally be unavailable, sleep between requests, or respond slowly due to free-tier limits and cold starts. The recommended way to run and evaluate the project is locally. This repository is designed to be forked, adapted, and used as a template for other projects.
+
+## Portfolio snapshot
+
+- Multi-scope authorization with separate route, record, and program-assignment policies.
+- Secure HTTP-only cookie sessions, CSRF protection, password hashing, rate limiting, and normalized API errors.
+- Angular standalone components, Signals, typed forms, lazy routes, runtime English/Portuguese i18n, and cached list state.
+- NestJS modules with Prisma repositories, PostgreSQL persistence, audit/version history, Docker development, CI quality gates, and API E2E coverage.
 
 It provides a practical operational workspace that can be forked and adapted to a nonprofit, community initiative, or other social-impact program. The domain model, workflows, visual identity, integrations, deployment model, and policies are intentionally customizable.
 
@@ -22,6 +38,8 @@ The application includes username/email authentication, password hashing, protec
 - Temporary access credentials, first-access password changes, password reset emails, and delivery notifications through optional Brevo integration.
 - Audit trails, entity version snapshots, request IDs, structured logging, and normalized API errors.
 - OpenAPI/Swagger documentation during non-production backend runs.
+
+The beneficiary email is optional. When it is not available, the account can still be created for local credential handoff, but password recovery and email notifications are unavailable for that beneficiary.
 
 ## Accounts, roles, and authorization
 
@@ -69,6 +87,15 @@ solidarity-network/
 ```
 
 ## Architecture
+
+At runtime, the main request path is:
+
+```text
+Angular UI -> NestJS REST API -> Authorization + domain services -> Prisma -> PostgreSQL
+                                      |                    |
+                                      v                    v
+                              Structured logs       Audit/version history
+```
 
 ### Backend
 
@@ -267,7 +294,11 @@ The Compose backend applies migrations on startup. It does not run the seed auto
 npm run build
 npm run lint
 npm test
+npm run build:shared
+npm --prefix apps/backend run test:e2e
 ```
+
+The E2E suite is environment-driven. Set `E2E_BASE_URL` and `E2E_PASSWORD` through your local environment or a secret manager before preparing credentials; without both values, the four API flows are reported as skipped. Never commit these values.
 
 Frontend deployment commands are available for Firebase Hosting and Cloudflare Workers:
 
@@ -312,6 +343,9 @@ The backend adds request IDs, structured request logs, audit events, and entity-
 - Configure `APP_PUBLIC_URL` and Brevo sender settings when email is enabled.
 - Provision bootstrap administrator credentials explicitly through `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD`, then rotate or replace them according to your operational policy.
 - Review the authorization and privacy model before exposing real beneficiary data.
+- Replace the process-local auth rate limiter with a shared limiter such as Redis when running multiple API instances.
+- Define retention/anonymization rules for beneficiary audit and entity-version snapshots before using real personal data.
+- Use the maintained `@nestjs/jwt` integration for token signing and verification, and evaluate a dedicated identity provider for MFA, recovery, and enterprise account controls.
 
 ## License
 

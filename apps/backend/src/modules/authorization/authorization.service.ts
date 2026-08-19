@@ -113,6 +113,25 @@ export class AuthorizationService {
     return programIds.some((programId) => user.programIds.includes(programId));
   }
 
+  canAssignBeneficiaryPrograms(
+    user: AuthenticatedUser,
+    programIds?: string[] | null,
+  ) {
+    if (user.accountType !== 'administrator') {
+      return false;
+    }
+
+    if (this.isSuperAdmin(user)) {
+      return true;
+    }
+
+    if (!programIds?.length) {
+      return false;
+    }
+
+    return programIds.every((programId) => user.programIds.includes(programId));
+  }
+
   canRegisterDelivery(user: AuthenticatedUser, programId: string) {
     return this.canAccessProgram(user, programId);
   }
@@ -221,6 +240,25 @@ export class AuthorizationService {
     throw new ForbiddenException({
       code: 'BENEFICIARY_EDIT_FORBIDDEN',
       message: 'Authenticated account cannot edit this beneficiary.',
+    });
+  }
+
+  assertCanAssignBeneficiaryPrograms(
+    user: AuthenticatedUser,
+    programIds?: string[] | null,
+    details?: Record<string, unknown>,
+  ) {
+    if (this.canAssignBeneficiaryPrograms(user, programIds)) {
+      return;
+    }
+
+    this.logFailure('canAssignBeneficiaryPrograms', user, {
+      ...details,
+      programIds,
+    });
+    throw new ForbiddenException({
+      code: 'BENEFICIARY_PROGRAM_ASSIGNMENT_FORBIDDEN',
+      message: 'Authenticated account cannot assign one or more of these charity programs.',
     });
   }
 

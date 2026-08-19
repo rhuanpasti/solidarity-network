@@ -48,6 +48,8 @@
     "refresh": "Atualizar",
     "refreshing": "Atualizando",
     "readOnlyDetails": "Os campos estao bloqueados. Clique em editar para habilitar a alteracao.",
+    "savedSuccessfully": "Salvo com sucesso.",
+    "deliveryRegisteredSuccessfully": "Entrega registrada com sucesso.",
     "paginationSummary": "Pagina {{page}} de {{totalPages}} · {{totalItems}} no total"
   },
   "forms": {

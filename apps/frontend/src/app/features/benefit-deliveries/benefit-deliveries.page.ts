@@ -328,7 +328,7 @@ export class BenefitDeliveriesPage implements OnInit {
           this.submitPending.set(false);
           this.toastService.show({
             type: 'success',
-            text: 'Delivery registered successfully.',
+            translationKey: 'common.deliveryRegisteredSuccessfully',
           });
           this.startCreate();
           this.closeEditorDialog();

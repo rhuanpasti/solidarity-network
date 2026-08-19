@@ -55,7 +55,6 @@ interface GeneratedCredentialInfo {
             label="forms.email"
             type="email"
             [errors]="[
-              ['required', 'validation.required'],
               ['email', 'validation.invalidEmail']
             ]"
             [readonly]="isReadOnly()"

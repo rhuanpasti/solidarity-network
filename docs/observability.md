@@ -111,6 +111,21 @@ Successful requests emit `administrator.temporary_password.resent`. Provider fai
 `administrator.temporary_password_email.failed` with the same fingerprint-only sanitization; the endpoint returns
 `{"success": false}` so the modal can show an actionable retry message.
 
+Beneficiary edits and program assignments use separate authorization policies. An administrator may edit a
+beneficiary when at least one currently linked program is in scope, but a non-super administrator may assign only
+programs whose complete submitted list is in scope. An out-of-scope assignment returns `403
+BENEFICIARY_PROGRAM_ASSIGNMENT_FORBIDDEN` and emits `authorization.denied` with policy
+`canAssignBeneficiaryPrograms`; the log contains program IDs for diagnosis but never beneficiary personal data.
+
+The authentication rate limiter is process-local and currently derives a client address from the request headers.
+This is suitable for a single-instance deployment or a trusted reverse proxy, but production deployments with
+multiple API instances should move the counter to a shared store such as Redis and configure proxy trust explicitly.
+
+Beneficiary audit and entity-version snapshots currently retain personal-data fields needed to explain a historical
+change. Treat these records as personal data, restrict operational access, and define a retention or anonymization
+policy before processing real beneficiary information. A future hardening pass should mask documents and other
+high-sensitivity fields where full historical values are not required.
+
 Example request:
 
 ```bash
