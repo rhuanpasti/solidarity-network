@@ -66,6 +66,8 @@ export class AuthService {
   );
 
   async validateStoredSession() {
+    const hadCachedSession = this.sessionState() !== null;
+
     try {
       const response = await firstValueFrom(
         this.httpClient
@@ -84,6 +86,10 @@ export class AuthService {
       // cleared immediately so the login page does not get stuck in a loop.
       if (error instanceof HttpErrorResponse && [401, 403].includes(error.status)) {
         this.clearSessionState();
+
+        if (hadCachedSession) {
+          await this.logout();
+        }
       }
 
       return false;
@@ -184,6 +190,8 @@ export class AuthService {
   async logout(options?: { remote?: boolean }) {
     const remote = options?.remote ?? true;
 
+    this.clearSessionState();
+
     try {
       if (remote) {
         await firstValueFrom(this.httpClient.post(`${this.baseUrl}/logout`, {}));
@@ -192,7 +200,6 @@ export class AuthService {
       console.error('Logout request failed, clearing local session state anyway.');
     } finally {
       this.sessionExpiryHandled = false;
-      this.clearSessionState();
     }
   }
 

@@ -256,10 +256,11 @@ describe('AuthService', () => {
           }),
       ),
     );
+    const post = mock.fn(() => of({ success: true }));
     const injector = Injector.create({
       providers: [
         AuthService,
-        { provide: HttpClient, useValue: { get } },
+        { provide: HttpClient, useValue: { get, post } },
       ],
     });
     const service = runInInjectionContext(injector, () => new AuthService());
@@ -267,6 +268,34 @@ describe('AuthService', () => {
     assert.equal(await service.validateStoredSession(), false);
     assert.equal(service.session(), null);
     assert.equal(sessionStorage.getItem('solidarity-network-auth-session'), null);
+    assert.equal(post.mock.callCount(), 1);
+    assert.equal(
+      post.mock.calls[0]?.arguments[0],
+      `${environment.apiBaseUrl}/auth/logout`,
+    );
+  });
+
+  it('does not call logout when an empty login session is rejected', async () => {
+    const get = mock.fn(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            error: { code: 'AUTH_REQUIRED' },
+          }),
+      ),
+    );
+    const post = mock.fn(() => of({ success: true }));
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: { get, post } },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    assert.equal(await service.validateStoredSession(), false);
+    assert.equal(post.mock.callCount(), 0);
   });
 
   it('clears the HttpOnly cookie through logout and removes local session data', async () => {

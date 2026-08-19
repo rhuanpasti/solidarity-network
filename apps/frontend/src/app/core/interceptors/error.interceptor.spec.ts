@@ -29,6 +29,7 @@ describe('errorInterceptor', () => {
       'AUTH_REQUIRED',
       'INVALID_TOKEN',
       'AUTH_ACCOUNT_UNAVAILABLE',
+      'SESSION_REVOKED',
       'CSRF_TOKEN_INVALID',
     ];
 
