@@ -46,7 +46,7 @@ export class PublicController {
       );
     }
 
-    this.authRateLimitService.registerFailure(keys);
+    this.authRateLimitService.registerRequest(keys);
     response.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     return this.publicService.getLoginMetrics();
   }

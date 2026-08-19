@@ -65,4 +65,17 @@ describe('AuthRateLimitService', () => {
     mock.method(Date, 'now', () => now + 15 * 60 * 1000 + 1);
     assert.equal(service.getRetryAfterSeconds(keys), 0);
   });
+
+  it('allows normal public metrics traffic before applying its broader limit', () => {
+    const service = new AuthRateLimitService();
+    const keys = ['auth:public-metrics:ip:127.0.0.1'];
+
+    for (let requestNumber = 0; requestNumber < 20; requestNumber += 1) {
+      assert.equal(service.getRetryAfterSeconds(keys), 0);
+      service.registerRequest(keys);
+    }
+
+    service.registerRequest(keys);
+    assert.equal(service.getRetryAfterSeconds(keys), 900);
+  });
 });

@@ -45,6 +45,7 @@ export type AuthRateLimitAction =
 
 const WINDOW_MS = 1000 * 60 * 15;
 const MAX_ATTEMPTS = 5;
+const PUBLIC_METRICS_MAX_REQUESTS = 20;
 const BLOCK_DURATION_MS = 1000 * 60 * 15;
 
 @Injectable()
@@ -93,6 +94,14 @@ export class AuthRateLimitService {
   }
 
   registerFailure(keys: string[]) {
+    this.register(keys, MAX_ATTEMPTS);
+  }
+
+  registerRequest(keys: string[], maxRequests = PUBLIC_METRICS_MAX_REQUESTS) {
+    this.register(keys, maxRequests);
+  }
+
+  private register(keys: string[], maxAttempts: number) {
     const now = Date.now();
     this.pruneExpired(now);
 
@@ -105,7 +114,7 @@ export class AuthRateLimitService {
 
       state.attempts += 1;
 
-      if (state.attempts >= MAX_ATTEMPTS) {
+      if (state.attempts >= maxAttempts) {
         state.blockedUntil = now + BLOCK_DURATION_MS;
       }
 
