@@ -4,6 +4,7 @@ export interface AppEnvironment {
   CORS_ORIGIN: string;
   JWT_SECRET: string;
   NODE_ENV: string;
+  TRUST_PROXY: string;
   APP_PUBLIC_URL: string;
   PASSWORD_RESET_PATH: string;
   BREVO_ENABLED: boolean;
@@ -59,6 +60,7 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
     CORS_ORIGIN: corsOrigin,
     JWT_SECRET: jwtSecret,
     NODE_ENV: String(config.NODE_ENV ?? 'development'),
+    TRUST_PROXY: String(config.TRUST_PROXY ?? 'false').trim().toLowerCase(),
     APP_PUBLIC_URL: String(config.APP_PUBLIC_URL ?? 'http://localhost:4200'),
     PASSWORD_RESET_PATH: String(config.PASSWORD_RESET_PATH ?? '/reset-password'),
     BREVO_ENABLED: String(config.BREVO_ENABLED ?? 'false') === 'true',
@@ -70,4 +72,22 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
     BREVO_FROM_EMAIL: String(config.BREVO_FROM_EMAIL ?? ''),
     BREVO_FROM_NAME: String(config.BREVO_FROM_NAME ?? 'Solidarity Network'),
   };
+}
+
+export function parseTrustProxy(value: string): boolean | number | string[] {
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === 'true') {
+    return true;
+  }
+
+  if (normalized === 'false' || normalized === '') {
+    return false;
+  }
+
+  if (/^\d+$/.test(normalized)) {
+    return Number(normalized);
+  }
+
+  return normalized.split(',').map((entry) => entry.trim()).filter(Boolean);
 }

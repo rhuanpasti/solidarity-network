@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   DEFAULT_CORS_ORIGINS,
   normalizeCorsOrigins,
+  parseTrustProxy,
   validateEnv,
 } from './env.schema';
 
@@ -35,5 +36,14 @@ describe('validateEnv', () => {
     });
 
     assert.equal(environment.CORS_ORIGIN, 'https://solidarity-network-live.web.app');
+  });
+
+  it('parses explicit trusted proxy settings', () => {
+    assert.equal(parseTrustProxy('false'), false);
+    assert.equal(parseTrustProxy('1'), 1);
+    assert.deepEqual(parseTrustProxy('10.0.0.0/8, 192.168.0.0/16'), [
+      '10.0.0.0/8',
+      '192.168.0.0/16',
+    ]);
   });
 });

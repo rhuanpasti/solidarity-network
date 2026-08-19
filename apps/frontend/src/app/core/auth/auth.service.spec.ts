@@ -303,4 +303,18 @@ describe('AuthService', () => {
     assert.equal(sessionStorage.getItem('solidarity-network-auth-session'), null);
   });
 
+  it('accepts only internal return URLs after login', () => {
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        { provide: HttpClient, useValue: {} },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    assert.equal(service.resolvePostLoginUrl('/beneficiaries'), '/beneficiaries');
+    assert.equal(service.resolvePostLoginUrl('https://evil.example'), '/dashboard');
+    assert.equal(service.resolvePostLoginUrl('//evil.example'), '/dashboard');
+  });
+
 });

@@ -1,5 +1,11 @@
 node_modules
+**/node_modules
 dist
-.angular
+**/dist
 coverage
-
+.git
+.angular
+.cache
+*.log
+.env
+**/.env

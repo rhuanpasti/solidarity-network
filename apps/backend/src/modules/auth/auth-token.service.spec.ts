@@ -13,6 +13,7 @@ const user: AuthenticatedUser = {
   accountType: 'administrator',
   programIds: [],
   mustChangePassword: false,
+  sessionVersion: 0,
   csrfToken: 'csrf-token',
   iat: 0,
   exp: 0,
@@ -32,6 +33,7 @@ describe('AuthTokenService', () => {
 
     assert.equal(verified?.sub, user.sub);
     assert.equal(verified?.csrfToken, user.csrfToken);
+    assert.equal(verified?.sessionVersion, user.sessionVersion);
     assert.ok((verified?.exp ?? 0) > (verified?.iat ?? 0));
   });
 

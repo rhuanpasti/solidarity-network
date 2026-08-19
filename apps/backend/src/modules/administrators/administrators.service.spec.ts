@@ -12,6 +12,7 @@ const actor: AuthenticatedUser = {
   accountType: 'administrator',
   programIds: [],
   mustChangePassword: false,
+  sessionVersion: 0,
   csrfToken: 'csrf-token',
   iat: 0,
   exp: 0,

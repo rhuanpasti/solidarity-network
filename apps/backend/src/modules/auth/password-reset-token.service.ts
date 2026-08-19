@@ -1,59 +1,96 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import type { AccountType } from '@solidarity-network/shared';
 import type { AppEnvironment } from '../../config/env.schema';
+import { PrismaService } from '../../prisma/prisma.service';
 
-const RESET_TOKEN_TTL_SECONDS = 60 * 60;
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+
+export interface PasswordResetTokenPayload {
+  accountId: string;
+  accountType: AccountType;
+  email: string;
+}
 
 @Injectable()
 export class PasswordResetTokenService {
   constructor(
     @Inject(ConfigService)
     private readonly configService: ConfigService<AppEnvironment>,
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService,
   ) {}
 
-  createToken(payload: { accountId: string; accountType: AccountType; email: string }) {
-    const expiresAt = Math.floor(Date.now() / 1000) + RESET_TOKEN_TTL_SECONDS;
-    const body = this.encode({
-      sub: payload.accountId,
-      accountType: payload.accountType,
-      email: payload.email,
-      exp: expiresAt,
-    });
-    const signature = this.sign(body);
+  async createToken(payload: PasswordResetTokenPayload) {
+    const token = randomBytes(32).toString('base64url');
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + RESET_TOKEN_TTL_MS);
 
-    return `${body}.${signature}`;
+    await this.prisma.passwordResetToken.updateMany({
+      where: {
+        accountId: payload.accountId,
+        accountType: payload.accountType,
+        usedAt: null,
+      },
+      data: { usedAt: now },
+    });
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { expiresAt: { lt: now } },
+    });
+    await this.prisma.passwordResetToken.create({
+      data: {
+        tokenHash: this.hashToken(token),
+        accountId: payload.accountId,
+        accountType: payload.accountType,
+        email: payload.email,
+        expiresAt,
+      },
+    });
+
+    return token;
   }
 
-  verifyToken(token: string):
-    | { accountId: string; accountType: AccountType; email: string }
-    | null {
-    const [body, signature] = token.split('.');
+  async verifyToken(token: string): Promise<PasswordResetTokenPayload | null> {
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash: this.hashToken(token) },
+    });
 
-    if (!body || !signature || !this.signatureMatches(body, signature)) {
+    if (!record || record.usedAt || record.expiresAt <= new Date()) {
       return null;
     }
 
-    const payload = this.decode(body);
+    return this.toPayload(record);
+  }
 
-    if (
-      !payload ||
-      typeof payload.sub !== 'string' ||
-      (payload.accountType !== 'administrator' &&
-        payload.accountType !== 'beneficiary') ||
-      typeof payload.email !== 'string' ||
-      typeof payload.exp !== 'number' ||
-      payload.exp < Math.floor(Date.now() / 1000)
-    ) {
+  async consumeToken(token: string): Promise<PasswordResetTokenPayload | null> {
+    const tokenHash = this.hashToken(token);
+    const now = new Date();
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!record || record.usedAt || record.expiresAt <= now) {
       return null;
     }
 
-    return {
-      accountId: payload.sub,
-      accountType: payload.accountType,
-      email: payload.email,
-    };
+    const consumed = await this.prisma.passwordResetToken.updateMany({
+      where: {
+        id: record.id,
+        usedAt: null,
+        expiresAt: { gt: now },
+      },
+      data: { usedAt: now },
+    });
+
+    return consumed.count === 1 ? this.toPayload(record) : null;
+  }
+
+  async invalidateForAccount(accountType: AccountType, accountId: string) {
+    await this.prisma.passwordResetToken.updateMany({
+      where: { accountType, accountId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 
   buildResetLink(token: string) {
@@ -72,31 +109,23 @@ export class PasswordResetTokenService {
     return '1 hour';
   }
 
-  private encode(payload: Record<string, unknown>) {
-    return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
+  private hashToken(token: string) {
+    return createHash('sha256').update(token).digest('hex');
   }
 
-  private decode(value: string): Record<string, unknown> | null {
-    try {
-      return JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Record<
-        string,
-        unknown
-      >;
-    } catch {
+  private toPayload(record: {
+    accountId: string;
+    accountType: string;
+    email: string;
+  }): PasswordResetTokenPayload | null {
+    if (record.accountType !== 'administrator' && record.accountType !== 'beneficiary') {
       return null;
     }
-  }
 
-  private sign(value: string) {
-    const secret = this.configService.get('JWT_SECRET', { infer: true });
-    return createHmac('sha256', String(secret)).update(value).digest('base64url');
-  }
-
-  private signatureMatches(body: string, signature: string) {
-    const expectedSignature = this.sign(body);
-    const actual = Buffer.from(signature);
-    const expected = Buffer.from(expectedSignature);
-
-    return actual.length === expected.length && timingSafeEqual(actual, expected);
+    return {
+      accountId: record.accountId,
+      accountType: record.accountType,
+      email: record.email,
+    };
   }
 }

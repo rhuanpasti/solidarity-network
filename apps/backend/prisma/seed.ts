@@ -13,6 +13,12 @@ if (existsSync(envFilePath)) {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' || process.env.DEMO_SEED_ENABLED !== 'true') {
+    throw new Error(
+      'Demo seed is disabled by default. Set DEMO_SEED_ENABLED=true in a development or CI database.',
+    );
+  }
+
   const demoData = buildDemoSeedData();
   const seedAdminEmail =
     process.env.SEED_ADMIN_EMAIL?.trim() || 'admin@solidarity-network.local';
@@ -25,7 +31,8 @@ async function main() {
     );
   }
 
-  const administrator = await prisma.administrator.upsert({
+  await prisma.$transaction(async (transaction) => {
+  const administrator = await transaction.administrator.upsert({
     where: { email: seedAdminEmail },
     update: {
       name: 'System Administrator',
@@ -44,20 +51,20 @@ async function main() {
 
   const programIds = new Map<string, string>();
   for (const program of demoData.programs) {
-    const existing = await prisma.charityProgram.findFirst({
+    const existing = await transaction.charityProgram.findFirst({
       where: { name: program.name },
       select: { id: true },
     });
 
     const savedProgram = existing
-      ? await prisma.charityProgram.update({
+      ? await transaction.charityProgram.update({
           where: { id: existing.id },
           data: {
             description: program.description,
             status: program.status,
           },
         })
-      : await prisma.charityProgram.create({
+      : await transaction.charityProgram.create({
           data: {
             name: program.name,
             description: program.description,
@@ -70,13 +77,13 @@ async function main() {
 
   const benefitIds = new Map<string, string>();
   for (const benefit of demoData.benefits) {
-    const existing = await prisma.benefit.findFirst({
+    const existing = await transaction.benefit.findFirst({
       where: { name: benefit.name },
       select: { id: true },
     });
 
     const savedBenefit = existing
-      ? await prisma.benefit.update({
+      ? await transaction.benefit.update({
           where: { id: existing.id },
           data: {
             description: benefit.description,
@@ -84,7 +91,7 @@ async function main() {
             active: benefit.active,
           },
         })
-      : await prisma.benefit.create({
+      : await transaction.benefit.create({
           data: {
             name: benefit.name,
             description: benefit.description,
@@ -102,7 +109,7 @@ async function main() {
       continue;
     }
 
-    const savedAdministrator = await prisma.administrator.upsert({
+    const savedAdministrator = await transaction.administrator.upsert({
       where: { email: seededAdministrator.email },
       update: {
         name: seededAdministrator.name,
@@ -124,7 +131,7 @@ async function main() {
 
   const beneficiaryIds = new Map<string, string>();
   for (const beneficiary of demoData.beneficiaries) {
-    const savedBeneficiary = await prisma.beneficiary.upsert({
+    const savedBeneficiary = await transaction.beneficiary.upsert({
       where: { document: beneficiary.document },
       update: {
         fullName: beneficiary.fullName,
@@ -150,7 +157,7 @@ async function main() {
     beneficiaryIds.set(beneficiary.key, savedBeneficiary.id);
   }
 
-  await prisma.administratorProgramLink.deleteMany({
+  await transaction.administratorProgramLink.deleteMany({
     where: {
       administratorId: {
         in: Array.from(administratorIds.values()),
@@ -158,7 +165,7 @@ async function main() {
     },
   });
 
-  await prisma.administratorProgramLink.createMany({
+  await transaction.administratorProgramLink.createMany({
     data: demoData.administrators.flatMap((seededAdministrator) =>
       seededAdministrator.programKeys.map((programKey) => ({
         administratorId: requiredId(administratorIds, seededAdministrator.key),
@@ -168,7 +175,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.beneficiaryProgramLink.deleteMany({
+  await transaction.beneficiaryProgramLink.deleteMany({
     where: {
       beneficiaryId: {
         in: Array.from(beneficiaryIds.values()),
@@ -176,7 +183,7 @@ async function main() {
     },
   });
 
-  await prisma.beneficiaryProgramLink.createMany({
+  await transaction.beneficiaryProgramLink.createMany({
     data: demoData.beneficiaries.flatMap((beneficiary) =>
       beneficiary.programKeys.map((programKey) => ({
         beneficiaryId: requiredId(beneficiaryIds, beneficiary.key),
@@ -186,7 +193,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  await prisma.benefitDelivery.deleteMany({
+  await transaction.benefitDelivery.deleteMany({
     where: {
       reference: {
         in: demoData.deliveries.map((delivery) => delivery.reference),
@@ -194,7 +201,7 @@ async function main() {
     },
   });
 
-  await prisma.benefitDelivery.createMany({
+  await transaction.benefitDelivery.createMany({
     data: demoData.deliveries.map((delivery) => ({
       beneficiaryId: requiredId(beneficiaryIds, delivery.beneficiaryKey),
       benefitId: requiredId(benefitIds, delivery.benefitKey),
@@ -208,7 +215,7 @@ async function main() {
   });
 
   if (seedAdminUsername && seedAdminPassword) {
-    await prisma.authCredential.upsert({
+    await transaction.authCredential.upsert({
       where: { username: seedAdminUsername },
       update: {
         administratorId: administrator.id,
@@ -236,6 +243,7 @@ async function main() {
       `${demoData.deliveries.length} delivery records`,
     ].join(', '),
   );
+  });
 }
 
 function requiredId(ids: Map<string, string>, key: string) {

@@ -22,6 +22,10 @@ The logger emits one JSON object per log line through Nest's logger. Every log e
 
 Sensitive fields are sanitized before output. Keys containing values like `password`, `token`, `secret`, `authorization`, or `cookie` are replaced with `[REDACTED]`. Beneficiary audit snapshots can include dependent names, birth dates, relationship, and nullable documents, so log access should be treated as access to personal data.
 
+Persisted audit and entity-version snapshots mask documents and phones, replace full addresses with
+`[REDACTED_ADDRESS]`, and partially mask email addresses. Technical logs additionally redact passwords, tokens,
+cookies, JWTs, CSRF values, and API keys.
+
 Transactional email logs must not include reset tokens, temporary passwords, API
 keys, or raw recipient addresses. Email events use a short recipient fingerprint
 for correlation.
@@ -36,15 +40,19 @@ request.failed
 request.exception
 auth.request.denied
 authorization.denied
-audit.record.created
-audit.record.failed
-entity.version.failed
+audit.recorded
+audit.persist_failed
+audit.persistence_unavailable
+entity_version.persist_failed
 email.send.succeeded
 email.send.failed
 email.send.skipped
 email.send.configuration_missing
 administrator.temporary_password.resent
 administrator.temporary_password_email.failed
+auth.password_recovery.requested
+auth.password_recovery.email_failed
+auth.request.denied (reason=session_revoked)
 ```
 
 Prefer names that describe what happened, not where it happened. Put module-specific data in fields.
@@ -117,14 +125,24 @@ programs whose complete submitted list is in scope. An out-of-scope assignment r
 BENEFICIARY_PROGRAM_ASSIGNMENT_FORBIDDEN` and emits `authorization.denied` with policy
 `canAssignBeneficiaryPrograms`; the log contains program IDs for diagnosis but never beneficiary personal data.
 
-The authentication rate limiter is process-local and currently derives a client address from the request headers.
-This is suitable for a single-instance deployment or a trusted reverse proxy, but production deployments with
-multiple API instances should move the counter to a shared store such as Redis and configure proxy trust explicitly.
+The authentication rate limiter is process-local and uses Express's resolved `request.ip`; it never parses the first
+client-controlled `X-Forwarded-For` value itself. Configure `TRUST_PROXY` only for the actual reverse proxy topology
+(`false` for direct local/Docker traffic, `1` for Render's single proxy hop, or an explicit trusted proxy list).
+It applies separate IP and IP-plus-identifier limits to login, password recovery, password reset, and public metrics.
+Production deployments with multiple API instances should replace the in-memory store with Redis.
 
-Beneficiary audit and entity-version snapshots currently retain personal-data fields needed to explain a historical
-change. Treat these records as personal data, restrict operational access, and define a retention or anonymization
-policy before processing real beneficiary information. A future hardening pass should mask documents and other
-high-sensitivity fields where full historical values are not required.
+Beneficiary audit and entity-version snapshots remain personal data even after masking. Restrict operational access,
+define a retention/anonymization policy, and alert on `audit.persist_failed`, `audit.persistence_unavailable`, and
+`entity_version.persist_failed` before processing real beneficiary information.
+
+Password recovery is intentionally generic at the API boundary. A recovery request stores only a SHA-256 hash of a
+random token, expires after one hour, invalidates previous tokens for the account, and marks the token consumed before
+the password update. `auth.password_recovery.email_failed` records provider failures using only an email fingerprint;
+the endpoint still returns the same generic success response, preventing account enumeration.
+
+Changing or resetting a password increments the account `sessionVersion`. JWTs carry that version and the auth guard
+compares it with the current credential on every protected request, emitting `auth.request.denied` with
+`reason=session_revoked` for stale sessions.
 
 Example request:
 
@@ -329,3 +347,18 @@ Minimum alerts:
 5. Any sustained `email.send.failed` events for 5 minutes, or any `email.send.configuration_missing` event in production.
 
 Next step after log-based monitoring is OpenTelemetry tracing. Keep `traceId` aligned with `requestId` until a real distributed trace ID is introduced, then propagate W3C `traceparent` while preserving `X-Request-Id` for support workflows.
+
+Session revocation example:
+
+```json
+{
+  "timestamp": "2026-08-19T18:30:00.000Z",
+  "level": "warn",
+  "message": "auth.request.denied",
+  "event": "auth.request.denied",
+  "requestId": "req_01HXSESSION",
+  "accountType": "administrator",
+  "accountId": "clw9admin0001",
+  "reason": "session_revoked"
+}
+```

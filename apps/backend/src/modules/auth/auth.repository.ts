@@ -14,6 +14,7 @@ export interface AuthAccountRecord {
   programIds: string[];
   passwordHash: string;
   mustChangePassword: boolean;
+  sessionVersion: number;
 }
 
 export type PasswordRecoveryRecipient = Omit<AuthAccountRecord, 'passwordHash'>;
@@ -68,6 +69,7 @@ export class AuthRepository {
       ),
       passwordHash: credential.passwordHash,
       mustChangePassword: credential.mustChangePassword,
+      sessionVersion: credential.sessionVersion,
     }));
 
     if (beneficiary?.email && beneficiary.passwordHash) {
@@ -81,6 +83,7 @@ export class AuthRepository {
         programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         passwordHash: beneficiary.passwordHash,
         mustChangePassword: beneficiary.mustChangePassword,
+        sessionVersion: beneficiary.sessionVersion,
       });
     }
 
@@ -130,6 +133,7 @@ export class AuthRepository {
           (link) => link.charityProgramId,
         ),
         mustChangePassword: credential.mustChangePassword,
+        sessionVersion: credential.sessionVersion,
       };
     }
 
@@ -143,6 +147,7 @@ export class AuthRepository {
         accountType: 'beneficiary',
         programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
         mustChangePassword: beneficiary.mustChangePassword,
+        sessionVersion: beneficiary.sessionVersion,
       };
     }
 
@@ -180,6 +185,7 @@ export class AuthRepository {
           (link) => link.charityProgramId,
         ),
         mustChangePassword: credential.mustChangePassword,
+        sessionVersion: credential.sessionVersion,
         csrfToken: '',
       };
     }
@@ -208,6 +214,7 @@ export class AuthRepository {
       accountType,
       programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       mustChangePassword: beneficiary.mustChangePassword,
+      sessionVersion: beneficiary.sessionVersion,
       csrfToken: '',
     };
   }
@@ -244,6 +251,7 @@ export class AuthRepository {
         ),
         passwordHash: credential.passwordHash,
         mustChangePassword: credential.mustChangePassword,
+        sessionVersion: credential.sessionVersion,
       };
     }
 
@@ -272,6 +280,7 @@ export class AuthRepository {
       programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       passwordHash: beneficiary.passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
+      sessionVersion: beneficiary.sessionVersion,
     };
   }
 
@@ -287,6 +296,7 @@ export class AuthRepository {
           passwordHash,
           mustChangePassword: false,
           lastPasswordChangedAt: new Date(),
+          sessionVersion: { increment: 1 },
         },
         include: {
           administrator: {
@@ -296,6 +306,7 @@ export class AuthRepository {
           },
         },
       });
+      await this.invalidateResetTokens(accountType, accountId);
 
       return {
         id: credential.administrator.id,
@@ -309,6 +320,7 @@ export class AuthRepository {
         ),
         passwordHash: credential.passwordHash,
         mustChangePassword: credential.mustChangePassword,
+        sessionVersion: credential.sessionVersion,
       };
     }
 
@@ -318,11 +330,13 @@ export class AuthRepository {
         passwordHash,
         mustChangePassword: false,
         lastPasswordChangedAt: new Date(),
+        sessionVersion: { increment: 1 },
       },
       include: {
         charityPrograms: true,
       },
     });
+    await this.invalidateResetTokens(accountType, accountId);
 
     if (!beneficiary.email) {
       throw new Error('Beneficiary email is required to update password.');
@@ -338,6 +352,14 @@ export class AuthRepository {
       programIds: beneficiary.charityPrograms.map((link) => link.charityProgramId),
       passwordHash: beneficiary.passwordHash ?? passwordHash,
       mustChangePassword: beneficiary.mustChangePassword,
+      sessionVersion: beneficiary.sessionVersion,
     };
+  }
+
+  private invalidateResetTokens(accountType: AccountType, accountId: string) {
+    return this.prisma.passwordResetToken.updateMany({
+      where: { accountType, accountId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 }

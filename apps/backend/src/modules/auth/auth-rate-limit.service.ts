@@ -1,11 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import type { Request } from 'express';
 
-interface AttemptState {
+export interface AuthRateLimitState {
   attempts: number;
   windowStartedAt: number;
   blockedUntil: number | null;
 }
+
+export interface AuthRateLimitStore {
+  get(key: string): AuthRateLimitState | undefined;
+  set(key: string, state: AuthRateLimitState): void;
+  delete(key: string): void;
+  entries(): IterableIterator<[string, AuthRateLimitState]>;
+}
+
+export const AUTH_RATE_LIMIT_STORE = Symbol('AUTH_RATE_LIMIT_STORE');
+
+@Injectable()
+export class InMemoryAuthRateLimitStore implements AuthRateLimitStore {
+  private readonly values = new Map<string, AuthRateLimitState>();
+
+  get(key: string) {
+    return this.values.get(key);
+  }
+
+  set(key: string, state: AuthRateLimitState) {
+    this.values.set(key, state);
+  }
+
+  delete(key: string) {
+    this.values.delete(key);
+  }
+
+  entries() {
+    return this.values.entries();
+  }
+}
+
+export type AuthRateLimitAction =
+  | 'login'
+  | 'forgot-password'
+  | 'reset-password'
+  | 'public-metrics';
 
 const WINDOW_MS = 1000 * 60 * 15;
 const MAX_ATTEMPTS = 5;
@@ -13,17 +49,31 @@ const BLOCK_DURATION_MS = 1000 * 60 * 15;
 
 @Injectable()
 export class AuthRateLimitService {
-  private readonly attempts = new Map<string, AttemptState>();
+  private readonly store: AuthRateLimitStore;
 
-  buildKeys(request: Request, identifier: string) {
+  constructor(
+    @Optional() @Inject(AUTH_RATE_LIMIT_STORE) store?: AuthRateLimitStore,
+  ) {
+    this.store = store ?? new InMemoryAuthRateLimitStore();
+  }
+
+  buildKeys(
+    request: Request,
+    identifier: string,
+    action: AuthRateLimitAction = 'login',
+  ) {
     const normalizedIdentifier = identifier.trim().toLowerCase();
-    const clientIp = this.resolveClientIp(request);
+    const clientIp = request.ip || 'unknown';
 
-    return [`ip:${clientIp}`, `ip-identifier:${clientIp}:${normalizedIdentifier}`];
+    return [
+      `auth:${action}:ip:${clientIp}`,
+      `auth:${action}:ip-identifier:${clientIp}:${normalizedIdentifier}`,
+    ];
   }
 
   getRetryAfterSeconds(keys: string[]) {
     const now = Date.now();
+    this.pruneExpired(now);
     let retryAfterSeconds = 0;
 
     for (const key of keys) {
@@ -44,6 +94,7 @@ export class AuthRateLimitService {
 
   registerFailure(keys: string[]) {
     const now = Date.now();
+    this.pruneExpired(now);
 
     for (const key of keys) {
       const state = this.getState(key, now) ?? {
@@ -58,16 +109,16 @@ export class AuthRateLimitService {
         state.blockedUntil = now + BLOCK_DURATION_MS;
       }
 
-      this.attempts.set(key, state);
+      this.store.set(key, state);
     }
   }
 
   registerSuccess(keys: string[]) {
-    keys.forEach((key) => this.attempts.delete(key));
+    keys.forEach((key) => this.store.delete(key));
   }
 
   private getState(key: string, now: number) {
-    const current = this.attempts.get(key);
+    const current = this.store.get(key);
 
     if (!current) {
       return null;
@@ -78,29 +129,26 @@ export class AuthRateLimitService {
     }
 
     if (current.windowStartedAt + WINDOW_MS <= now) {
-      this.attempts.delete(key);
+      this.store.delete(key);
       return null;
     }
 
     if (current.blockedUntil && current.blockedUntil <= now) {
-      this.attempts.delete(key);
+      this.store.delete(key);
       return null;
     }
 
     return current;
   }
 
-  private resolveClientIp(request: Request) {
-    const forwardedFor = request.headers['x-forwarded-for'];
-
-    if (typeof forwardedFor === 'string' && forwardedFor.length) {
-      return forwardedFor.split(',')[0]?.trim() || request.ip;
+  private pruneExpired(now: number) {
+    for (const [key, state] of this.store.entries()) {
+      if (
+        state.windowStartedAt + WINDOW_MS <= now &&
+        (!state.blockedUntil || state.blockedUntil <= now)
+      ) {
+        this.store.delete(key);
+      }
     }
-
-    if (Array.isArray(forwardedFor) && forwardedFor.length) {
-      return forwardedFor[0]?.split(',')[0]?.trim() || request.ip;
-    }
-
-    return request.ip;
   }
 }

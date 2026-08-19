@@ -91,6 +91,15 @@ export class BeneficiariesRepository {
       }
     }
 
+    if (data.email !== undefined) {
+      operations.push(
+        this.prisma.passwordResetToken.updateMany({
+          where: { accountType: 'beneficiary', accountId: id, usedAt: null },
+          data: { usedAt: new Date() },
+        }),
+      );
+    }
+
     operations.push(
       this.prisma.beneficiary.update({
         where: { id },

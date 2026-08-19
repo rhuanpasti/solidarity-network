@@ -226,7 +226,12 @@ export class AuthService {
       return '/first-access';
     }
 
-    return returnUrl || this.resolveHomeUrl();
+    const safeReturnUrl =
+      returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//') && !returnUrl.startsWith('/login')
+        ? returnUrl
+        : undefined;
+
+    return safeReturnUrl || this.resolveHomeUrl();
   }
 
   resolveHomeUrl() {

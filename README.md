@@ -1,6 +1,6 @@
 # Solidarity Network
 
-[![Quality gate](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml/badge.svg)](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml)
+[![Firebase Hosting](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml/badge.svg)](https://github.com/rhuanpasti/solidarity-network/actions/workflows/firebase-hosting.yml)
 [![License](https://img.shields.io/badge/license-see%20LICENSE-1f2937)](LICENSE)
 
 **Angular 21 · NestJS 11 · PostgreSQL · Prisma · Docker**
@@ -30,7 +30,7 @@ Solidarity Network is a full-stack, role-based management platform for organizat
 - Multi-scope authorization with separate route, record, and program-assignment policies.
 - Secure HTTP-only cookie sessions, CSRF protection, password hashing, rate limiting, and normalized API errors.
 - Angular standalone components, Signals, typed forms, lazy routes, runtime English/Portuguese i18n, and cached list state.
-- NestJS modules with Prisma repositories, PostgreSQL persistence, audit/version history, Docker development, CI quality gates, and API E2E coverage.
+- NestJS modules with Prisma repositories, PostgreSQL persistence, audit/version history, Docker development, and API test coverage.
 
 It provides a practical operational workspace that can be forked and adapted to a nonprofit, community initiative, or other social-impact program. The domain model, workflows, visual identity, integrations, deployment model, and policies are intentionally customizable.
 
@@ -40,7 +40,7 @@ In Portuguese, the interface uses the institutional name **Rede Solidaria**.
 
 This repository is a working application and a reusable foundation, not a turnkey compliance solution. Review the authorization rules, privacy requirements, retention policies, infrastructure, and operational processes before using it with real personal data.
 
-The application includes username/email authentication, password hashing, protected sessions, password recovery, first-access password changes, rate limiting, and role-based authorization. For a production deployment, consider replacing or integrating the built-in authentication with a dedicated identity provider that supports the account protection, MFA, auditability, and recovery requirements of your organization.
+The application includes username/email authentication, password hashing, HTTP-only cookie sessions with CSRF protection, one-time password recovery tokens stored only as hashes, session-version revocation, rate limiting, and role-based authorization. For a production deployment, consider replacing or integrating the built-in authentication with a dedicated identity provider that supports MFA and enterprise recovery controls.
 
 ## What it includes
 
@@ -182,6 +182,7 @@ Supporting entities:
 - `BeneficiaryProgramLink`
 - `AuditTrail`
 - `EntityVersion`
+- `PasswordResetToken` (hash-only, expiring, single-use recovery records)
 
 Addresses are stored as structured JSON on beneficiary records. Statuses, roles, dependent relationships, and benefit categories use typed enums.
 
@@ -198,7 +199,10 @@ The API uses the `/api/v1` global prefix. In development, interactive Swagger do
 - `POST /api/v1/auth/reset-password`
 - `POST /api/v1/auth/change-password`
 
-Sessions are issued as an HTTP-only cookie. The API also accepts a bearer token for documented API clients.
+Sessions are issued as an HTTP-only cookie. The API also accepts a bearer token for documented API clients. Each JWT
+contains the account `sessionVersion`; changing or resetting a password increments that value and invalidates older
+sessions. Password recovery always returns a generic response, rate-limits by resolved IP and identifier, invalidates
+older recovery records, stores only a token hash, and consumes the token once before changing the password.
 
 ### Public
 
@@ -269,7 +273,9 @@ npm --prefix apps/backend run prisma:migrate
 npm run seed:backend
 ```
 
-The seed always creates demo data. It creates an administrator login only when both `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set in `apps/backend/.env`; there is no default password.
+The seed is synthetic/demo-only and transactional. It is disabled unless `DEMO_SEED_ENABLED=true` and refuses to run in
+production. It creates an administrator login only when both `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set;
+there is no default password. Never point it at a real-data database.
 
 For macOS/Linux, the helper script can prepare the database before starting the API:
 
@@ -302,6 +308,10 @@ docker compose up --build
 
 The Compose backend applies migrations on startup. It does not run the seed automatically.
 
+The backend runs on Render using the repository's Dockerfile and the environment variables configured in the Render
+dashboard. Prisma migrations are applied through `start:prod`. The frontend can be deployed to Firebase Hosting or
+Cloudflare Workers; PostgreSQL is the backend's only required external service.
+
 ## Useful commands
 
 ```bash
@@ -309,10 +319,12 @@ npm run build
 npm run lint
 npm test
 npm run build:shared
-npm --prefix apps/backend run test:e2e
+npx prisma validate --schema apps/backend/prisma/schema.prisma
 ```
 
-The E2E suite is environment-driven. Set `E2E_BASE_URL` and `E2E_PASSWORD` through your local environment or a secret manager before preparing credentials; without both values, the four API flows are reported as skipped. Never commit these values.
+Coverage is intentionally available through the existing test runners; use the backend/frontend test commands with
+their project-specific coverage flags when a report is needed. Automated deployment is handled by the Firebase Hosting
+workflow; validation remains available for local development.
 
 Frontend deployment commands are available for Firebase Hosting and Cloudflare Workers:
 
@@ -353,12 +365,13 @@ The backend adds request IDs, structured request logs, audit events, and entity-
 - Do not commit secrets or use placeholder credentials in production.
 - Set a unique `JWT_SECRET` with at least 32 characters.
 - Restrict `CORS_ORIGIN` to the deployed frontend origins.
+- Set `TRUST_PROXY` to the exact reverse-proxy topology (`false` locally/Docker, `1` for a single Render proxy hop); do not trust arbitrary forwarded headers.
 - Keep Swagger disabled in production; it is disabled automatically when `NODE_ENV=production`.
 - Configure `APP_PUBLIC_URL` and Brevo sender settings when email is enabled.
 - Provision bootstrap administrator credentials explicitly through `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD`, then rotate or replace them according to your operational policy.
 - Review the authorization and privacy model before exposing real beneficiary data.
 - Replace the process-local auth rate limiter with a shared limiter such as Redis when running multiple API instances.
-- Define retention/anonymization rules for beneficiary audit and entity-version snapshots before using real personal data.
+- Define retention/anonymization rules for beneficiary audit and entity-version snapshots before using real personal data; persisted snapshots mask documents, phones, addresses, and email locals but remain personal data.
 - Use the maintained `@nestjs/jwt` integration for token signing and verification, and evaluate a dedicated identity provider for MFA, recovery, and enterprise account controls.
 
 ## License

@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { sanitizeForLogs } from './log-sanitizer.util';
+import { sanitizeForAudit } from './log-sanitizer.util';
 import { requestContextStorage } from './request-context.service';
 import { StructuredLoggerService } from './structured-logger.service';
 
@@ -30,9 +30,9 @@ export class EntityVersioningService {
   async recordVersion(input: EntityVersionInput) {
     const actor = input.actor ?? null;
     const context = requestContextStorage.getStore();
-    const snapshot = sanitizeForLogs(input.snapshot) as Prisma.InputJsonValue;
+    const snapshot = sanitizeForAudit(input.snapshot) as Prisma.InputJsonValue;
     const diff = input.diff
-      ? (sanitizeForLogs(input.diff) as Prisma.InputJsonValue)
+      ? (sanitizeForAudit(input.diff) as Prisma.InputJsonValue)
       : undefined;
 
     for (let attempt = 0; attempt < 3; attempt += 1) {

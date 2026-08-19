@@ -8,6 +8,7 @@ import { createValidationException } from './common/validation/validation-except
 import {
   DEFAULT_CORS_ORIGINS,
   normalizeCorsOrigins,
+  parseTrustProxy,
 } from './config/env.schema';
 
 async function bootstrap() {
@@ -21,6 +22,7 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api/v1');
+  expressApp.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY ?? 'false'));
   expressApp.disable('x-powered-by');
   app.enableCors({
     origin: allowedOrigins,
@@ -34,6 +36,16 @@ async function bootstrap() {
       'Permissions-Policy',
       'camera=(), microphone=(), geolocation=()',
     );
+    response.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    );
+    if (isProduction) {
+      response.setHeader(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains',
+      );
+    }
     next();
   });
   app.useGlobalPipes(

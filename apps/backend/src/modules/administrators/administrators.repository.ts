@@ -88,6 +88,15 @@ export class AdministratorsRepository {
       }
     }
 
+    if (data.email !== undefined) {
+      operations.push(
+        this.prisma.passwordResetToken.updateMany({
+          where: { accountType: 'administrator', accountId: id, usedAt: null },
+          data: { usedAt: new Date() },
+        }),
+      );
+    }
+
     operations.push(
       this.prisma.administrator.update({
         where: { id },
@@ -100,14 +109,22 @@ export class AdministratorsRepository {
     return results[results.length - 1] as AdministratorWithPrograms;
   }
 
-  updateCredential(
+  async updateCredential(
     administratorId: string,
     data: Prisma.AuthCredentialUpdateInput,
   ) {
-    return this.prisma.authCredential.update({
+    const credential = await this.prisma.authCredential.update({
       where: { administratorId },
-      data,
+      data: {
+        ...data,
+        sessionVersion: { increment: 1 },
+      },
     });
+    await this.prisma.passwordResetToken.updateMany({
+      where: { accountType: 'administrator', accountId: administratorId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+    return credential;
   }
 
   findProgramLinks(administratorId: string): Promise<AdministratorProgramLink[]> {

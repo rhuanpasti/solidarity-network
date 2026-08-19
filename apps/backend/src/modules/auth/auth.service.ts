@@ -119,6 +119,7 @@ export class AuthService {
       accountType: matchingCredential.accountType,
       programIds: matchingCredential.programIds,
       mustChangePassword: matchingCredential.mustChangePassword,
+      sessionVersion: matchingCredential.sessionVersion,
       csrfToken: this.createCsrfToken(),
       iat: 0,
       exp: 0,
@@ -193,14 +194,35 @@ export class AuthService {
       accountType: updatedCredential.accountType,
       programIds: updatedCredential.programIds,
       mustChangePassword: updatedCredential.mustChangePassword,
+      sessionVersion: updatedCredential.sessionVersion,
       csrfToken: this.createCsrfToken(),
       iat: 0,
       exp: 0,
     });
   }
 
-  async forgotPassword(dto: ForgotPasswordDto) {
+  async forgotPassword(dto: ForgotPasswordDto, request: Request) {
     const normalizedEmail = dto.email.trim().toLowerCase();
+    const rateLimitKeys = this.authRateLimitService.buildKeys(
+      request,
+      this.buildIdentifierFingerprint(normalizedEmail),
+      'forgot-password',
+    );
+    const retryAfterSeconds =
+      this.authRateLimitService.getRetryAfterSeconds(rateLimitKeys);
+
+    if (retryAfterSeconds > 0) {
+      throw new HttpException(
+        {
+          code: 'TOO_MANY_PASSWORD_RECOVERY_ATTEMPTS',
+          message: 'Too many password recovery requests. Please try again later.',
+          details: { retryAfterSeconds },
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    this.authRateLimitService.registerFailure(rateLimitKeys);
     const recipient =
       await this.repository.findPasswordRecoveryRecipient(normalizedEmail);
 
@@ -216,25 +238,35 @@ export class AuthService {
       return { success: true };
     }
 
-    const resetToken = this.passwordResetTokenService.createToken({
+    const resetToken = await this.passwordResetTokenService.createToken({
       accountId: recipient.id,
       accountType: recipient.accountType,
       email: recipient.email,
     });
 
-    await this.emailService.send({
-      to: {
-        email: recipient.email,
-        name: recipient.name,
-      },
-      template: 'forgot-password',
-      variables: {
-        userName: recipient.name,
-        email: recipient.email,
-        resetPasswordLink: this.passwordResetTokenService.buildResetLink(resetToken),
-        expiresIn: this.passwordResetTokenService.getExpiresInLabel(),
-      },
-    });
+    try {
+      await this.emailService.send({
+        to: {
+          email: recipient.email,
+          name: recipient.name,
+        },
+        template: 'forgot-password',
+        variables: {
+          userName: recipient.name,
+          email: recipient.email,
+          resetPasswordLink: this.passwordResetTokenService.buildResetLink(resetToken),
+          expiresIn: this.passwordResetTokenService.getExpiresInLabel(),
+        },
+      });
+    } catch {
+      await this.auditTrailService.record({
+        action: 'auth.password_recovery.email_failed',
+        status: 'failure',
+        metadata: {
+          emailFingerprint: this.buildIdentifierFingerprint(normalizedEmail),
+        },
+      });
+    }
 
     await this.auditTrailService.record({
       action: 'auth.password_recovery.requested',
@@ -253,15 +285,37 @@ export class AuthService {
     return { success: true };
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
-    const tokenPayload = this.passwordResetTokenService.verifyToken(dto.token);
+  async resetPassword(dto: ResetPasswordDto, request: Request) {
+    const rateLimitKeys = this.authRateLimitService.buildKeys(
+      request,
+      createHash('sha256').update(dto.token).digest('hex').slice(0, 16),
+      'reset-password',
+    );
+    const retryAfterSeconds =
+      this.authRateLimitService.getRetryAfterSeconds(rateLimitKeys);
+
+    if (retryAfterSeconds > 0) {
+      throw new HttpException(
+        {
+          code: 'TOO_MANY_PASSWORD_RESET_ATTEMPTS',
+          message: 'Too many password reset attempts. Please try again later.',
+          details: { retryAfterSeconds },
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const tokenPayload = await this.passwordResetTokenService.consumeToken(dto.token);
 
     if (!tokenPayload) {
+      this.authRateLimitService.registerFailure(rateLimitKeys);
       throw new BadRequestException({
         code: 'PASSWORD_RESET_TOKEN_INVALID',
         message: 'Password reset link is invalid or expired.',
       });
     }
+
+    this.authRateLimitService.registerSuccess(rateLimitKeys);
 
     const updatedCredential = await this.repository.updatePassword(
       tokenPayload.accountType,

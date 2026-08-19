@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeForLogs } from './log-sanitizer.util';
+import { sanitizeForAudit, sanitizeForLogs } from './log-sanitizer.util';
 
 describe('sanitizeForLogs', () => {
   it('redacts sensitive keys case-insensitively and recursively', () => {
@@ -30,6 +30,23 @@ describe('sanitizeForLogs', () => {
     assert.deepEqual(
       sanitizeForLogs([{ csrfToken: 'csrf' }, { value: 'safe' }]),
       [{ csrfToken: '[REDACTED]' }, { value: 'safe' }],
+    );
+  });
+
+  it('masks personal data in persisted audit snapshots', () => {
+    assert.deepEqual(
+      sanitizeForAudit({
+        document: '52998224725',
+        phone: '+55 11 96540-1101',
+        email: 'maria@example.org',
+        address: { street: 'Rua das Palmeiras', number: '145' },
+      }),
+      {
+        document: '*********25',
+        phone: '***************01',
+        email: '****a@example.org',
+        address: '[REDACTED_ADDRESS]',
+      },
     );
   });
 });

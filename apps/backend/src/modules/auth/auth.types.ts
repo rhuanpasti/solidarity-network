@@ -10,6 +10,7 @@ export interface AuthenticatedUser {
   accountType: AccountType;
   programIds: string[];
   mustChangePassword: boolean;
+  sessionVersion: number;
   csrfToken: string;
   iat: number;
   exp: number;

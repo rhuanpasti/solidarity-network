@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --cache --fix",
     "deploy:firebase": "npm run build && firebase deploy --only hosting",
     "deploy:workers": "npx wrangler deploy",
-    "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts"
+    "test": "npm --prefix ../../packages/shared run build && tsx test/index.ts",
+    "test:coverage": "npm --prefix ../../packages/shared run build && c8 --reporter=text --reporter=lcov --check-coverage --lines=30 --functions=25 --branches=20 --statements=30 tsx test/index.ts"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",

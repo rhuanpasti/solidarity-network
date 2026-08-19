@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { sanitizeForLogs } from './log-sanitizer.util';
+import { sanitizeForAudit } from './log-sanitizer.util';
 import { requestContextStorage } from './request-context.service';
 import { StructuredLoggerService } from './structured-logger.service';
 
@@ -37,7 +37,7 @@ export class AuditTrailService {
 
     const context = requestContextStorage.getStore();
     const actor = input.actor ?? null;
-    const metadata = sanitizeForLogs(input.metadata) as
+    const metadata = sanitizeForAudit(input.metadata) as
       | Prisma.InputJsonValue
       | undefined;
     const previousValues = this.toNullableJson(input.previousValues);
@@ -131,7 +131,7 @@ export class AuditTrailService {
       return Prisma.JsonNull;
     }
 
-    return sanitizeForLogs(value) as Prisma.InputJsonValue;
+    return sanitizeForAudit(value) as Prisma.InputJsonValue;
   }
 
   private logInfo(message: string, details: Record<string, unknown>) {

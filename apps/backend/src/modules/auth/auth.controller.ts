@@ -80,8 +80,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Request a password reset email' })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiOkResponse({ schema: { properties: { success: { type: 'boolean' } } } })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
+  forgotPassword(@Req() request: Request, @Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto, request);
   }
 
   @Public()
@@ -89,8 +89,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset a password with a recovery token' })
   @ApiBody({ type: ResetPasswordDto })
   @ApiOkResponse({ schema: { properties: { success: { type: 'boolean' } } } })
-  resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto);
+  resetPassword(@Req() request: Request, @Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto, request);
   }
 
   @AllowPasswordChangeWhenRequired()

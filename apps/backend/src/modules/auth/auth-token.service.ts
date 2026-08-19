@@ -12,6 +12,7 @@ interface TokenPayloadBase {
   accountType: AccountType;
   programIds: string[];
   mustChangePassword: boolean;
+  sessionVersion: number;
   csrfToken: string;
 }
 

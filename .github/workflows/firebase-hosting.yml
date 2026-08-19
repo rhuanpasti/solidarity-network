@@ -19,6 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+
       - run: npm ci
 
       - run: npm run build
@@ -26,7 +31,7 @@ jobs:
 
       - name: Deploy pull request preview
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@v0.10.0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOLIDARITY_NETWORK_LIVE }}
@@ -35,7 +40,7 @@ jobs:
 
       - name: Deploy production hosting
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@v0.10.0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOLIDARITY_NETWORK_LIVE }}

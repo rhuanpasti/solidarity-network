@@ -12,24 +12,25 @@ describe('AuthRateLimitService', () => {
     mock.restoreAll();
   });
 
-  it('normalizes identifier and forwarded IP into stable rate-limit keys', () => {
+  it('uses the framework-resolved IP instead of trusting a client header', () => {
     const service = new AuthRateLimitService();
 
     assert.deepEqual(
-      service.buildKeys(request({ 'x-forwarded-for': ' 203.0.113.10, 10.0.0.1 ' }), ' User@Email.COM '),
-      ['ip:203.0.113.10', 'ip-identifier:203.0.113.10:user@email.com'],
+      service.buildKeys(request({ 'x-forwarded-for': ' 203.0.113.10, 10.0.0.1 ' }, '192.0.2.20'), ' User@Email.COM '),
+      ['auth:login:ip:192.0.2.20', 'auth:login:ip-identifier:192.0.2.20:user@email.com'],
     );
   });
 
-  it('normalizes array forwarded IP values into stable rate-limit keys', () => {
+  it('supports endpoint-specific keys', () => {
     const service = new AuthRateLimitService();
 
     assert.deepEqual(
       service.buildKeys(
-        request({ 'x-forwarded-for': [' 203.0.113.11, 10.0.0.1 '] }),
+        request({ 'x-forwarded-for': [' 203.0.113.11, 10.0.0.1 '] }, '192.0.2.21'),
         'User@Email.COM',
+        'forgot-password',
       ),
-      ['ip:203.0.113.11', 'ip-identifier:203.0.113.11:user@email.com'],
+      ['auth:forgot-password:ip:192.0.2.21', 'auth:forgot-password:ip-identifier:192.0.2.21:user@email.com'],
     );
   });
 

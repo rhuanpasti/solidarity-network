@@ -3,7 +3,7 @@ const tseslint = require('typescript-eslint');
 
 module.exports = tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
   },
   {
     files: ['src/**/*.ts', 'prisma/**/*.ts'],

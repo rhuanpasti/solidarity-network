@@ -1,4 +1,5 @@
 import '../src/modules/auth/auth-rate-limit.service.spec';
+import '../src/modules/auth/auth.guard.spec';
 import '../src/modules/auth/auth-token.service.spec';
 import '../src/modules/auth/password-reset-token.service.spec';
 import '../src/modules/authorization/authorization.service.spec';

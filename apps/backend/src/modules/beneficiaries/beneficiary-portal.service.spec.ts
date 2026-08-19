@@ -12,6 +12,7 @@ const actor: AuthenticatedUser = {
   accountType: 'beneficiary',
   programIds: ['program-active', 'program-inactive'],
   mustChangePassword: false,
+  sessionVersion: 0,
   csrfToken: 'csrf',
   iat: 0,
   exp: 0,

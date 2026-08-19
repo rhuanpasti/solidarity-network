@@ -110,6 +110,22 @@ export class AuthGuard implements CanActivate {
       });
     }
 
+    if (user.sessionVersion !== currentUser.sessionVersion) {
+      await this.auditTrailService.record({
+        action: 'auth.request.denied',
+        status: 'failure',
+        metadata: {
+          reason: 'session_revoked',
+          accountType: user.accountType,
+          accountId: user.sub,
+        },
+      });
+      throw new UnauthorizedException({
+        code: 'SESSION_REVOKED',
+        message: 'The authentication session is no longer valid.',
+      });
+    }
+
     const authenticatedUser: AuthenticatedUser = {
       ...currentUser,
       iat: user.iat,

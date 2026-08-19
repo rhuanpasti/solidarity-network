@@ -17,6 +17,7 @@ const superAdmin: AuthenticatedUser = {
   accountType: 'administrator',
   programIds: [],
   mustChangePassword: false,
+  sessionVersion: 0,
   csrfToken: 'csrf',
   iat: 0,
   exp: 0,
