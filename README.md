@@ -11,6 +11,20 @@ Solidarity Network is a full-stack, role-based management platform for organizat
 
 > **Demo availability:** The hosted frontend and backend run on the free tiers of their respective providers. The API or database may occasionally be unavailable, sleep between requests, or respond slowly due to free-tier limits and cold starts. The recommended way to run and evaluate the project is locally. This repository is designed to be forked, adapted, and used as a template for other projects.
 
+## Screenshots
+
+### Login
+
+![Solidarity Network login](docs/screenshots/login.png)
+
+### Operations dashboard
+
+![Operations dashboard](docs/screenshots/dashboard.png)
+
+### Charity program management
+
+![Charity program creation modal](docs/screenshots/program-modal.png)
+
 ## Portfolio snapshot
 
 - Multi-scope authorization with separate route, record, and program-assignment policies.
