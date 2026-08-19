@@ -3,8 +3,17 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { TranslateModule } from '@ngx-translate/core';
 import { AdministratorRole } from '@solidarity-network/shared';
 import { AuthService } from '../auth/auth.service';
+import type { AuthSession } from '../auth/auth.storage';
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
+
+export function resolveAccountDisplayName(
+  session: Pick<AuthSession, 'accountType' | 'displayName'> | null,
+) {
+  return session?.accountType === 'administrator'
+    ? 'Admin'
+    : session?.displayName ?? '';
+}
 
 @Component({
   selector: 'app-layout',
@@ -20,6 +29,7 @@ export class AppLayoutComponent {
   private readonly router = inject(Router);
   readonly currentLanguage = computed(() => this.languageService.currentLanguage());
   readonly session = this.authService.currentUser;
+  readonly accountDisplayName = computed(() => resolveAccountDisplayName(this.session()));
   readonly mobileNavigationOpen = signal(false);
   readonly isAdministrator = computed(
     () => this.session()?.accountType === 'administrator',

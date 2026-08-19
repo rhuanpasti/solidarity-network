@@ -23,6 +23,27 @@ The application includes username/email authentication, password hashing, protec
 - Audit trails, entity version snapshots, request IDs, structured logging, and normalized API errors.
 - OpenAPI/Swagger documentation during non-production backend runs.
 
+## Accounts, roles, and authorization
+
+The system has two account types: `administrator` and `beneficiary`. Administrator accounts have one of three roles. The frontend displays administrator accounts with the generic `Admin` label, but the permission role remains unchanged in the database and API.
+
+| Account or role | Access scope | Allowed | Blocked |
+| --- | --- | --- | --- |
+| `super_admin` | Global | Full administrator workspace access; create and manage charity programs, administrators, beneficiaries, benefits, and deliveries; assign programs and roles; view all records | The protected root administrator account cannot be modified or removed through the administrator workflow |
+| `program_manager` | Assigned charity programs only | View and update assigned programs; manage beneficiaries and deliveries within the assigned program scope; manage the shared benefit catalog; view administrators visible within that scope | Creating programs, creating or editing administrators, resending administrator access, changing roles, and accessing other programs |
+| `case_worker` | No operational route access currently granted | Authenticate, maintain the account session, and complete a required password change | Administrator workspace, program management, beneficiary records, benefits, deliveries, and the beneficiary portal |
+| `beneficiary` | Own beneficiary account | Read-only beneficiary portal with linked programs, dependents, upcoming deliveries, and delivery history; password and session management | Administrator workspace and all administrator CRUD or delivery-management endpoints |
+| Unauthenticated visitor | Public endpoints only | Login, password recovery/reset, and public login metrics | All protected application and API resources |
+
+Authorization is enforced in the backend API; hidden frontend navigation is only a usability feature and is not the security boundary. Requests from an authenticated account with the wrong account type or role receive `403 Forbidden`, while requests without valid authentication receive `401 Unauthorized`.
+
+Additional access rules:
+
+- Non-super administrators are restricted to records associated with their assigned charity programs.
+- A beneficiary can access only their own portal summary; the portal does not expose administrator CRUD operations.
+- Accounts created with a temporary password must complete the first-access password change before accessing protected operational resources.
+- The system root administrator is immutable through the administrator management workflow.
+
 ## Technology
 
 - `Angular 21` with standalone components, Signals, typed reactive forms, lazy routes, and runtime i18n.

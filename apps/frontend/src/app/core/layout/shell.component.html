@@ -46,10 +46,10 @@
       @if (session(); as currentSession) {
         <section class="user-card">
           <div class="user-card-avatar">
-            {{ currentSession.displayName.slice(0, 1) }}
+            {{ accountDisplayName().slice(0, 1) }}
           </div>
           <div class="user-card-copy">
-            <strong>{{ currentSession.displayName }}</strong>
+            <strong>{{ accountDisplayName() }}</strong>
             <span>{{ currentSession.email }}</span>
           </div>
         </section>
