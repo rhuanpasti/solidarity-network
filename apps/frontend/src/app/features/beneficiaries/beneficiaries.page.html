@@ -54,7 +54,8 @@
   />
 
   <div class="content-grid listing-grid">
-    <app-beneficiary-list
+      <app-beneficiary-list
+        data-testid="beneficiary-list"
       [items]="beneficiariesState.items()"
       [pagination]="beneficiariesState.pagination()"
       [pageSize]="beneficiariesState.filters().pageSize"

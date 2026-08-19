@@ -38,7 +38,7 @@ interface GeneratedCredentialInfo {
         />
       }
 
-      <form class="form" [formGroup]="form()" (ngSubmit)="saveRequested.emit()">
+      <form class="form" data-testid="beneficiary-form" [formGroup]="form()" (ngSubmit)="saveRequested.emit()">
         <div class="field-grid">
           <app-input-field
             [control]="form().controls.fullName"

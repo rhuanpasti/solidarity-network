@@ -326,6 +326,24 @@ Coverage is intentionally available through the existing test runners; use the b
 their project-specific coverage flags when a report is needed. Automated deployment is handled by the Firebase Hosting
 workflow; validation remains available for local development.
 
+### Playwright E2E
+
+The browser tests live in the separate `tests/e2e` workspace and support both the local application and the published
+deployment. Copy `tests/e2e/.env.example` to `tests/e2e/.env`, choose `E2E_TARGET=local` or `E2E_TARGET=published`, and
+set the target-specific URLs and login credentials. Never commit this file.
+
+```bash
+npm run test:e2e:install
+npm run test:e2e
+npm run test:e2e:ui
+npm run test:e2e:headed
+```
+
+Local E2E tests expect the frontend and backend to already be running. Published tests use the configured public URLs;
+the Playwright config does not start or deploy services. The form-preview spec uses synthetic values only to exercise
+the UI and intentionally does not submit beneficiary registrations, because the current CPF rules make repeated real
+registrations unsuitable for an automated suite.
+
 Frontend deployment commands are available for Firebase Hosting and Cloudflare Workers:
 
 ```bash

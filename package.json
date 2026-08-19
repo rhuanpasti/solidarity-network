@@ -8,7 +8,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tests/*"
   ],
   "scripts": {
     "install:all": "npm install --workspaces",
@@ -28,6 +29,12 @@
     "test:coverage:backend": "npm --prefix apps/backend run test:coverage",
     "test:coverage:frontend": "npm --prefix apps/frontend run test:coverage",
     "test": "npm run test:backend && npm run test:frontend",
+    "test:e2e": "npm --workspace @solidarity-network/e2e run test",
+    "test:e2e:ui": "npm --workspace @solidarity-network/e2e run test:ui",
+    "test:e2e:headed": "npm --workspace @solidarity-network/e2e run test:headed",
+    "test:e2e:debug": "npm --workspace @solidarity-network/e2e run test:debug",
+    "test:e2e:install": "npm --workspace @solidarity-network/e2e run install:browsers",
+    "test:e2e:report": "npm --workspace @solidarity-network/e2e run report",
     "deploy:frontend:workers": "npx wrangler deploy --config apps/frontend/wrangler.jsonc"
   },
   "devDependencies": {

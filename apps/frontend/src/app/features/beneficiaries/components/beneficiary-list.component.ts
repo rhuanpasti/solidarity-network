@@ -22,7 +22,7 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
       (pageChange)="pageChange.emit($event)"
       (pageSizeChange)="pageSizeChange.emit($event)"
     >
-      <app-button panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="create.emit()">
+      <app-button data-testid="beneficiary-create" panelAction type="button" variant="secondary" [disabled]="submitPending()" (click)="create.emit()">
         {{ 'common.add' | translate }}
       </app-button>
 

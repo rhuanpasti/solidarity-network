@@ -75,9 +75,9 @@ export class FirstAccessPage {
 
   readonly session = this.authService.session;
 
-  logout() {
-    this.authService.logout();
-    void this.router.navigate(['/login']);
+  async logout() {
+    await this.authService.logout();
+    await this.router.navigate(['/login']);
   }
 
   async submit() {

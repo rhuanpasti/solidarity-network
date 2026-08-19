@@ -88,9 +88,9 @@ export class AppLayoutComponent {
     this.mobileNavigationOpen.set(false);
   }
 
-  logout() {
-    void this.authService.logout();
+  async logout() {
+    await this.authService.logout();
     this.closeMobileNavigation();
-    void this.router.navigate(['/login']);
+    await this.router.navigate(['/login']);
   }
 }

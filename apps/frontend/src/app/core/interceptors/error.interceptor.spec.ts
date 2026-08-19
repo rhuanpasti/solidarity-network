@@ -13,7 +13,7 @@ describe('errorInterceptor', () => {
     mock.reset();
   });
 
-  it('expires the session, warns the user, and redirects for auth errors', () => {
+  it('expires the session, warns the user, and redirects for auth errors', async () => {
     const expireSession = mock.fn(() => true);
     const logout = mock.fn(async () => undefined);
     const show = mock.fn();
@@ -46,6 +46,8 @@ describe('errorInterceptor', () => {
       response$.subscribe({ error: () => undefined });
     }
 
+    await Promise.resolve();
+
     assert.equal(expireSession.mock.callCount(), authErrorCodes.length);
     assert.equal(logout.mock.callCount(), authErrorCodes.length);
     assert.deepEqual(show.mock.calls[0]?.arguments[0], {
@@ -57,7 +59,7 @@ describe('errorInterceptor', () => {
     assert.equal(navigate.mock.callCount(), authErrorCodes.length);
   });
 
-  it('does not repeat the warning or redirect after expiration was handled', () => {
+  it('does not repeat the warning or redirect after expiration was handled', async () => {
     let expirationHandled = false;
     const logout = mock.fn(async () => undefined);
     const expireSession = mock.fn(() => {
@@ -89,6 +91,8 @@ describe('errorInterceptor', () => {
 
     response$.subscribe({ error: () => undefined });
     response$.subscribe({ error: () => undefined });
+
+    await Promise.resolve();
 
     assert.equal(expireSession.mock.callCount(), 2);
     assert.equal(logout.mock.callCount(), 1);
