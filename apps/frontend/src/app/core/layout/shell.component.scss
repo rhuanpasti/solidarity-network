@@ -104,18 +104,6 @@ app-language-switcher {
   @apply flex-1;
 }
 
-.search-field {
-  @apply relative w-full max-w-md;
-}
-
-.search-field .material-symbols-rounded {
-  @apply absolute left-4 top-1/2 -translate-y-1/2 text-gray-400;
-}
-
-.search-field input {
-  @apply min-h-[2.95rem] w-full rounded-2xl border border-surface-border bg-surface-alt py-[0.8rem] pl-12 pr-4;
-}
-
 .icon-button {
   @apply inline-flex h-[2.8rem] w-[2.8rem] cursor-pointer items-center justify-center rounded-full border border-surface-border bg-white text-gray-600;
 }
@@ -163,8 +151,7 @@ app-language-switcher {
     @apply flex-col items-stretch;
   }
 
-  .topbar-actions,
-  .search-field {
+  .topbar-actions {
     @apply w-full;
   }
 
