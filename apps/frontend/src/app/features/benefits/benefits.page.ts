@@ -100,6 +100,9 @@ export class BenefitsPage implements OnInit {
   });
   readonly selected = this.editor.selected;
   readonly isReadOnly = this.editor.isReadOnly;
+  readonly editorTitle = computed(() =>
+    this.selected() ? 'features.benefits.editTitle' : 'features.benefits.createTitle',
+  );
 
   ngOnInit() {
     this.load();

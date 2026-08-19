@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { filterSelectOptions, type SelectOption } from './form-select.component';
 
 const options: SelectOption[] = [
@@ -25,5 +26,17 @@ describe('filterSelectOptions', () => {
     };
 
     assert.deepEqual(filterSelectOptions([translatedOption], 'food-security'), [translatedOption]);
+  });
+
+  it('leaves disabled state for reactive form controls to manage', () => {
+    const source = readFileSync(
+      new URL('./form-select.component.ts', import.meta.url),
+      'utf8',
+    );
+
+    assert.doesNotMatch(
+      source,
+      /\[formControl\]="control\(\)"[\s\S]{0,120}\[disabled\]="readonly\(\)"/,
+    );
   });
 });

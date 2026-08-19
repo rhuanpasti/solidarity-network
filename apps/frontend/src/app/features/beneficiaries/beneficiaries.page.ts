@@ -61,6 +61,11 @@ export class BeneficiariesPage implements OnInit {
   readonly refreshDisabled = computed(
     () => this.refreshing() || this.refreshCooldownSeconds() > 0,
   );
+  readonly editorTitle = computed(() =>
+    this.beneficiariesState.selected()
+      ? 'features.beneficiaries.editTitle'
+      : 'features.beneficiaries.createTitle',
+  );
 
   ngOnInit() {
     this.beneficiariesState.initialize();

@@ -8,7 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [ReactiveFormsModule, TranslateModule],
   template: `
     <label class="field checkbox-field">
-      <input type="checkbox" [formControl]="control()" [disabled]="readonly()" />
+      <input type="checkbox" [formControl]="control()" />
       <span>{{ label() | translate }}</span>
     </label>
   `,
@@ -17,5 +17,4 @@ import { TranslateModule } from '@ngx-translate/core';
 export class CheckboxFieldComponent {
   readonly control = input.required<FormControl>();
   readonly label = input.required<string>();
-  readonly readonly = input(false);
 }

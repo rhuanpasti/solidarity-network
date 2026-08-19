@@ -130,6 +130,11 @@ export class CharityProgramsPage implements OnInit {
   });
   readonly selected = this.editor.selected;
   readonly isReadOnly = this.editor.isReadOnly;
+  readonly editorTitle = computed(() =>
+    this.selected()
+      ? 'features.charityPrograms.editTitle'
+      : 'features.charityPrograms.createTitle',
+  );
 
   ngOnInit() {
     this.load();

@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.beneficiaryPortal.eyebrow"
-    title="features.beneficiaryPortal.title"
+    [title]="'features.beneficiaryPortal.title' | translate"
     description="features.beneficiaryPortal.description"
   />
 
@@ -67,7 +67,7 @@
           </div>
         } @else {
           <app-empty-state
-            title="features.beneficiaryPortal.noProgramTitle"
+            [title]="'features.beneficiaryPortal.noProgramTitle' | translate"
             description="features.beneficiaryPortal.noProgramDescription"
           />
         }
@@ -126,7 +126,7 @@
           </div>
         } @else {
           <app-empty-state
-            title="features.beneficiaryPortal.emptyTitle"
+            [title]="'features.beneficiaryPortal.emptyTitle' | translate"
             description="features.beneficiaryPortal.emptyDescription"
           />
         }
@@ -157,7 +157,7 @@
           </div>
         } @else {
           <app-empty-state
-            title="features.beneficiaryPortal.noDeliveryHistoryTitle"
+            [title]="'features.beneficiaryPortal.noDeliveryHistoryTitle' | translate"
             description="features.beneficiaryPortal.noDeliveryHistoryDescription"
           />
         }

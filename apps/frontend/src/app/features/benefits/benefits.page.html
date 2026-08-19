@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.benefits.eyebrow"
-    title="features.benefits.title"
+    [title]="'features.benefits.title' | translate"
     description="features.benefits.description"
     [showRefresh]="true"
     [refreshing]="refreshing()"
@@ -12,7 +12,7 @@
 
   <ng-template #editorDialog>
     <app-modal
-      [title]="selected() ? 'features.benefits.editTitle' : 'features.benefits.createTitle'"
+          [title]="editorTitle() | translate"
       description="features.benefits.formDescription"
       [showReadonlyNote]="isReadOnly()"
       (closed)="closeEditorDialog()"
@@ -66,7 +66,6 @@
           <app-checkbox-field
             [control]="form.controls.active"
             label="forms.active"
-            [readonly]="isReadOnly()"
           />
         </div>
 
@@ -86,7 +85,7 @@
 
   <div class="content-grid listing-grid">
     <app-list-panel
-      title="features.benefits.title"
+      [title]="'features.benefits.title' | translate"
       description="features.benefits.formDescription"
       emptyTitle="features.benefits.emptyTitle"
       emptyDescription="features.benefits.emptyDescription"

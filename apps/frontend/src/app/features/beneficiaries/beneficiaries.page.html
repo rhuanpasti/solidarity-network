@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.beneficiaries.eyebrow"
-    title="features.beneficiaries.title"
+    [title]="'features.beneficiaries.title' | translate"
     description="features.beneficiaries.description"
     [showRefresh]="true"
     [refreshing]="refreshing()"
@@ -12,7 +12,7 @@
 
   <ng-template #editorDialog>
     <app-modal
-      [title]="beneficiariesState.selected() ? 'features.beneficiaries.editTitle' : 'features.beneficiaries.createTitle'"
+      [title]="editorTitle() | translate"
       description="features.beneficiaries.formDescription"
       [showReadonlyNote]="beneficiariesState.isReadOnly()"
       (closed)="closeEditorDialog()"

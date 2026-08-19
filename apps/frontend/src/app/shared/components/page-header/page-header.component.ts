@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -7,7 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [TranslateModule],
   styleUrl: './page-header.component.scss',
   template: `
-    <header class="page-header">
+    <header class="page-header" [title]="tooltipText() | translate">
       <div>
         <p class="eyebrow">{{ eyebrow() | translate }}</p>
         <h2>{{ title() | translate }}</h2>
@@ -37,10 +37,12 @@ import { TranslateModule } from '@ngx-translate/core';
 export class PageHeaderComponent {
   readonly eyebrow = input.required<string>();
   readonly title = input.required<string>();
+  readonly tooltip = input<string | null>(null);
   readonly description = input.required<string>();
   readonly showRefresh = input(false);
   readonly refreshing = input(false);
   readonly refreshDisabled = input(false);
   readonly refreshCooldownSeconds = input(0);
   readonly refresh = output<void>();
+  readonly tooltipText = computed(() => this.tooltip() ?? this.title());
 }

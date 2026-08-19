@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.dashboard.eyebrow"
-    title="features.dashboard.title"
+    [title]="'features.dashboard.title' | translate"
     description="features.dashboard.description"
     [showRefresh]="true"
     [refreshing]="refreshing()"

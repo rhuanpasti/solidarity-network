@@ -85,6 +85,16 @@ export class BenefitDeliveriesPage implements OnInit {
   );
   readonly deliveries = computed(() => this.listState().data?.items ?? []);
   readonly selectedDelivery = signal<BenefitDeliverySummary | null>(null);
+  readonly editorTitle = computed(() =>
+    this.selectedDelivery()
+      ? 'features.benefitDeliveries.detailTitle'
+      : 'features.benefitDeliveries.registerTitle',
+  );
+  readonly editorDescription = computed(() =>
+    this.selectedDelivery()
+      ? 'features.benefitDeliveries.detailDescription'
+      : 'features.benefitDeliveries.formDescription',
+  );
   readonly pagination = computed(
     () => this.listState().data?.meta ?? DEFAULT_PAGINATION_META,
   );

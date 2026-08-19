@@ -10,7 +10,7 @@ import { ListPanelComponent } from '../../../shared/components/list-panel/list-p
   imports: [TranslateModule, ButtonComponent, ListPanelComponent],
   template: `
     <app-list-panel
-      title="features.beneficiaries.title"
+      [title]="'features.beneficiaries.title' | translate"
       description="features.beneficiaries.formDescription"
       emptyTitle="features.beneficiaries.emptyTitle"
       emptyDescription="features.beneficiaries.emptyDescription"

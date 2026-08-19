@@ -178,7 +178,6 @@ export function filterSelectOptions(
           [attr.aria-invalid]="showError()"
           [attr.aria-labelledby]="fieldLabelId"
           multiple
-          [disabled]="readonly()"
         >
           @for (option of filteredOptions(); track option.value) {
             <option [value]="option.value" [disabled]="option.disabled">
@@ -197,7 +196,6 @@ export function filterSelectOptions(
           [formControl]="control()"
           [attr.aria-invalid]="showError()"
           [attr.aria-labelledby]="fieldLabelId"
-          [disabled]="readonly()"
         >
           @if (placeholder(); as placeholderKey) {
             <option value="">{{ placeholderKey | translate }}</option>

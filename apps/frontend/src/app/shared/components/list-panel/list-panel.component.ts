@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import type { PaginationMeta } from '@solidarity-network/shared';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
@@ -9,7 +9,7 @@ import { PaginationControlsComponent } from '../pagination-controls/pagination-c
   standalone: true,
   imports: [TranslateModule, EmptyStateComponent, PaginationControlsComponent],
   template: `
-    <section class="panel">
+    <section class="panel" [title]="tooltipText() | translate">
       <div class="panel-heading">
         <div>
           <h3>{{ title() | translate }}</h3>
@@ -48,6 +48,7 @@ import { PaginationControlsComponent } from '../pagination-controls/pagination-c
 export class ListPanelComponent {
   readonly shouldShowListEmptyState = shouldShowListEmptyState;
   readonly title = input.required<string>();
+  readonly tooltip = input<string | null>(null);
   readonly description = input.required<string>();
   readonly emptyTitle = input.required<string>();
   readonly emptyDescription = input.required<string>();
@@ -58,6 +59,7 @@ export class ListPanelComponent {
   readonly pageSizes = input<readonly number[]>([]);
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
+  readonly tooltipText = computed(() => this.tooltip() ?? this.title());
 }
 
 export function shouldShowListEmptyState(loading: boolean, hasItems: boolean) {

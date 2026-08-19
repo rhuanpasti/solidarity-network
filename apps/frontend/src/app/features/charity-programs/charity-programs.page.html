@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.charityPrograms.eyebrow"
-    title="features.charityPrograms.title"
+    [title]="'features.charityPrograms.title' | translate"
     description="features.charityPrograms.description"
     [showRefresh]="true"
     [refreshing]="refreshing()"
@@ -12,7 +12,7 @@
 
   <ng-template #editorDialog>
     <app-modal
-      [title]="selected() ? 'features.charityPrograms.editTitle' : 'features.charityPrograms.createTitle'"
+      [title]="editorTitle() | translate"
       description="features.charityPrograms.formDescription"
       [note]="!selected() && !canCreatePrograms() ? 'features.charityPrograms.createRestrictedNote' : null"
       [showReadonlyNote]="isReadOnly()"
@@ -84,7 +84,7 @@
 
   <div class="content-grid listing-grid">
     <app-list-panel
-      title="features.charityPrograms.title"
+      [title]="'features.charityPrograms.title' | translate"
       description="features.charityPrograms.formDescription"
       emptyTitle="features.charityPrograms.emptyTitle"
       emptyDescription="features.charityPrograms.emptyDescription"

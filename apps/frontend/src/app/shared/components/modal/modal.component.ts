@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-modal',
   imports: [TranslateModule],
   template: `
-    <section class="modal-shell">
+    <section class="modal-shell" [title]="tooltipText() | translate">
       <header class="modal-header">
         <div class="modal-heading">
           <h2 id="modal-title">{{ title() | translate }}</h2>
@@ -43,8 +43,10 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class ModalComponent {
   readonly title = input.required<string>();
+  readonly tooltip = input<string | null>(null);
   readonly description = input.required<string>();
   readonly note = input<string | null>(null);
   readonly showReadonlyNote = input(false);
   readonly closed = output<void>();
+  readonly tooltipText = computed(() => this.tooltip() ?? this.title());
 }

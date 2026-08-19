@@ -192,6 +192,11 @@ export class AdministratorsPage implements OnInit {
   readonly selected = this.editor.selected;
   readonly mode = this.editor.mode;
   readonly isReadOnly = this.editor.isReadOnly;
+  readonly editorTitle = computed(() =>
+    this.selected()
+      ? 'features.administrators.editTitle'
+      : 'features.administrators.createTitle',
+  );
 
   ngOnInit() {
     this.load();

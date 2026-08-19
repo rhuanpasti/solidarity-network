@@ -1,7 +1,7 @@
 <div class="workspace">
   <app-page-header
     eyebrow="features.benefitDeliveries.eyebrow"
-    title="features.benefitDeliveries.title"
+    [title]="'features.benefitDeliveries.title' | translate"
     description="features.benefitDeliveries.description"
     [showRefresh]="true"
     [refreshing]="refreshing()"
@@ -12,8 +12,8 @@
 
   <ng-template #editorDialog>
     <app-modal
-      [title]="selectedDelivery() ? 'features.benefitDeliveries.detailTitle' : 'features.benefitDeliveries.registerTitle'"
-      [description]="selectedDelivery() ? 'features.benefitDeliveries.detailDescription' : 'features.benefitDeliveries.formDescription'"
+      [title]="editorTitle() | translate"
+      [description]="editorDescription() | translate"
       (closed)="closeEditorDialog()"
     >
       @if (selectedDelivery()) {
@@ -120,7 +120,7 @@
 
   <div class="content-grid listing-grid">
     <app-list-panel
-      title="features.benefitDeliveries.historyTitle"
+      [title]="'features.benefitDeliveries.historyTitle' | translate"
       description="features.benefitDeliveries.historyDescription"
       emptyTitle="features.benefitDeliveries.emptyTitle"
       emptyDescription="features.benefitDeliveries.emptyDescription"

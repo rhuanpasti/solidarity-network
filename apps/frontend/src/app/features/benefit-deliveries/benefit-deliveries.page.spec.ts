@@ -3,6 +3,7 @@ import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { afterEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { of, Subject } from 'rxjs';
 import { BeneficiariesService } from '../../core/services/beneficiaries.service';
 import { BenefitDeliveriesService } from '../../core/services/benefit-deliveries.service';
@@ -69,5 +70,21 @@ describe('BenefitDeliveriesPage', () => {
     assert.equal(listBeneficiaries.mock.callCount(), 1);
     beneficiaryRequest.next({ items: [], meta: {} });
     beneficiaryRequest.complete();
+  });
+
+  it('binds the translated history title as a component input', () => {
+    const template = readFileSync(
+      new URL('./benefit-deliveries.page.html', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      template,
+      /\[title\]="'features\.benefitDeliveries\.historyTitle' \| translate"/,
+    );
+    assert.match(template, /\[title\]="editorTitle\(\) \| translate"/);
+    assert.match(template, /\[description\]="editorDescription\(\) \| translate"/);
+    assert.doesNotMatch(template, /\[title\]="[^\n]*\?[^\n]*\| translate"/);
+    assert.doesNotMatch(template, /title="features\.benefitDeliveries\.historyTitle"/);
   });
 });
