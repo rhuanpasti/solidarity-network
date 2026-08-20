@@ -265,6 +265,8 @@ export class AuthService {
         return 'auth.resetPasswordTokenInvalid';
       case 'TOO_MANY_LOGIN_ATTEMPTS':
         return 'auth.tooManyLoginAttempts';
+      case 'TOO_MANY_PASSWORD_RECOVERY_ATTEMPTS':
+        return 'auth.tooManyPasswordRecoveryAttempts';
       default:
         return fallback;
     }

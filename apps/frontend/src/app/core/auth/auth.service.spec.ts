@@ -95,6 +95,39 @@ describe('AuthService', () => {
     });
   });
 
+  it('shows the rate-limit warning when password recovery is temporarily blocked', async () => {
+    const post = mock.fn(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 429,
+            error: {
+              code: 'TOO_MANY_PASSWORD_RECOVERY_ATTEMPTS',
+              message: 'Too many password recovery requests. Please try again later.',
+            },
+          }),
+      ),
+    );
+
+    const injector = Injector.create({
+      providers: [
+        AuthService,
+        {
+          provide: HttpClient,
+          useValue: { post },
+        },
+      ],
+    });
+    const service = runInInjectionContext(injector, () => new AuthService());
+
+    const result = await service.forgotPassword({ email: 'maria@example.org' });
+
+    assert.deepEqual(result, {
+      success: false,
+      message: 'auth.tooManyPasswordRecoveryAttempts',
+    });
+  });
+
   it('resets the password with the token and skips duplicate global error toasts', async () => {
     const post = mock.fn(() => of({ success: true }));
 
