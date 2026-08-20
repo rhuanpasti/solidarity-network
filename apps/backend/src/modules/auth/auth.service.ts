@@ -264,6 +264,8 @@ export class AuthService {
       );
     }
 
+    this.authRateLimitService.registerPasswordRecoveryAttempt(rateLimitKeys);
+
     if (
       this.demoDataService.isEnabled() &&
       normalizedEmail === this.demoDataService.demoEmail()
@@ -271,7 +273,6 @@ export class AuthService {
       return { success: true };
     }
 
-    this.authRateLimitService.registerFailure(rateLimitKeys);
     const recipient =
       await this.repository.findPasswordRecoveryRecipient(normalizedEmail);
 

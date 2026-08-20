@@ -47,6 +47,8 @@ const WINDOW_MS = 1000 * 60 * 15;
 const MAX_ATTEMPTS = 5;
 const PUBLIC_METRICS_MAX_REQUESTS = 20;
 const BLOCK_DURATION_MS = 1000 * 60 * 15;
+const PASSWORD_RECOVERY_MAX_ATTEMPTS = 3;
+const PASSWORD_RECOVERY_BLOCK_DURATION_MS = 1000 * 60 * 60;
 
 @Injectable()
 export class AuthRateLimitService {
@@ -97,11 +99,23 @@ export class AuthRateLimitService {
     this.register(keys, MAX_ATTEMPTS);
   }
 
+  registerPasswordRecoveryAttempt(keys: string[]) {
+    this.register(
+      keys,
+      PASSWORD_RECOVERY_MAX_ATTEMPTS,
+      PASSWORD_RECOVERY_BLOCK_DURATION_MS,
+    );
+  }
+
   registerRequest(keys: string[], maxRequests = PUBLIC_METRICS_MAX_REQUESTS) {
     this.register(keys, maxRequests);
   }
 
-  private register(keys: string[], maxAttempts: number) {
+  private register(
+    keys: string[],
+    maxAttempts: number,
+    blockDurationMs = BLOCK_DURATION_MS,
+  ) {
     const now = Date.now();
     this.pruneExpired(now);
 
@@ -115,7 +129,7 @@ export class AuthRateLimitService {
       state.attempts += 1;
 
       if (state.attempts >= maxAttempts) {
-        state.blockedUntil = now + BLOCK_DURATION_MS;
+        state.blockedUntil = now + blockDurationMs;
       }
 
       this.store.set(key, state);

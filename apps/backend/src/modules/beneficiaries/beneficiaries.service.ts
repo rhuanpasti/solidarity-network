@@ -151,6 +151,7 @@ export class BeneficiariesService {
       email: beneficiary.email,
       name: beneficiary.fullName,
       temporaryPassword: generatedPasskey,
+      isDemo: this.demoDataService?.isDemoUser(actor),
     });
 
     return {
@@ -433,6 +434,7 @@ export class BeneficiariesService {
     email: string | null;
     name: string;
     temporaryPassword: string;
+    isDemo?: boolean;
   }) {
     if (!payload.email) {
       return;
@@ -451,6 +453,7 @@ export class BeneficiariesService {
           temporaryPassword: payload.temporaryPassword,
           organizationName: 'Solidarity Network',
         },
+        ...(payload.isDemo ? { isDemo: true } : {}),
       });
     } catch {
       await this.auditTrailService.record({

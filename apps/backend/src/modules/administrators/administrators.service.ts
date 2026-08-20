@@ -99,6 +99,7 @@ export class AdministratorsService {
       email: administrator.email,
       name: administrator.name,
       temporaryPassword: generatedPasskey,
+      isDemo: this.demoDataService?.isDemoUser(actor),
     });
 
     return {
@@ -176,6 +177,7 @@ export class AdministratorsService {
       email: administrator.email,
       name: administrator.name,
       temporaryPassword,
+      isDemo: this.demoDataService?.isDemoUser(actor),
     });
 
     if (emailSent) {
@@ -334,6 +336,7 @@ export class AdministratorsService {
     email: string;
     name: string;
     temporaryPassword: string;
+    isDemo?: boolean;
   }): Promise<boolean> {
     try {
       await this.emailService.send({
@@ -348,6 +351,7 @@ export class AdministratorsService {
           temporaryPassword: payload.temporaryPassword,
           organizationName: 'Solidarity Network',
         },
+        ...(payload.isDemo ? { isDemo: true } : {}),
       });
       return true;
     } catch {

@@ -20,6 +20,7 @@ export interface EmailMessage {
   to: EmailRecipient;
   template: EmailTemplateName;
   variables: EmailTemplateVariables;
+  isDemo?: boolean;
 }
 
 export interface EmailSenderPayload {
@@ -27,9 +28,9 @@ export interface EmailSenderPayload {
   subject: string;
   html: string;
   text: string;
+  isDemo?: boolean;
 }
 
 export interface EmailSender {
   send(payload: EmailSenderPayload): Promise<void>;
 }
-

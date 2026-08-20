@@ -23,7 +23,7 @@ export class EmailService {
       subject: renderedEmail.subject,
       html: renderedEmail.html,
       text: renderedEmail.text,
+      ...(message.isDemo ? { isDemo: true } : {}),
     });
   }
 }
-

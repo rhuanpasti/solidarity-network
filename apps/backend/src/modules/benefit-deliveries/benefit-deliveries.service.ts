@@ -152,7 +152,7 @@ export class BenefitDeliveriesService {
       },
     });
 
-    await this.sendNewDeliveryEmail(delivery);
+    await this.sendNewDeliveryEmail(delivery, this.demoDataService?.isDemoUser(actor));
 
     return toBenefitDeliverySummary(delivery);
   }
@@ -228,7 +228,7 @@ export class BenefitDeliveriesService {
     benefit: { name: string; category: string };
     charityProgram: { name: string };
     deliveryDate: Date;
-  }) {
+  }, isDemo?: boolean) {
     if (!delivery.beneficiary.email) {
       return;
     }
@@ -248,6 +248,7 @@ export class BenefitDeliveriesService {
           programName: delivery.charityProgram.name,
           organizationName: 'Solidarity Network',
         },
+        ...(isDemo ? { isDemo: true } : {}),
       });
     } catch {
       await this.auditTrailService.record({
