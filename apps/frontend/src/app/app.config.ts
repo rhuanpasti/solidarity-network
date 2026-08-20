@@ -9,6 +9,7 @@ import {
 } from '@ngx-translate/http-loader';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { backendTimeoutInterceptor } from './core/interceptors/backend-timeout.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 
@@ -23,7 +24,14 @@ export const appConfig: ApplicationConfig = {
       useValue: CDK_OVERLAY_DEFAULT_CONFIG,
     },
     provideRouter(appRoutes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor, loadingInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withInterceptors([
+        authInterceptor,
+        backendTimeoutInterceptor,
+        loadingInterceptor,
+        errorInterceptor,
+      ]),
+    ),
     {
       provide: TRANSLATE_HTTP_LOADER_CONFIG,
       useValue: {

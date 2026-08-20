@@ -42,7 +42,7 @@
 }
 
 .selected-options-dialog-backdrop {
-  @apply fixed inset-0 z-[1200] grid place-items-center bg-slate-950/35 p-4;
+  @apply fixed inset-0 z-[1200] grid place-items-center bg-slate-950/72 p-4 backdrop-blur-md;
 }
 
 .selected-options-dialog {

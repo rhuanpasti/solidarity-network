@@ -7,7 +7,9 @@ import '../src/app/core/layout/shell.component.spec';
 import '../src/app/core/interceptors/error.interceptor.spec';
 import '../src/app/core/interceptors/error-message.utils.spec';
 import '../src/app/core/interceptors/loading.interceptor.spec';
+import '../src/app/core/interceptors/backend-timeout.interceptor.spec';
 import '../src/app/core/services/loading.service.spec';
+import '../src/app/core/services/backend-availability.service.spec';
 import '../src/app/core/services/login-metrics.service.spec';
 import '../src/app/core/services/administrators.service.spec';
 import '../src/app/core/state/cached-list.store.spec';
@@ -24,4 +26,5 @@ import '../src/app/shared/components/checkbox-field/checkbox-field.component.spe
 import '../src/app/shared/components/form-select/form-select.component.spec';
 import '../src/app/shared/components/pagination-controls/pagination-controls.component.spec';
 import '../src/app/shared/components/list-panel/list-panel.component.spec';
+import '../src/app/shared/components/backend-unavailable/backend-unavailable.component.spec';
 import '../src/app/shared/components/title-attribute.spec';

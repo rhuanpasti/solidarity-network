@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { TimeoutError, catchError, throwError } from 'rxjs';
 import type { ApiErrorResponse } from '@solidarity-network/shared';
 import { AuthService } from '../auth/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -22,7 +22,11 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const toastService = inject(ToastService);
 
   return next(request).pipe(
-    catchError((error: HttpErrorResponse) => {
+    catchError((error: HttpErrorResponse | TimeoutError) => {
+      if (error instanceof TimeoutError || error.status === 0) {
+        return throwError(() => error);
+      }
+
       const payload = error.error as ApiErrorResponse | undefined;
       const code = payload?.code;
 

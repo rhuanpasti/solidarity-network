@@ -25,6 +25,12 @@ Solidarity Network is a full-stack, role-based management platform for organizat
 
 ![Charity program creation modal](docs/screenshots/program-modal.png)
 
+### Backend unavailable
+
+If the backend or another required service is unavailable for any reason, this is the screen presented by the frontend after a failed request or a 20-second timeout. It also includes a language switcher and, in demo mode, explains the limitations of free hosting services.
+
+![Backend unavailable screen in English](docs/screenshots/backend-unavailable-en.png)
+
 ## Portfolio snapshot
 
 - Multi-scope authorization with separate route, record, and program-assignment policies.

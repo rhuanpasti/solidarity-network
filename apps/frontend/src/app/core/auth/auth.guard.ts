@@ -68,11 +68,16 @@ export const loginGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const resetToken = route.queryParamMap.get('token');
+  const offlineMode = route.queryParamMap.get('offline') === 'true';
 
   if (resetToken) {
     return router.createUrlTree(['/reset-password'], {
       queryParams: { token: resetToken },
     });
+  }
+
+  if (offlineMode) {
+    return true;
   }
 
   return authService.validateStoredSession().then((isValid) => {

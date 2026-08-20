@@ -23,6 +23,14 @@
   color-scheme: light;
 }
 
+.cdk-overlay-backdrop {
+  @apply fixed inset-0;
+}
+
+.cdk-overlay-dark-backdrop {
+  @apply bg-slate-950/72 backdrop-blur-md;
+}
+
 * {
   @apply box-border;
 }
@@ -33,6 +41,11 @@ html {
 
 body {
   @apply m-0 bg-surface-subtle font-sans text-text;
+}
+
+body:has(.backend-unavailable),
+body:has(.selected-options-dialog-backdrop) {
+  overflow: hidden;
 }
 
 h1,
