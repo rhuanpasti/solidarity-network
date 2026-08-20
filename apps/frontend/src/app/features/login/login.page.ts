@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, type TemplateRef } from '@angular/core';
+import type { DialogRef } from '@angular/cdk/dialog';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { merge } from 'rxjs';
@@ -17,12 +18,44 @@ import { PasswordFieldComponent } from '../../shared/components/password-field/p
 import { CheckboxFieldComponent } from '../../shared/components/checkbox-field/checkbox-field.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { touchAll } from '../../shared/utils/form.utils';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { ModalService } from '../../shared/components/modal/modal.service';
+import { environment } from '../../../environments/environment';
 
 const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
   programs: 0,
   beneficiaries: 0,
   deliveries: 0,
 };
+
+export async function copyTextToClipboard(value: string): Promise<boolean> {
+  try {
+    if (globalThis.navigator?.clipboard?.writeText) {
+      await globalThis.navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    // Fall back to the legacy API when the Clipboard API is unavailable or blocked.
+  }
+
+  if (typeof document === 'undefined') {
+    return false;
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = value;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    return document.execCommand('copy');
+  } finally {
+    textArea.remove();
+  }
+}
 
 @Component({
   selector: 'app-login-page',
@@ -36,6 +69,7 @@ const EMPTY_LOGIN_METRICS: LoginMetricsResponse = {
     LanguageSwitcherComponent,
     PasswordFieldComponent,
     CheckboxFieldComponent,
+    ModalComponent,
   ],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
@@ -49,11 +83,16 @@ export class LoginPage {
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly modalService = inject(ModalService);
+  private demoDialogRef: DialogRef<unknown> | null = null;
 
   readonly passwordVisible = signal(false);
   readonly authError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isRequestingPasswordReset = signal(false);
+  readonly demoMode = environment.demoMode;
+  readonly demoCredentials = environment.demoCredentials;
+  readonly copiedDemoCredential = signal<'login' | 'password' | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     identifier: ['', [Validators.required, Validators.maxLength(120)]],
@@ -99,6 +138,23 @@ export class LoginPage {
 
   logout() {
     void this.authService.logout();
+  }
+
+  openDemoInfo(template: TemplateRef<unknown>) {
+    this.demoDialogRef?.close();
+    this.demoDialogRef = this.modalService.open(template);
+    this.demoDialogRef.closed.subscribe(() => (this.demoDialogRef = null));
+  }
+
+  closeDemoInfo() {
+    this.demoDialogRef?.close();
+    this.demoDialogRef = null;
+  }
+
+  async copyDemoCredential(kind: 'login' | 'password', value: string) {
+    if (await copyTextToClipboard(value)) {
+      this.copiedDemoCredential.set(kind);
+    }
   }
 
   setLanguage(language: string) {

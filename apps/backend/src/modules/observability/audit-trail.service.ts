@@ -12,7 +12,7 @@ interface AuditTrailInput {
   entityType?: string;
   entityId?: string;
   charityProgramId?: string | null;
-  actor?: Pick<AuthenticatedUser, 'sub' | 'accountType' | 'role'> | null;
+  actor?: (Pick<AuthenticatedUser, 'sub' | 'accountType' | 'role'> & { isDemo?: boolean }) | null;
   changedFields?: string[];
   previousValues?: Record<string, unknown> | null;
   newValues?: Record<string, unknown> | null;
@@ -31,6 +31,9 @@ export class AuditTrailService {
   ) {}
 
   async record(input: AuditTrailInput) {
+    if (input.actor?.isDemo) {
+      return;
+    }
     if (this.isPersistenceUnavailable) {
       return;
     }

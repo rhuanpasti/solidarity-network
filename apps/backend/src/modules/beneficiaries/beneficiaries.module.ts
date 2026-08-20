@@ -7,9 +7,10 @@ import { BeneficiariesController } from './beneficiaries.controller';
 import { BeneficiariesRepository } from './beneficiaries.repository';
 import { BeneficiariesService } from './beneficiaries.service';
 import { PostalCodeLookupService } from './postal-code-lookup.service';
+import { DemoModule } from '../demo/demo.module';
 
 @Module({
-  imports: [CharityProgramsModule, EmailModule],
+  imports: [CharityProgramsModule, EmailModule, DemoModule],
   controllers: [BeneficiariesController, BeneficiaryPortalController],
   providers: [
     BeneficiariesService,

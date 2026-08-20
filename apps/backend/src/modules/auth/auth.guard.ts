@@ -21,6 +21,7 @@ import { extractAuthToken } from './auth-cookie.util';
 import { AuthRepository } from './auth.repository';
 import { AuthTokenService } from './auth-token.service';
 import type { AuthenticatedUser } from './auth.types';
+import { DemoDataService } from '../demo/demo-data.service';
 
 export interface AuthenticatedRequest extends Request {
   authUser: AuthenticatedUser;
@@ -41,6 +42,8 @@ export class AuthGuard implements CanActivate {
     private readonly logger: StructuredLoggerService,
     @Inject(AuthTokenService)
     private readonly authTokenService: AuthTokenService,
+    @Inject(DemoDataService)
+    private readonly demoDataService: DemoDataService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -89,49 +92,72 @@ export class AuthGuard implements CanActivate {
       });
     }
 
-    const currentUser = await this.authRepository.findAuthenticatedUser(
-      user.accountType,
-      user.sub,
-    );
+    let authenticatedUser: AuthenticatedUser;
 
-    if (!currentUser) {
-      await this.auditTrailService.record({
-        action: 'auth.request.denied',
-        status: 'failure',
-        metadata: {
-          reason: 'account_unavailable',
-          accountType: user.accountType,
-          accountId: user.sub,
-        },
-      });
-      throw new UnauthorizedException({
-        code: 'AUTH_ACCOUNT_UNAVAILABLE',
-        message: 'Authenticated account is no longer available.',
-      });
+    if (user.isDemo) {
+      if (
+        !this.demoDataService.isEnabled() ||
+        user.sub !== 'demo-user' ||
+        user.accountType !== 'administrator' ||
+        user.role !== 'super_admin'
+      ) {
+        throw new UnauthorizedException({
+          code: 'INVALID_DEMO_TOKEN',
+          message: 'The demo authentication token is no longer valid.',
+        });
+      }
+
+      authenticatedUser = {
+        ...user,
+        csrfToken: user.csrfToken,
+        isDemo: true,
+      };
+    } else {
+      const currentUser = await this.authRepository.findAuthenticatedUser(
+        user.accountType,
+        user.sub,
+      );
+
+      if (!currentUser) {
+        await this.auditTrailService.record({
+          action: 'auth.request.denied',
+          status: 'failure',
+          metadata: {
+            reason: 'account_unavailable',
+            accountType: user.accountType,
+            accountId: user.sub,
+          },
+        });
+        throw new UnauthorizedException({
+          code: 'AUTH_ACCOUNT_UNAVAILABLE',
+          message: 'Authenticated account is no longer available.',
+        });
+      }
+
+      if (user.sessionVersion !== currentUser.sessionVersion) {
+        await this.auditTrailService.record({
+          action: 'auth.request.denied',
+          status: 'failure',
+          metadata: {
+            reason: 'session_revoked',
+            accountType: user.accountType,
+            accountId: user.sub,
+          },
+        });
+        throw new UnauthorizedException({
+          code: 'SESSION_REVOKED',
+          message: 'The authentication session is no longer valid.',
+        });
+      }
+
+      authenticatedUser = {
+        ...currentUser,
+        iat: user.iat,
+        exp: user.exp,
+        csrfToken: user.csrfToken,
+      };
     }
 
-    if (user.sessionVersion !== currentUser.sessionVersion) {
-      await this.auditTrailService.record({
-        action: 'auth.request.denied',
-        status: 'failure',
-        metadata: {
-          reason: 'session_revoked',
-          accountType: user.accountType,
-          accountId: user.sub,
-        },
-      });
-      throw new UnauthorizedException({
-        code: 'SESSION_REVOKED',
-        message: 'The authentication session is no longer valid.',
-      });
-    }
-
-    const authenticatedUser: AuthenticatedUser = {
-      ...currentUser,
-      iat: user.iat,
-      exp: user.exp,
-      csrfToken: user.csrfToken,
-    };
     this.requestContextService.setAuthenticatedUser(authenticatedUser);
 
     const allowPasswordChangeWhenRequired =

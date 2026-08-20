@@ -10,6 +10,7 @@ import type { Request } from 'express';
 import type { AuthUserSummary } from '@solidarity-network/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { AuditTrailService } from '../observability/audit-trail.service';
+import { StructuredLoggerService } from '../observability/structured-logger.service';
 import { EmailService } from '../email/email.service';
 import { AuthRateLimitService } from './auth-rate-limit.service';
 import { AuthTokenService } from './auth-token.service';
@@ -21,12 +22,15 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(AuditTrailService)
     private readonly auditTrailService: AuditTrailService,
+    @Inject(StructuredLoggerService)
+    private readonly logger: StructuredLoggerService,
     @Inject(AuthRateLimitService)
     private readonly authRateLimitService: AuthRateLimitService,
     @Inject(AuthRepository)
@@ -37,6 +41,8 @@ export class AuthService {
     private readonly emailService: EmailService,
     @Inject(PasswordResetTokenService)
     private readonly passwordResetTokenService: PasswordResetTokenService,
+    @Inject(DemoDataService)
+    private readonly demoDataService: DemoDataService,
   ) {}
 
   async login(dto: LoginDto, request: Request): Promise<AuthResponse> {
@@ -70,6 +76,33 @@ export class AuthService {
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
+    }
+
+    const demoUser = this.demoDataService.authenticate(
+      normalizedIdentifier,
+      dto.password,
+    );
+
+    if (demoUser) {
+      this.authRateLimitService.registerSuccess(rateLimitKeys);
+      const authenticatedDemoUser: AuthenticatedUser = {
+        ...demoUser,
+        csrfToken: this.createCsrfToken(),
+        iat: 0,
+        exp: 0,
+      };
+      await this.auditTrailService.record({
+        action: 'auth.demo_login.succeeded',
+        status: 'success',
+        actor: authenticatedDemoUser,
+        metadata: { identifierFingerprint },
+      });
+      this.logger.log('auth.demo_login.succeeded', {
+        event: 'auth.demo_login.succeeded',
+        accountType: 'administrator',
+        role: 'super_admin',
+      });
+      return this.toAuthResponse(authenticatedDemoUser);
     }
 
     const credentials = await this.repository.findCredentialsByIdentifier(
@@ -130,6 +163,15 @@ export class AuthService {
     user: AuthenticatedUser,
     dto: ChangePasswordDto,
   ): Promise<AuthResponse> {
+    if (this.demoDataService.isDemoUser(user)) {
+      return this.toAuthResponse({
+        ...user,
+        csrfToken: this.createCsrfToken(),
+        iat: 0,
+        exp: 0,
+      });
+    }
+
     const credential = await this.repository.findCredentialByAccount(
       user.accountType,
       user.sub,
@@ -220,6 +262,13 @@ export class AuthService {
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
+    }
+
+    if (
+      this.demoDataService.isEnabled() &&
+      normalizedEmail === this.demoDataService.demoEmail()
+    ) {
+      return { success: true };
     }
 
     this.authRateLimitService.registerFailure(rateLimitKeys);
@@ -363,6 +412,7 @@ export class AuthService {
       role: user.role,
       accountType: user.accountType,
       mustChangePassword: user.mustChangePassword,
+      isDemo: user.isDemo ?? false,
     };
   }
 

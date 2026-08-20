@@ -279,6 +279,7 @@ export class AuthService {
       role: user.role,
       accountType: user.accountType as AccountType,
       mustChangePassword: user.mustChangePassword,
+      isDemo: user.isDemo ?? false,
       csrfToken,
     };
   }

@@ -17,6 +17,7 @@ import { BenefitDeliveriesModule } from './modules/benefit-deliveries/benefit-de
 import { ObservabilityModule } from './modules/observability/observability.module';
 import { RequestLoggingInterceptor } from './modules/observability/request-logging.interceptor';
 import { PublicModule } from './modules/public/public.module';
+import { DemoModule } from './modules/demo/demo.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PublicModule } from './modules/public/public.module';
     BenefitsModule,
     BenefitDeliveriesModule,
     PublicModule,
+    DemoModule,
   ],
   providers: [
     {

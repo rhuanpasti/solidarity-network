@@ -8,6 +8,7 @@ export interface AuthSession {
   role: string | null;
   accountType: AccountType;
   mustChangePassword: boolean;
+  isDemo?: boolean;
   csrfToken: string;
 }
 
@@ -67,6 +68,7 @@ export function readStoredAuthSession(): AuthSession | null {
         role: session.role ?? null,
         accountType: session.accountType ?? 'administrator',
         mustChangePassword: session.mustChangePassword ?? false,
+        ...(session.isDemo ? { isDemo: true } : {}),
         csrfToken: session.csrfToken,
       };
     } catch {

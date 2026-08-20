@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
 import type { AdministratorProgramLink } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import type {
@@ -21,6 +21,7 @@ import { BenefitDeliveriesRepository } from './benefit-deliveries.repository';
 import { toBenefitDeliverySummary } from './benefit-deliveries.mapper';
 import { CreateBenefitDeliveryDto } from './dto/create-benefit-delivery.dto';
 import { QueryBenefitDeliveriesDto } from './dto/query-benefit-deliveries.dto';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class BenefitDeliveriesService {
@@ -43,6 +44,9 @@ export class BenefitDeliveriesService {
     private readonly administratorsRepository: AdministratorsRepository,
     @Inject(EmailService)
     private readonly emailService: EmailService,
+    @Optional()
+    @Inject(DemoDataService)
+    private readonly demoDataService?: DemoDataService,
   ) {}
 
   async create(
@@ -52,6 +56,9 @@ export class BenefitDeliveriesService {
     this.authorizationService.assertCanRegisterDelivery(actor, dto.charityProgramId, {
       action: 'benefit_delivery.create',
     });
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.previewDelivery(dto);
+    }
 
     const [beneficiary, benefit, charityProgram, administrator] = await Promise.all([
       this.beneficiariesRepository.findById(dto.beneficiaryId),
@@ -154,6 +161,9 @@ export class BenefitDeliveriesService {
     query: QueryBenefitDeliveriesDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BenefitDeliverySummary>> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.listDeliveries(query);
+    }
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const scope = this.authorizationService.getProgramScope(actor);
@@ -176,6 +186,9 @@ export class BenefitDeliveriesService {
   }
 
   async findOne(id: string, actor: AuthenticatedUser): Promise<BenefitDeliverySummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getDelivery(id);
+    }
     const delivery = await this.repository.findById(
       id,
       this.authorizationService.getProgramScope(actor),

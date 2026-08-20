@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import type {
@@ -35,6 +35,7 @@ import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
 import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
 import { rethrowBeneficiaryUniqueError } from './beneficiary-unique-error';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class BeneficiariesService {
@@ -51,6 +52,9 @@ export class BeneficiariesService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
     @Inject(EmailService)
     private readonly emailService: EmailService,
+    @Optional()
+    @Inject(DemoDataService)
+    private readonly demoDataService?: DemoDataService,
   ) {}
 
   async create(
@@ -69,6 +73,19 @@ export class BeneficiariesService {
       dto.charityProgramIds ?? [],
       { action: 'beneficiary.create' },
     );
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.previewBeneficiary({
+        fullName: dto.fullName,
+        document: dto.document,
+        birthDate: dto.birthDate,
+        email: dto.email,
+        phone: dto.phone,
+        address: dto.address as Address,
+        notes: dto.notes,
+        charityProgramIds: dto.charityProgramIds,
+        status: dto.status ?? 'active',
+      });
+    }
     await this.assertProgramsExist(dto.charityProgramIds);
     const normalizedInput = normalizeBeneficiaryInput({
       document: dto.document,
@@ -162,6 +179,9 @@ export class BeneficiariesService {
     query: QueryBeneficiariesDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BeneficiarySummary>> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.listBeneficiaries(query);
+    }
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const scope = this.authorizationService.getProgramScope(actor);
@@ -184,6 +204,9 @@ export class BeneficiariesService {
   }
 
   async findOne(id: string, actor: AuthenticatedUser): Promise<BeneficiarySummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getBeneficiary(id);
+    }
     const beneficiary = await this.repository.findById(
       id,
       this.authorizationService.getProgramScope(actor),
@@ -201,6 +224,9 @@ export class BeneficiariesService {
     dto: UpdateBeneficiaryDto,
     actor: AuthenticatedUser,
   ): Promise<BeneficiarySummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getBeneficiary(id);
+    }
     const existingBeneficiary = await this.repository.findById(
       id,
       this.authorizationService.getProgramScope(actor),

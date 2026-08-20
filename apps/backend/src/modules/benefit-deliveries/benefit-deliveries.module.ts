@@ -7,6 +7,7 @@ import { EmailModule } from '../email/email.module';
 import { BenefitDeliveriesController } from './benefit-deliveries.controller';
 import { BenefitDeliveriesRepository } from './benefit-deliveries.repository';
 import { BenefitDeliveriesService } from './benefit-deliveries.service';
+import { DemoModule } from '../demo/demo.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { BenefitDeliveriesService } from './benefit-deliveries.service';
     BenefitsModule,
     CharityProgramsModule,
     EmailModule,
+    DemoModule,
   ],
   controllers: [BenefitDeliveriesController],
   providers: [BenefitDeliveriesService, BenefitDeliveriesRepository],

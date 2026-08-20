@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import type { BenefitSummary, PaginatedResponse } from '@solidarity-network/shared';
 import {
   normalizePaginationQuery,
@@ -15,6 +15,7 @@ import { BenefitsRepository } from './benefits.repository';
 import { CreateBenefitDto } from './dto/create-benefit.dto';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
 import { UpdateBenefitStatusDto } from './dto/update-benefit-status.dto';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class BenefitsService {
@@ -27,6 +28,9 @@ export class BenefitsService {
     private readonly authorizationService: AuthorizationService,
     @Inject(BenefitsRepository)
     private readonly repository: BenefitsRepository,
+    @Optional()
+    @Inject(DemoDataService)
+    private readonly demoDataService?: DemoDataService,
   ) {}
 
   async create(
@@ -36,6 +40,14 @@ export class BenefitsService {
     this.authorizationService.assertCanManageBenefit(actor, {
       action: 'benefit.create',
     });
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.previewBenefit({
+        name: dto.name,
+        description: dto.description,
+        category: dto.category,
+        active: dto.active ?? true,
+      });
+    }
     const benefit = await this.repository.create({
       ...dto,
       active: dto.active ?? true,
@@ -69,6 +81,9 @@ export class BenefitsService {
     query: PaginationQueryDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<BenefitSummary>> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.listBenefits(query);
+    }
     this.authorizationService.assertCanManageBenefit(actor, {
       action: 'benefit.find_all',
     });
@@ -92,6 +107,9 @@ export class BenefitsService {
   }
 
   async findOne(id: string, actor: AuthenticatedUser): Promise<BenefitSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getBenefit(id);
+    }
     this.authorizationService.assertCanManageBenefit(actor, {
       action: 'benefit.find_one',
       benefitId: id,
@@ -110,6 +128,9 @@ export class BenefitsService {
     dto: UpdateBenefitDto,
     actor: AuthenticatedUser,
   ): Promise<BenefitSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getBenefit(id);
+    }
     this.authorizationService.assertCanManageBenefit(actor, {
       action: 'benefit.update',
       benefitId: id,
@@ -145,6 +166,9 @@ export class BenefitsService {
     dto: UpdateBenefitStatusDto,
     actor: AuthenticatedUser,
   ): Promise<BenefitSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getBenefit(id);
+    }
     this.authorizationService.assertCanManageBenefit(actor, {
       action: 'benefit.update_status',
       benefitId: id,

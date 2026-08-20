@@ -121,4 +121,5 @@ export interface AuthUserSummary {
   role: AdministratorRole | null;
   accountType: AccountType;
   mustChangePassword: boolean;
+  isDemo?: boolean;
 }

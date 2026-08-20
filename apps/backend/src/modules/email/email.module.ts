@@ -3,8 +3,10 @@ import { EMAIL_SENDER } from './email.tokens';
 import { EmailService } from './email.service';
 import { EmailTemplateService } from './email-template.service';
 import { BrevoEmailSender } from './brevo-email.sender';
+import { DemoModule } from '../demo/demo.module';
 
 @Module({
+  imports: [DemoModule],
   providers: [
     EmailService,
     EmailTemplateService,

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import {
   CharityProgramSummary,
   PaginatedResponse,
@@ -14,6 +14,7 @@ import { UpdateCharityProgramDto } from './dto/update-charity-program.dto';
 import { UpdateCharityProgramStatusDto } from './dto/update-charity-program-status.dto';
 import { toCharityProgramSummary } from './charity-programs.mapper';
 import { CharityProgramsRepository } from './charity-programs.repository';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class CharityProgramsService {
@@ -22,6 +23,9 @@ export class CharityProgramsService {
     private readonly authorizationService: AuthorizationService,
     @Inject(CharityProgramsRepository)
     private readonly repository: CharityProgramsRepository,
+    @Optional()
+    @Inject(DemoDataService)
+    private readonly demoDataService?: DemoDataService,
   ) {}
 
   async create(
@@ -31,6 +35,13 @@ export class CharityProgramsService {
     this.authorizationService.assertCanCreateCharityProgram(actor, {
       action: 'charity_program.create',
     });
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.previewProgram({
+        name: dto.name,
+        description: dto.description,
+        status: dto.status ?? 'active',
+      });
+    }
     const program = await this.repository.create({
       ...dto,
       status: dto.status ?? 'active',
@@ -43,6 +54,9 @@ export class CharityProgramsService {
     query: QueryCharityProgramsDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<CharityProgramSummary>> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.listPrograms(query);
+    }
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const scope = this.authorizationService.getProgramScope(actor);
@@ -66,6 +80,9 @@ export class CharityProgramsService {
   }
 
   async findOne(id: string, actor: AuthenticatedUser): Promise<CharityProgramSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getProgram(id);
+    }
     const program = await this.repository.findById(
       id,
       this.authorizationService.getProgramScope(actor),
@@ -83,6 +100,14 @@ export class CharityProgramsService {
     dto: UpdateCharityProgramDto,
     actor: AuthenticatedUser,
   ): Promise<CharityProgramSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      const existing = this.demoDataService.getProgram(id);
+      return this.demoDataService.previewProgram({
+        name: dto.name ?? existing.name,
+        description: dto.description ?? existing.description,
+        status: dto.status ?? existing.status,
+      });
+    }
     await this.findOne(id, actor);
     const program = await this.repository.update(id, dto);
     return toCharityProgramSummary(program);
@@ -93,6 +118,14 @@ export class CharityProgramsService {
     dto: UpdateCharityProgramStatusDto,
     actor: AuthenticatedUser,
   ): Promise<CharityProgramSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      const existing = this.demoDataService.getProgram(id);
+      return this.demoDataService.previewProgram({
+        name: existing.name,
+        description: existing.description,
+        status: dto.status,
+      });
+    }
     await this.findOne(id, actor);
     const program = await this.repository.update(id, { status: dto.status });
     return toCharityProgramSummary(program);

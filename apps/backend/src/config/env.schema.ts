@@ -11,6 +11,10 @@ export interface AppEnvironment {
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL: string;
   BREVO_FROM_NAME: string;
+  DEMO_MODE: boolean;
+  DEMO_USER_USERNAME: string;
+  DEMO_USER_EMAIL: string;
+  DEMO_USER_PASSWORD: string;
 }
 
 export const DEFAULT_CORS_ORIGINS = [
@@ -71,6 +75,12 @@ export function validateEnv(config: Record<string, unknown>): AppEnvironment {
         : undefined,
     BREVO_FROM_EMAIL: String(config.BREVO_FROM_EMAIL ?? ''),
     BREVO_FROM_NAME: String(config.BREVO_FROM_NAME ?? 'Solidarity Network'),
+    DEMO_MODE: String(config.DEMO_MODE ?? 'false') === 'true',
+    DEMO_USER_USERNAME: String(config.DEMO_USER_USERNAME ?? 'demo-user').trim(),
+    DEMO_USER_EMAIL: String(
+      config.DEMO_USER_EMAIL ?? 'demo@solidarity-network.local',
+    ).trim().toLowerCase(),
+    DEMO_USER_PASSWORD: String(config.DEMO_USER_PASSWORD ?? 'demo-user-2026'),
   };
 }
 

@@ -150,7 +150,7 @@ const administrators: DemoAdministrator[] = [
     key: 'system-root',
     name: 'System Administrator',
     email: 'admin@solidarity-network.local',
-    phone: '+55 11 98888-0000',
+    phone: '999999999',
     role: 'super_admin',
     isSystemRoot: true,
     programKeys: programs.map((program) => program.key),
@@ -159,7 +159,7 @@ const administrators: DemoAdministrator[] = [
     key: 'camila',
     name: 'Camila Ferreira',
     email: 'camila.ferreira@solidarity-network.local',
-    phone: '+55 11 97770-4101',
+    phone: '888888888',
     role: 'program_manager',
     isSystemRoot: false,
     programKeys: ['food-security', 'school-support'],
@@ -168,7 +168,7 @@ const administrators: DemoAdministrator[] = [
     key: 'rafael',
     name: 'Rafael Gomes',
     email: 'rafael.gomes@solidarity-network.local',
-    phone: '+55 11 97770-4102',
+    phone: '777777777',
     role: 'case_worker',
     isSystemRoot: false,
     programKeys: ['food-security', 'senior-care'],
@@ -177,7 +177,7 @@ const administrators: DemoAdministrator[] = [
     key: 'marina',
     name: 'Marina Costa',
     email: 'marina.costa@solidarity-network.local',
-    phone: '+55 11 97770-4103',
+    phone: '666666666',
     role: 'case_worker',
     isSystemRoot: false,
     programKeys: ['school-support', 'senior-care'],
@@ -188,10 +188,10 @@ const beneficiaries: DemoBeneficiary[] = [
   {
     key: 'ana-souza',
     fullName: 'Ana Carolina Souza',
-    document: '52998224725',
+    document: '52998224726',
     birthDate: '1991-02-14',
     email: 'ana.souza@example.org',
-    phone: '+55 11 96540-1101',
+    phone: '555555555',
     status: 'active',
     address: {
       street: 'Rua das Palmeiras',
@@ -209,9 +209,9 @@ const beneficiaries: DemoBeneficiary[] = [
   {
     key: 'joao-santos',
     fullName: 'Joao Pedro Santos',
-    document: '39053344705',
+    document: '39053344706',
     birthDate: '2009-08-21',
-    phone: '+55 11 96420-1102',
+    phone: '444444444',
     status: 'active',
     address: {
       street: 'Travessa Esperanca',
@@ -228,10 +228,10 @@ const beneficiaries: DemoBeneficiary[] = [
   {
     key: 'maria-silva',
     fullName: 'Maria Aparecida Silva',
-    document: '28625587887',
+    document: '28625587888',
     birthDate: '1957-06-03',
     email: 'maria.aparecida@example.org',
-    phone: '+55 11 96310-1103',
+    phone: '333333333',
     status: 'active',
     address: {
       street: 'Rua Jose Bonifacio',
@@ -249,10 +249,10 @@ const beneficiaries: DemoBeneficiary[] = [
   {
     key: 'carlos-lima',
     fullName: 'Carlos Henrique Lima',
-    document: '84434843003',
+    document: '84434843004',
     birthDate: '1983-11-29',
     email: 'carlos.lima@example.org',
-    phone: '+55 11 96200-1104',
+    phone: '222222222',
     status: 'active',
     address: {
       street: 'Avenida dos Trabalhadores',
@@ -269,9 +269,9 @@ const beneficiaries: DemoBeneficiary[] = [
   {
     key: 'luciana-rocha',
     fullName: 'Luciana Rocha',
-    document: '11811005030',
+    document: '11811005031',
     birthDate: '1979-04-10',
-    phone: '+55 11 96100-1105',
+    phone: '111111111',
     status: 'inactive',
     address: {
       street: 'Rua do Rosario',

@@ -53,6 +53,7 @@ administrator.temporary_password_email.failed
 auth.password_recovery.requested
 auth.password_recovery.email_failed
 auth.request.denied (reason=session_revoked)
+auth.demo_login.succeeded
 ```
 
 Prefer names that describe what happened, not where it happened. Put module-specific data in fields.
@@ -143,6 +144,12 @@ the endpoint still returns the same generic success response, preventing account
 Changing or resetting a password increments the account `sessionVersion`. JWTs carry that version and the auth guard
 compares it with the current credential on every protected request, emitting `auth.request.denied` with
 `reason=session_revoked` for stale sessions.
+
+When `DEMO_MODE=true`, the configured demo credentials authenticate to a synthetic `demo-user` with the
+`isDemo=true` JWT claim. The auth guard accepts that claim without querying `AuthRepository`; protected domain services
+serve only in-memory synthetic records from `DemoDataService`, and demo create/update operations return previews without
+calling Prisma. Audit and entity-version persistence skip demo actors, and the email sender emits `email.send.skipped`
+with `reason=demo_mode`. Never log the configured demo password or copy demo credentials into operational logs.
 
 Example request:
 
@@ -337,6 +344,7 @@ Minimum dashboard panels:
 4. Top failing routes grouped by `path` or `route`.
 5. Authorization denials from `authorization.denied` and `auth.request.denied`.
 6. Transactional email failures from `email.send.failed` and configuration gaps from `email.send.configuration_missing`.
+7. Demo traffic and email suppression from `auth.demo_login.succeeded` and `email.send.skipped` grouped by `reason`.
 
 Minimum alerts:
 
@@ -360,5 +368,21 @@ Session revocation example:
   "accountType": "administrator",
   "accountId": "clw9admin0001",
   "reason": "session_revoked"
+}
+```
+
+Demo email suppression:
+
+```json
+{
+  "timestamp": "2026-08-20T14:33:22.100Z",
+  "level": "debug",
+  "message": "email.send.skipped",
+  "service": "solidarity-network-backend",
+  "requestId": "req_01HXDEMO",
+  "provider": "brevo",
+  "reason": "demo_mode",
+  "templateSubject": "Seu acesso a Rede Solidaria esta pronto",
+  "recipientFingerprint": "a6b8c9d0e1f20304"
 }
 ```

@@ -46,4 +46,20 @@ describe('validateEnv', () => {
       '192.168.0.0/16',
     ]);
   });
+
+  it('parses demo mode and keeps the configured demo credentials separate', () => {
+    const environment = validateEnv({
+      DATABASE_URL: 'postgresql://localhost:5432/solidarity',
+      JWT_SECRET: 'a'.repeat(32),
+      DEMO_MODE: 'true',
+      DEMO_USER_USERNAME: ' demo-user ',
+      DEMO_USER_EMAIL: ' Demo@Example.org ',
+      DEMO_USER_PASSWORD: 'demo-password',
+    });
+
+    assert.equal(environment.DEMO_MODE, true);
+    assert.equal(environment.DEMO_USER_USERNAME, 'demo-user');
+    assert.equal(environment.DEMO_USER_EMAIL, 'demo@example.org');
+    assert.equal(environment.DEMO_USER_PASSWORD, 'demo-password');
+  });
 });

@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { isValidBrazilianPhone, isValidCpf } from '@solidarity-network/shared';
 import { buildDemoSeedData } from './demo-seed-data';
 
 describe('buildDemoSeedData', () => {
@@ -54,5 +55,18 @@ describe('buildDemoSeedData', () => {
       assert.ok(delivery.deliveryDate instanceof Date);
       assert.ok(delivery.notes.length > 20);
     }
+  });
+
+  it('uses invalid CPF values for every synthetic beneficiary', () => {
+    const data = buildDemoSeedData();
+
+    assert.ok(data.beneficiaries.every((beneficiary) => !isValidCpf(beneficiary.document)));
+  });
+
+  it('uses invalid cellphone values for every synthetic contact', () => {
+    const data = buildDemoSeedData();
+
+    assert.ok(data.beneficiaries.every((beneficiary) => !isValidBrazilianPhone(beneficiary.phone)));
+    assert.ok(data.administrators.every((administrator) => !isValidBrazilianPhone(administrator.phone)));
   });
 });

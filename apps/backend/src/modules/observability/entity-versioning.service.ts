@@ -11,7 +11,7 @@ interface EntityVersionInput {
   entityId: string;
   action: string;
   charityProgramId?: string | null;
-  actor?: Pick<AuthenticatedUser, 'sub' | 'accountType' | 'role'> | null;
+  actor?: (Pick<AuthenticatedUser, 'sub' | 'accountType' | 'role'> & { isDemo?: boolean }) | null;
   changedFields?: string[];
   snapshot: Record<string, unknown>;
   diff?: Record<string, unknown>;
@@ -28,6 +28,9 @@ export class EntityVersioningService {
   ) {}
 
   async recordVersion(input: EntityVersionInput) {
+    if (input.actor?.isDemo) {
+      return undefined;
+    }
     const actor = input.actor ?? null;
     const context = requestContextStorage.getStore();
     const snapshot = sanitizeForAudit(input.snapshot) as Prisma.InputJsonValue;

@@ -12,10 +12,12 @@ import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 import { AuthTokenService } from './auth-token.service';
 import { PasswordResetTokenService } from './password-reset-token.service';
+import { DemoModule } from '../demo/demo.module';
 
 @Module({
   imports: [
     EmailModule,
+    DemoModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

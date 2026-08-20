@@ -29,14 +29,15 @@ export class BrevoEmailSender implements EmailSender {
   async send(payload: EmailSenderPayload): Promise<void> {
     const enabled = this.configService.get('BREVO_ENABLED', { infer: true });
     const nodeEnv = this.configService.get('NODE_ENV', { infer: true });
+    const demoMode = this.configService.get('DEMO_MODE', { infer: true });
     const apiKey = this.configService.get('BREVO_API_KEY', { infer: true });
     const fromEmail = this.configService.get('BREVO_FROM_EMAIL', { infer: true });
     const fromName = this.configService.get('BREVO_FROM_NAME', { infer: true });
 
-    if (!enabled || nodeEnv === 'test') {
+    if (!enabled || nodeEnv === 'test' || demoMode) {
       this.logger.debug('email.send.skipped', {
         provider: 'brevo',
-        reason: enabled ? 'test_environment' : 'disabled',
+        reason: demoMode ? 'demo_mode' : enabled ? 'test_environment' : 'disabled',
         templateSubject: payload.subject,
         recipientFingerprint: this.fingerprint(payload.to.email),
       });

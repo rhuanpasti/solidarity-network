@@ -176,4 +176,25 @@ describe('BrevoEmailSender', () => {
     assert.equal(fetchImplementation.mock.callCount(), 0);
     assert.equal(logger.debug.mock.callCount(), 1);
   });
+
+  it('skips sending when demo mode is enabled even if Brevo is configured', async () => {
+    const config = makeConfig({ DEMO_MODE: true });
+    const logger = {
+      debug: mock.fn(),
+      warn: mock.fn(),
+      log: mock.fn(),
+      error: mock.fn(),
+    };
+    const fetchImplementation = mock.fn(async () => makeResponse({}));
+    const sender = new BrevoEmailSender(
+      config as never,
+      logger as never,
+      fetchImplementation as never,
+    );
+
+    await sender.send(makePayload());
+
+    assert.equal(fetchImplementation.mock.callCount(), 0);
+    assert.equal(logger.debug.mock.calls[0]?.arguments[1].reason, 'demo_mode');
+  });
 });

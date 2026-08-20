@@ -89,6 +89,12 @@
     </header>
 
     <main id="content" class="content" data-testid="app-content">
+      @if (session()?.isDemo) {
+        <div class="demo-banner" role="status">
+          <span class="material-symbols-rounded" aria-hidden="true">science</span>
+          {{ 'auth.demoBanner' | translate }}
+        </div>
+      }
       <router-outlet />
     </main>
   </div>

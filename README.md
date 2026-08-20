@@ -298,6 +298,10 @@ npm run start:frontend
 
 The frontend's local API URL is configured in `apps/frontend/src/environments/environment.ts`.
 
+### Demo mode
+
+Demo mode is enabled with `DEMO_MODE=true` in the backend environment and `demoMode: true` in the matching frontend environment. Configure `DEMO_USER_USERNAME`, `DEMO_USER_EMAIL`, and `DEMO_USER_PASSWORD` with the same values used by `demoCredentials`. The default login is `demo-user` with password `demo-user-2026`. The demo account is a synthetic super admin: its token never queries real records, demo changes are returned as previews without database persistence, email delivery is disabled, and all CPFs and cellphone numbers shown in synthetic data are deliberately invalid.
+
 ### Docker Compose full stack
 
 After configuring the root `.env`, start PostgreSQL, the backend, and the frontend together with:

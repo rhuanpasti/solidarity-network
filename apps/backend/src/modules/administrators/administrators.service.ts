@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Optional } from '@nestjs/common';
 import type { Administrator, CharityProgram } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import type {
@@ -25,6 +25,7 @@ import { toAdministratorSummary } from './administrators.mapper';
 import { AdministratorsRepository } from './administrators.repository';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
+import { DemoDataService } from '../demo/demo-data.service';
 
 @Injectable()
 export class AdministratorsService {
@@ -39,6 +40,9 @@ export class AdministratorsService {
     private readonly charityProgramsRepository: CharityProgramsRepository,
     @Inject(EmailService)
     private readonly emailService: EmailService,
+    @Optional()
+    @Inject(DemoDataService)
+    private readonly demoDataService?: DemoDataService,
   ) {}
 
   async create(
@@ -48,6 +52,12 @@ export class AdministratorsService {
     this.authorizationService.assertCanManageAdministrator(actor, {
       action: 'administrator.create',
     });
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.previewAdministrator({
+        ...dto,
+        charityProgramIds: dto.charityProgramIds ?? [],
+      });
+    }
     await this.assertProgramsExist(dto.charityProgramIds);
     const generatedPasskey = generateNumericPasskey(16);
 
@@ -101,6 +111,9 @@ export class AdministratorsService {
     query: PaginationQueryDto,
     actor: AuthenticatedUser,
   ): Promise<PaginatedResponse<AdministratorSummary>> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.listAdministrators(query);
+    }
     const normalizedQuery = normalizePaginationQuery(query);
     const skip = (normalizedQuery.page - 1) * normalizedQuery.pageSize;
     const scope = this.authorizationService.getProgramScope(actor);
@@ -123,6 +136,9 @@ export class AdministratorsService {
   }
 
   async findOne(id: string, actor: AuthenticatedUser): Promise<AdministratorSummary> {
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return this.demoDataService.getAdministrator(id);
+    }
     const administrator = await this.findVisibleAdministrator(id, actor);
 
     if (!administrator) {
@@ -137,6 +153,10 @@ export class AdministratorsService {
       action: 'administrator.temporary_password.resend',
       targetAdministratorId: id,
     });
+
+    if (this.demoDataService?.isDemoUser(actor)) {
+      return { success: false };
+    }
 
     const administrator = await this.findVisibleAdministrator(id, actor);
 
@@ -182,6 +202,21 @@ export class AdministratorsService {
       action: 'administrator.update',
       targetAdministratorId: id,
     });
+
+    const demoDataService = this.demoDataService;
+    if (demoDataService?.isDemoUser(actor)) {
+      const existing = demoDataService.getAdministrator(id);
+      return {
+        ...existing,
+        name: dto.name ?? existing.name,
+        email: dto.email ?? existing.email,
+        phone: dto.phone ?? existing.phone,
+        role: dto.role ?? existing.role,
+        charityPrograms: dto.charityProgramIds
+          ? dto.charityProgramIds.map((programId) => demoDataService.getProgram(programId))
+          : existing.charityPrograms,
+      };
+    }
 
     const administrator = await this.repository.findById(id);
 

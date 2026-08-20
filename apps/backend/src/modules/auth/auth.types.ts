@@ -11,6 +11,7 @@ export interface AuthenticatedUser {
   programIds: string[];
   mustChangePassword: boolean;
   sessionVersion: number;
+  isDemo?: boolean;
   csrfToken: string;
   iat: number;
   exp: number;

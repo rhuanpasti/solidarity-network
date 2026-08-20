@@ -13,6 +13,7 @@ interface TokenPayloadBase {
   programIds: string[];
   mustChangePassword: boolean;
   sessionVersion: number;
+  isDemo?: boolean;
   csrfToken: string;
 }
 

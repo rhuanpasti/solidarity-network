@@ -14,6 +14,7 @@ import '../src/app/core/state/cached-list.store.spec';
 import '../src/app/features/benefit-deliveries/benefit-deliveries.page.spec';
 import '../src/app/features/beneficiaries/beneficiaries.page.spec';
 import '../src/app/features/beneficiaries/components/beneficiary-list.component.spec';
+import '../src/app/features/login/login.page.spec';
 import '../src/app/shared/utils/http.utils.spec';
 import '../src/app/shared/utils/list-query.utils.spec';
 import '../src/app/shared/utils/form.utils.spec';

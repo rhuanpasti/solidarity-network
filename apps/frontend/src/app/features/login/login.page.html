@@ -27,6 +27,23 @@
   </section>
 
   <section class="login-panel" aria-labelledby="login-title">
+    <ng-template #demoInfoDialog>
+      <app-modal
+        title="auth.demoInfoTitle"
+        description="auth.demoInfoDescription"
+        (closed)="closeDemoInfo()"
+      >
+        <div class="demo-modal-copy">
+          <p>{{ 'auth.demoNoPersistence' | translate }}</p>
+          <p>{{ 'auth.demoNoEmail' | translate }}</p>
+          <p>{{ 'auth.demoTokenScope' | translate }}</p>
+          <p>{{ 'auth.demoInvalidCpf' | translate }}</p>
+          <p>{{ 'auth.demoInvalidPhone' | translate }}</p>
+          <p>{{ 'auth.demoOnlySynthetic' | translate }}</p>
+        </div>
+      </app-modal>
+    </ng-template>
+
     <div class="login-panel-topbar">
       <div class="mobile-brand">
         <div class="brand-mark">
@@ -47,6 +64,52 @@
         <h2 id="login-title">{{ 'auth.title' | translate }}</h2>
         <span>{{ 'auth.subtitle' | translate }}</span>
       </header>
+
+      @if (demoMode) {
+        <section class="demo-card session-card" aria-labelledby="demo-card-title">
+          <div class="demo-card-heading">
+            <div>
+              <p id="demo-card-title">{{ 'auth.demoTitle' | translate }}</p>
+              <span>{{ 'auth.demoDisclaimer' | translate }}</span>
+            </div>
+          </div>
+          <dl class="demo-credentials">
+            <div>
+              <dt>{{ 'auth.demoLogin' | translate }}:</dt>
+              <dd>{{ demoCredentials.login }}</dd>
+              <button
+                type="button"
+                class="ghost-button demo-copy-button"
+                [attr.aria-label]="(copiedDemoCredential() === 'login' ? 'auth.copied' : 'auth.copyDemoLogin') | translate"
+                [attr.title]="(copiedDemoCredential() === 'login' ? 'auth.copied' : 'auth.copyDemoLogin') | translate"
+                (click)="copyDemoCredential('login', demoCredentials.login)"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">
+                  {{ copiedDemoCredential() === 'login' ? 'check' : 'content_copy' }}
+                </span>
+              </button>
+            </div>
+            <div>
+              <dt>{{ 'auth.demoPassword' | translate }}:</dt>
+              <dd>{{ demoCredentials.password }}</dd>
+              <button
+                type="button"
+                class="ghost-button demo-copy-button"
+                [attr.aria-label]="(copiedDemoCredential() === 'password' ? 'auth.copied' : 'auth.copyDemoPassword') | translate"
+                [attr.title]="(copiedDemoCredential() === 'password' ? 'auth.copied' : 'auth.copyDemoPassword') | translate"
+                (click)="copyDemoCredential('password', demoCredentials.password)"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">
+                  {{ copiedDemoCredential() === 'password' ? 'check' : 'content_copy' }}
+                </span>
+              </button>
+            </div>
+          </dl>
+          <button type="button" class="ghost-button demo-more-button" (click)="openDemoInfo(demoInfoDialog)">
+            {{ 'auth.demoLearnMore' | translate }}
+          </button>
+        </section>
+      }
 
       @if (isAuthenticated() && session(); as currentSession) {
         <section class="session-card">
