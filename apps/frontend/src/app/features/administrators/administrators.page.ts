@@ -28,7 +28,10 @@ import {
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGINATION_META,
 } from "../../shared/utils/pagination.utils";
-import { genericPhoneValidator } from "../../shared/utils/validation.utils";
+import {
+  formatBrazilianPhoneForDisplay,
+  genericPhoneValidator,
+} from "../../shared/utils/validation.utils";
 import { AdministratorsService } from "../../core/services/administrators.service";
 import { CharityProgramsService } from "../../core/services/charity-programs.service";
 import { ToastService } from "../../core/services/toast.service";
@@ -182,7 +185,7 @@ export class AdministratorsPage implements OnInit {
       this.form.reset({
         name: item.name,
         email: item.email,
-        phone: item.phone,
+        phone: formatBrazilianPhoneForDisplay(item.phone),
         role: item.role,
         charityProgramIds: item.charityPrograms.map((program) => program.id),
       });

@@ -33,15 +33,12 @@
         [isReadOnly]="beneficiariesState.isReadOnly()"
         [submitPending]="beneficiariesState.submitPending()"
         [programOptions]="activeProgramOptions()"
-        [dependentRelationshipOptions]="beneficiariesState.dependentRelationshipOptions"
         [countryOptions]="countryOptions()"
         [documentLabelKey]="beneficiariesState.documentLabelKey"
         [isBrazilDocument]="beneficiariesState.isBrazilSelected()"
         [addressLookupMessageKey]="beneficiariesState.addressLookupMessageKey()"
         (saveRequested)="submitBeneficiary()"
         (cancelRequested)="cancelEditor()"
-        (addDependent)="beneficiariesState.addDependent()"
-        (removeDependent)="beneficiariesState.removeDependent($event)"
         (postalCodeBlur)="beneficiariesState.lookupAddressByPostalCode()"
       />
     </app-modal>

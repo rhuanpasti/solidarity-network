@@ -32,6 +32,48 @@ export function formatCpfForDisplay(value: string | null | undefined) {
   return normalizeDigits(value).length === 11 ? formatCpf(value) : value;
 }
 
+export function formatBrazilianPhone(value: string) {
+  const digits = normalizeDigits(value).slice(0, 11);
+
+  if (!digits) {
+    return '';
+  }
+
+  if (digits.length <= 2) {
+    return digits.length === 2 ? `(${digits})` : `(${digits}`;
+  }
+
+  const areaCode = digits.slice(0, 2);
+  const number = digits.slice(2);
+  const firstGroupLength = digits.length >= 11 ? 5 : 4;
+
+  if (number.length <= firstGroupLength) {
+    return `(${areaCode}) ${number}`;
+  }
+
+  return `(${areaCode}) ${number.slice(0, firstGroupLength)}-${number.slice(firstGroupLength)}`;
+}
+
+export function formatBrazilianPhoneForDisplay(value: string | null | undefined) {
+  if (!value) {
+    return value ?? '';
+  }
+
+  const trimmedValue = value.trim();
+
+  if (trimmedValue.startsWith('+') && !trimmedValue.startsWith('+55')) {
+    return value;
+  }
+
+  let digits = normalizeDigits(value);
+
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith('55')) {
+    digits = digits.slice(2);
+  }
+
+  return digits.length === 10 || digits.length === 11 ? formatBrazilianPhone(digits) : value;
+}
+
 export function cpfValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = String(control.value ?? '').trim();

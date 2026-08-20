@@ -95,6 +95,8 @@ interface GeneratedCredentialInfo {
           <app-input-field
             [control]="form().controls.phone"
             label="forms.phone"
+            [mask]="isBrazilDocument() ? 'phone' : null"
+            [inputMode]="isBrazilDocument() ? 'numeric' : null"
             [errors]="[
               ['required', 'validation.required'],
               ['brazilianPhone', 'validation.invalidBrazilianPhone'],
@@ -127,91 +129,6 @@ interface GeneratedCredentialInfo {
           (postalCodeBlur)="postalCodeBlur.emit()"
         />
 
-        <section class="dependents" aria-labelledby="beneficiary-dependents-title">
-          <div class="dependents-header">
-            <div>
-              <h3 id="beneficiary-dependents-title">
-                {{ 'features.beneficiaries.dependentsTitle' | translate }}
-              </h3>
-              <p>{{ 'features.beneficiaries.dependentsDescription' | translate }}</p>
-            </div>
-
-            @if (!isReadOnly()) {
-              <app-button type="button" variant="secondary" [disabled]="submitPending()" (click)="addDependent.emit()">
-                <span class="material-symbols-rounded" aria-hidden="true">add</span>
-                {{ 'features.beneficiaries.addDependent' | translate }}
-              </app-button>
-            }
-          </div>
-
-          @if (form().controls.dependents.controls.length) {
-            <div class="dependent-list" formArrayName="dependents">
-              @for (dependentGroup of form().controls.dependents.controls; track $index; let index = $index) {
-                <fieldset class="dependent-row" [formGroupName]="index">
-                  <div class="dependent-row-header">
-                    <legend>
-                      {{ 'features.beneficiaries.dependentLabel' | translate: { number: index + 1 } }}
-                    </legend>
-
-                    @if (!isReadOnly()) {
-                      <app-button
-                        type="button"
-                        variant="ghost"
-                        [disabled]="submitPending()"
-                        (click)="removeDependent.emit(index)"
-                      >
-                        <span class="material-symbols-rounded" aria-hidden="true">delete</span>
-                        {{ 'features.beneficiaries.removeDependent' | translate }}
-                      </app-button>
-                    }
-                  </div>
-
-                  <div class="field-grid">
-                    <app-input-field
-                      [control]="dependentGroup.controls.fullName"
-                      label="forms.fullName"
-                      [errors]="[
-                        ['required', 'validation.required'],
-                        ['maxlength', 'validation.maxLength']
-                      ]"
-                      [readonly]="isReadOnly()"
-                    />
-
-                    <app-form-select
-                      [control]="dependentGroup.controls.relationship"
-                      label="forms.relationship"
-                      [options]="dependentRelationshipOptions()"
-                      [readonly]="isReadOnly()"
-                    />
-                  </div>
-
-                  <div class="field-grid">
-                    <app-input-field
-                      [control]="dependentGroup.controls.birthDate"
-                      label="forms.birthDate"
-                      type="date"
-                      [errors]="[
-                        ['required', 'validation.required'],
-                        ['dependentUnder18', 'validation.dependentUnder18']
-                      ]"
-                      [readonly]="isReadOnly()"
-                    />
-
-                    <app-input-field
-                      [control]="dependentGroup.controls.document"
-                      label="forms.document"
-                      [mask]="isBrazilDocument() ? 'cpf' : null"
-                      [inputMode]="isBrazilDocument() ? 'numeric' : null"
-                      [errors]="[['maxlength', 'validation.maxLength']]"
-                      [readonly]="isReadOnly()"
-                    />
-                  </div>
-                </fieldset>
-              }
-            </div>
-          }
-        </section>
-
         <app-input-field
           [control]="form().controls.notes"
           label="forms.notes"
@@ -241,15 +158,12 @@ export class BeneficiaryFormComponent {
   readonly selected = input<unknown | null>(null);
   readonly generatedCredential = input<GeneratedCredentialInfo | null>(null);
   readonly programOptions = input.required<SelectOption[]>();
-  readonly dependentRelationshipOptions = input.required<SelectOption[]>();
   readonly countryOptions = input.required<SelectOption[]>();
   readonly documentLabelKey = input.required<string>();
   readonly isBrazilDocument = input(false);
   readonly addressLookupMessageKey = input<string | null>(null);
   readonly saveRequested = output<void>();
   readonly cancelRequested = output<void>();
-  readonly addDependent = output<void>();
-  readonly removeDependent = output<number>();
   readonly postalCodeBlur = output<void>();
   readonly statusOptions: SelectOption[] = [
     { value: 'active', translationKey: 'enums.beneficiaryStatuses.active' },

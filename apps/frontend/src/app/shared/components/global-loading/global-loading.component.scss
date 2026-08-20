@@ -1,7 +1,7 @@
 @reference '../../../../styles.css';
 
 .global-loading {
-  @apply pointer-events-auto fixed inset-0 z-[90] grid place-items-center;
+  @apply pointer-events-auto fixed inset-0 z-[1500] grid place-items-center;
 }
 
 .global-loading-scrim {

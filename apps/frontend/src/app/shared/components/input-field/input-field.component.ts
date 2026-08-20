@@ -14,7 +14,7 @@ import {
   type ControlErrorMap,
 } from '../../utils/form.utils';
 import { FieldActionDirective } from './field-action.directive';
-import { formatCpf } from '../../utils/validation.utils';
+import { formatBrazilianPhone, formatCpf } from '../../utils/validation.utils';
 
 let nextInputFieldId = 0;
 
@@ -117,7 +117,7 @@ export class InputFieldComponent {
   readonly max = input<string | number | null>(null);
   readonly step = input<string | number | null>(null);
   readonly readonly = input(false);
-  readonly mask = input<'cpf' | null>(null);
+  readonly mask = input<'cpf' | 'phone' | null>(null);
   readonly blurred = output<FocusEvent>();
 
   private readonly projectedAction = contentChild(FieldActionDirective);
@@ -176,12 +176,14 @@ export class InputFieldComponent {
   }
 
   handleInput(event: Event) {
-    if (this.mask() !== 'cpf') {
+    const mask = this.mask();
+
+    if (!mask) {
       return;
     }
 
     const input = event.target as HTMLInputElement;
-    const formatted = formatCpf(input.value);
+    const formatted = mask === 'cpf' ? formatCpf(input.value) : formatBrazilianPhone(input.value);
 
     if (input.value === formatted) {
       return;

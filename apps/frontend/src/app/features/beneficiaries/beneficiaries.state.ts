@@ -41,7 +41,9 @@ import {
 } from '../../shared/utils/form.utils';
 import {
   cpfValidator,
+  brazilianPhoneValidator,
   brazilianPostalCodeValidator,
+  formatBrazilianPhoneForDisplay,
   formatCpf,
 } from '../../shared/utils/validation.utils';
 
@@ -208,7 +210,9 @@ export class BeneficiariesState {
         document: isBrazilCountry(item.address.country) ? formatCpf(item.document) : item.document,
         birthDate: item.birthDate ? item.birthDate.slice(0, 10) : '',
         email: item.email ?? '',
-        phone: item.phone,
+        phone: isBrazilCountry(item.address.country)
+          ? formatBrazilianPhoneForDisplay(item.phone)
+          : item.phone,
         notes: item.notes ?? '',
         charityProgramIds: item.charityPrograms.map((program) => program.id),
         status: item.status,
@@ -470,10 +474,20 @@ export class BeneficiariesState {
         this.selectedCountry.set(country);
         this.applyCountryValidators(country);
         this.applyDocumentValidators(country);
+        this.applyPhoneValidators(country);
 
         if (!isBrazilCountry(country)) {
+          this.form.controls.phone.setValue(
+            this.form.controls.phone.value.replace(/[()\s-]/g, ''),
+            { emitEvent: false },
+          );
           this.addressLookupPending.set(false);
           this.addressLookupMessageKey.set(null);
+        } else {
+          this.form.controls.phone.setValue(
+            formatBrazilianPhoneForDisplay(this.form.controls.phone.value),
+            { emitEvent: false },
+          );
         }
       });
   }
@@ -490,6 +504,17 @@ export class BeneficiariesState {
     this.form.controls.address.controls.postalCode.updateValueAndValidity({
       emitEvent: false,
     });
+  }
+
+  private applyPhoneValidators(country: SupportedCountry) {
+    const phoneValidators = [Validators.required, Validators.maxLength(30)];
+
+    if (isBrazilCountry(country)) {
+      phoneValidators.push(brazilianPhoneValidator());
+    }
+
+    this.form.controls.phone.setValidators(phoneValidators);
+    this.form.controls.phone.updateValueAndValidity({ emitEvent: false });
   }
 
   private applyDocumentValidators(country: SupportedCountry) {

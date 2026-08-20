@@ -71,6 +71,8 @@
           <app-input-field
             [control]="form.controls.phone"
             label="forms.phone"
+            mask="phone"
+            inputMode="numeric"
             [errors]="[
               ['required', 'validation.required'],
               ['phone', 'validation.invalidPhone'],
