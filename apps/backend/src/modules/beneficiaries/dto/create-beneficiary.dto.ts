@@ -87,7 +87,13 @@ export class CreateBeneficiaryDto {
   @IsNotEmpty({ each: true })
   charityProgramIds?: string[];
 
-  @ApiPropertyOptional({ type: () => [BeneficiaryDependentDto] })
+  // Temporarily retained for payload compatibility; the backend rejects
+  // non-empty dependent lists until this feature is enabled again.
+  @ApiPropertyOptional({
+    type: () => [BeneficiaryDependentDto],
+    deprecated: true,
+    description: 'Temporarily disabled. Send an empty array or omit this field.',
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

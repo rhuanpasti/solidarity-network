@@ -111,9 +111,9 @@ describe('BeneficiaryPortalService', () => {
       result.beneficiaries.map((person) => [person.fullName, person.relationship]),
       [
         ['Ana Souza', 'primary'],
-        ['Julia Souza', 'child'],
       ],
     );
+    assert.deepEqual(result.beneficiary.dependents, []);
     assert.equal(result.upcomingDeliveries[0]?.id, 'upcoming-delivery');
     assert.equal(result.pastDeliveries[0]?.id, 'past-delivery');
     assert.equal(result.pastDeliveries[0]?.quantity, 1);

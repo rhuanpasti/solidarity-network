@@ -212,7 +212,7 @@ Unhandled exceptions become HTTP 500 responses. They are logged at `error` level
 
 Do not expose stack traces, database errors, tokens, cookies, or raw exception objects in HTTP responses.
 
-Beneficiary dependent validation failures use `INVALID_BENEFICIARY_DEPENDENTS` with user-safe messages such as "Dependent 1 must be under 18 years old." The dependent document field is nullable; blank documents are normalized to `null` before persistence and audit snapshots.
+Beneficiary dependents are temporarily disabled. Create or update requests with a non-empty `dependents` array return `BENEFICIARY_DEPENDENTS_DISABLED` with status `400` and do not write to the database. Existing dependent tables and migrations remain intact for a future re-enable; beneficiary list, detail, audit snapshots, and portal responses expose an empty dependent list.
 
 Beneficiary create and update operations translate Prisma duplicate-key errors into field-level `400` responses. Use
 `BENEFICIARY_EMAIL_ALREADY_EXISTS` or `BENEFICIARY_DOCUMENT_ALREADY_EXISTS` with a `details` entry identifying the

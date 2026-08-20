@@ -1,6 +1,5 @@
 import type {
   Beneficiary,
-  BeneficiaryDependent,
   CharityProgram,
   Prisma,
 } from '@prisma/client';
@@ -13,7 +12,6 @@ export type BeneficiaryWithPrograms = Beneficiary & {
     charityProgramId: string;
     charityProgram: CharityProgram;
   }>;
-  dependents: BeneficiaryDependent[];
   address: Prisma.JsonValue;
 };
 
@@ -29,13 +27,8 @@ export function toBeneficiarySummary(
     phone: beneficiary.phone,
     address: beneficiary.address as unknown as Address,
     notes: beneficiary.notes,
-    dependents: beneficiary.dependents.map((dependent) => ({
-      id: dependent.id,
-      fullName: dependent.fullName,
-      relationship: dependent.relationship,
-      document: dependent.document,
-      birthDate: dependent.birthDate.toISOString(),
-    })),
+    // Dependents are temporarily disabled and are never exposed by the API.
+    dependents: [],
     charityPrograms: beneficiary.charityPrograms.map((link) => toCharityProgramSummary(link.charityProgram)),
     createdAt: beneficiary.createdAt.toISOString(),
     status: beneficiary.status,

@@ -7,7 +7,6 @@ import type { BeneficiaryWithPrograms } from './beneficiaries.mapper';
 import { buildBeneficiarySearchFilters } from './beneficiary-search.util';
 
 const beneficiaryInclude = {
-  dependents: true,
   charityPrograms: {
     include: {
       charityProgram: true,

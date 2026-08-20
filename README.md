@@ -273,9 +273,10 @@ npm --prefix apps/backend run prisma:migrate
 npm run seed:backend
 ```
 
-The seed is synthetic/demo-only and transactional. It is disabled unless `DEMO_SEED_ENABLED=true` and refuses to run in
-production. It creates an administrator login only when both `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set;
-there is no default password. Never point it at a real-data database.
+The seed is synthetic/demo-only and transactional. It is disabled unless `DEMO_SEED_ENABLED=true`. Production also requires
+the explicit `DEMO_SEED_ALLOW_PRODUCTION=true` flag. It creates an administrator login only when both
+`SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD` are set; there is no default password. Only run it against an intentional
+demo/disposable database.
 
 For macOS/Linux, the helper script can prepare the database before starting the API:
 

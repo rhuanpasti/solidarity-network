@@ -7,7 +7,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 type BeneficiaryPortalBeneficiary = Prisma.BeneficiaryGetPayload<{
   include: {
-    dependents: true;
     charityPrograms: {
       include: { charityProgram: true };
     };
@@ -32,9 +31,6 @@ export class BeneficiaryPortalService {
       this.prisma.beneficiary.findUnique({
         where: { id: beneficiaryId },
         include: {
-          dependents: {
-            orderBy: [{ fullName: 'asc' }, { createdAt: 'asc' }],
-          },
           charityPrograms: {
             include: {
               charityProgram: true,
@@ -96,13 +92,8 @@ export class BeneficiaryPortalService {
       email: beneficiary.email,
       phone: beneficiary.phone,
       status: beneficiary.status,
-      dependents: beneficiary.dependents.map((dependent) => ({
-        id: dependent.id,
-        fullName: dependent.fullName,
-        relationship: dependent.relationship,
-        document: dependent.document,
-        birthDate: dependent.birthDate.toISOString(),
-      })),
+      // Dependents are temporarily disabled and are never exposed by the API.
+      dependents: [],
     };
   }
 
@@ -130,13 +121,6 @@ export class BeneficiaryPortalService {
         birthDate: beneficiary.birthDate?.toISOString() ?? null,
         relationship: 'primary',
       },
-      ...beneficiary.dependents.map((dependent) => ({
-        id: dependent.id,
-        fullName: dependent.fullName,
-        document: dependent.document,
-        birthDate: dependent.birthDate.toISOString(),
-        relationship: dependent.relationship,
-      })),
     ];
   }
 

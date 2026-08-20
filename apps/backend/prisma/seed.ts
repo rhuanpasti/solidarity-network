@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/modules/auth/password.util';
 import { buildDemoSeedData } from './demo-seed-data';
+import { assertSeedAllowed } from './seed-policy';
 
 const prisma = new PrismaClient();
 const envFilePath = resolve(process.cwd(), '.env');
@@ -13,11 +14,7 @@ if (existsSync(envFilePath)) {
 }
 
 async function main() {
-  if (process.env.NODE_ENV === 'production' || process.env.DEMO_SEED_ENABLED !== 'true') {
-    throw new Error(
-      'Demo seed is disabled by default. Set DEMO_SEED_ENABLED=true in a development or CI database.',
-    );
-  }
+  assertSeedAllowed(process.env);
 
   const demoData = buildDemoSeedData();
   const seedAdminEmail =
@@ -36,14 +33,14 @@ async function main() {
     where: { email: seedAdminEmail },
     update: {
       name: 'System Administrator',
-      phone: '+55 11 98888-0000',
+      phone: '999999999',
       role: 'super_admin',
       isSystemRoot: true,
     },
     create: {
       name: 'System Administrator',
       email: seedAdminEmail,
-      phone: '+55 11 98888-0000',
+      phone: '999999999',
       role: 'super_admin',
       isSystemRoot: true,
     },

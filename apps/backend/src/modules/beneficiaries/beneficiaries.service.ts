@@ -25,11 +25,6 @@ import {
   getBeneficiaryValidationErrors,
   normalizeBeneficiaryInput,
 } from './beneficiary-validation';
-import {
-  getBeneficiaryDependentsValidationErrors,
-  normalizeBeneficiaryDependents,
-  type NormalizedBeneficiaryDependent,
-} from './beneficiary-dependents.validation';
 import { toBeneficiarySummary } from './beneficiaries.mapper';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { QueryBeneficiariesDto } from './dto/query-beneficiaries.dto';
@@ -73,6 +68,7 @@ export class BeneficiariesService {
       dto.charityProgramIds ?? [],
       { action: 'beneficiary.create' },
     );
+    this.assertDependentsDisabled(dto.dependents);
     if (this.demoDataService?.isDemoUser(actor)) {
       return this.demoDataService.previewBeneficiary({
         fullName: dto.fullName,
@@ -93,8 +89,6 @@ export class BeneficiariesService {
       address: dto.address,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
-    const normalizedDependents = normalizeBeneficiaryDependents(dto.dependents);
-    this.assertValidBeneficiaryDependents(normalizedDependents);
     await this.assertDocumentAvailable(normalizedInput.document);
     const generatedPasskey = generateNumericPasskey(16);
     let beneficiary;
@@ -109,16 +103,6 @@ export class BeneficiariesService {
         mustChangePassword: true,
         address: normalizedInput.address as unknown as Prisma.InputJsonValue,
         notes: dto.notes,
-        dependents: normalizedDependents.length
-          ? {
-              create: normalizedDependents.map((dependent) => ({
-                fullName: dependent.fullName,
-                relationship: dependent.relationship,
-                document: dependent.document,
-                birthDate: dependent.birthDate,
-              })),
-            }
-          : undefined,
         charityPrograms: dto.charityProgramIds?.length
           ? {
               create: dto.charityProgramIds.map((charityProgramId) => ({
@@ -224,6 +208,7 @@ export class BeneficiariesService {
     dto: UpdateBeneficiaryDto,
     actor: AuthenticatedUser,
   ): Promise<BeneficiarySummary> {
+    this.assertDependentsDisabled(dto.dependents);
     if (this.demoDataService?.isDemoUser(actor)) {
       return this.demoDataService.getBeneficiary(id);
     }
@@ -258,11 +243,6 @@ export class BeneficiariesService {
       address: mergedAddress,
     });
     this.assertValidBeneficiaryInput(normalizedInput);
-    const normalizedDependents =
-      dto.dependents === undefined
-        ? undefined
-        : normalizeBeneficiaryDependents(dto.dependents);
-    this.assertValidBeneficiaryDependents(normalizedDependents ?? []);
     await this.assertDocumentAvailable(normalizedInput.document, id);
 
     this.authorizationService.assertCanEditBeneficiary(
@@ -291,18 +271,6 @@ export class BeneficiariesService {
           : undefined,
         notes: dto.notes,
         status: dto.status,
-        dependents:
-          normalizedDependents === undefined
-            ? undefined
-            : {
-                deleteMany: {},
-                create: normalizedDependents.map((dependent) => ({
-                  fullName: dependent.fullName,
-                  relationship: dependent.relationship,
-                  document: dependent.document,
-                  birthDate: dependent.birthDate,
-                })),
-              },
       }, dto.charityProgramIds);
     } catch (error) {
       rethrowBeneficiaryUniqueError(error);
@@ -378,19 +346,19 @@ export class BeneficiariesService {
     });
   }
 
-  private assertValidBeneficiaryDependents(
-    dependents: NormalizedBeneficiaryDependent[],
-  ) {
-    const errors = getBeneficiaryDependentsValidationErrors(dependents);
-
-    if (!errors.length) {
+  /**
+   * Temporarily disables dependent persistence and exposure while the feature
+   * is being revisited. The Prisma model and migration remain available for a
+   * future re-enable without changing the database schema.
+   */
+  private assertDependentsDisabled(dependents?: unknown[]) {
+    if (!dependents?.length) {
       return;
     }
 
     throw new BadRequestException({
-      code: 'INVALID_BENEFICIARY_DEPENDENTS',
-      message: errors[0],
-      details: errors,
+      code: 'BENEFICIARY_DEPENDENTS_DISABLED',
+      message: 'Beneficiary dependents are temporarily disabled.',
     });
   }
 
@@ -423,12 +391,6 @@ export class BeneficiariesService {
     address: unknown;
     notes: string | null;
     status: string;
-    dependents: Array<{
-      fullName: string;
-      relationship: string;
-      document: string | null;
-      birthDate: Date;
-    }>;
     charityPrograms: Array<{ charityProgramId: string }>;
   }) {
     return {
@@ -440,14 +402,7 @@ export class BeneficiariesService {
       address: beneficiary.address,
       notes: beneficiary.notes,
       status: beneficiary.status,
-      dependents: beneficiary.dependents
-        .map((dependent) => ({
-          fullName: dependent.fullName,
-          relationship: dependent.relationship,
-          document: dependent.document,
-          birthDate: dependent.birthDate.toISOString(),
-        }))
-        .sort((left, right) => left.fullName.localeCompare(right.fullName)),
+      dependents: [],
       charityProgramIds: beneficiary.charityPrograms
         .map((link) => link.charityProgramId)
         .sort(),

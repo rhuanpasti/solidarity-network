@@ -22,3 +22,4 @@ import '../src/modules/demo/demo-data.service.spec';
 import '../src/modules/charity-programs/charity-programs.service.spec';
 import '../src/modules/beneficiaries/beneficiaries.service.spec';
 import '../prisma/demo-seed-data.spec';
+import '../prisma/seed-policy.spec';
