@@ -139,7 +139,9 @@ define a retention/anonymization policy, and alert on `audit.persist_failed`, `a
 Password recovery is intentionally generic at the API boundary. A recovery request stores only a SHA-256 hash of a
 random token, expires after one hour, invalidates previous tokens for the account, and marks the token consumed before
 the password update. `auth.password_recovery.email_failed` records provider failures using only an email fingerprint;
-the endpoint still returns the same generic success response, preventing account enumeration.
+the endpoint still returns the same generic success response, preventing account enumeration. Recovery requests are
+limited to three attempts per IP within the rate-limit window; the IP is then blocked for one hour and receives
+`429 TOO_MANY_PASSWORD_RECOVERY_ATTEMPTS` with `retryAfterSeconds` so the client can tell the user to try again later.
 
 Changing or resetting a password increments the account `sessionVersion`. JWTs carry that version and the auth guard
 compares it with the current credential on every protected request, emitting `auth.request.denied` with
@@ -148,8 +150,9 @@ compares it with the current credential on every protected request, emitting `au
 When `DEMO_MODE=true`, the configured demo credentials authenticate to a synthetic `demo-user` with the
 `isDemo=true` JWT claim. The auth guard accepts that claim without querying `AuthRepository`; protected domain services
 serve only in-memory synthetic records from `DemoDataService`, and demo create/update operations return previews without
-calling Prisma. Audit and entity-version persistence skip demo actors, and the email sender emits `email.send.skipped`
-with `reason=demo_mode`. Never log the configured demo password or copy demo credentials into operational logs.
+calling Prisma. Audit and entity-version persistence skip demo actors. Email delivery is skipped only for messages
+marked with the demo actor and emits `email.send.skipped` with `reason=demo_mode`; real administrators can still send
+email while demo mode is enabled. Never log the configured demo password or copy demo credentials into operational logs.
 
 Example request:
 

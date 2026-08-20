@@ -78,4 +78,20 @@ describe('AuthRateLimitService', () => {
     service.registerRequest(keys);
     assert.equal(service.getRetryAfterSeconds(keys), 900);
   });
+
+  it('blocks password recovery after three requests for one hour', () => {
+    const service = new AuthRateLimitService();
+    const keys = [
+      'auth:forgot-password:ip:203.0.113.30',
+      'auth:forgot-password:ip-identifier:203.0.113.30:user@email.com',
+    ];
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      service.registerPasswordRecoveryAttempt(keys);
+      assert.equal(service.getRetryAfterSeconds(keys), 0);
+    }
+
+    service.registerPasswordRecoveryAttempt(keys);
+    assert.equal(service.getRetryAfterSeconds(keys), 3600);
+  });
 });

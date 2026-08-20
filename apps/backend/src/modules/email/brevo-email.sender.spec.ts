@@ -26,7 +26,7 @@ function makeResponse(body: unknown, status = 201) {
   };
 }
 
-function makePayload() {
+function makePayload(overrides: Record<string, unknown> = {}) {
   return {
     to: {
       email: 'maria@example.org',
@@ -35,6 +35,7 @@ function makePayload() {
     subject: 'Subject',
     html: '<p>Hello</p>',
     text: 'Hello',
+    ...overrides,
   };
 }
 
@@ -171,7 +172,7 @@ describe('BrevoEmailSender', () => {
       fetchImplementation as never,
     );
 
-    await sender.send(makePayload());
+    await sender.send(makePayload({ isDemo: true }));
 
     assert.equal(fetchImplementation.mock.callCount(), 0);
     assert.equal(logger.debug.mock.callCount(), 1);
@@ -192,9 +193,29 @@ describe('BrevoEmailSender', () => {
       fetchImplementation as never,
     );
 
-    await sender.send(makePayload());
+    await sender.send(makePayload({ isDemo: true }));
 
     assert.equal(fetchImplementation.mock.callCount(), 0);
     assert.equal(logger.debug.mock.calls[0]?.arguments[1].reason, 'demo_mode');
+  });
+
+  it('sends real-user email while demo mode is enabled', async () => {
+    const config = makeConfig({ DEMO_MODE: true });
+    const logger = {
+      debug: mock.fn(),
+      warn: mock.fn(),
+      log: mock.fn(),
+      error: mock.fn(),
+    };
+    const fetchImplementation = mock.fn(async () => makeResponse({}));
+    const sender = new BrevoEmailSender(
+      config as never,
+      logger as never,
+      fetchImplementation as never,
+    );
+
+    await sender.send(makePayload({ isDemo: false }));
+
+    assert.equal(fetchImplementation.mock.callCount(), 1);
   });
 });
