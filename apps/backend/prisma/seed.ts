@@ -28,7 +28,8 @@ async function main() {
     );
   }
 
-  await prisma.$transaction(async (transaction) => {
+  await prisma.$transaction(
+    async (transaction) => {
   const administrator = await transaction.administrator.upsert({
     where: { email: seedAdminEmail },
     update: {
@@ -240,7 +241,12 @@ async function main() {
       `${demoData.deliveries.length} delivery records`,
     ].join(', '),
   );
-  });
+    },
+    {
+      maxWait: 30_000,
+      timeout: 120_000,
+    },
+  );
 }
 
 function requiredId(ids: Map<string, string>, key: string) {
